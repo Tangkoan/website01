@@ -1,4 +1,4 @@
-@component('layouts.app')
+{{-- @component('layouts.app') --}}
     <div class="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
         <h1 class="text-9xl font-black text-gray-200">404</h1>
         <h2 class="text-3xl font-bold text-gray-800 mt-4">{{ __('messages.404_title') }}</h2>
@@ -16,4 +16,4 @@
             </a>
         </div>
     </div>
-@endcomponent
+{{-- @endcomponent --}}
