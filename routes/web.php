@@ -22,3 +22,9 @@ Route::get('/', function () {
 Route::get('/dashboard', Dashboard::class)
     ->middleware('auth')
     ->name('dashboard');
+
+
+// បន្ថែម Fallback Route នៅក្រោមគេបង្អស់
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});

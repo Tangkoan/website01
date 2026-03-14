@@ -23,4 +23,9 @@ return [
     '403_description' => 'Sorry, you do not have permission to access this page.',
     'go_back' => 'Go Back',
     'go_home' => 'Home',
+
+    // header
+    'profile' => 'Profile',
+    'change_password' => 'Chnage Password',
+
 ];
