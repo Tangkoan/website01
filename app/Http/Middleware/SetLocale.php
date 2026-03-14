@@ -5,17 +5,15 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Session;
+use Symfony\Component\HttpFoundation\Response;
 
 class SetLocale
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // បើមានការកំណត់ភាសាក្នុង Session, យកវាមកប្រើ។ បើគ្មានទេ យក 'km' ជាភាសាដើម
-        if (Session::has('locale')) {
-            App::setLocale(Session::get('locale'));
-        } else {
-            App::setLocale('km'); 
+        // ឆែកមើលថាបើមាន session 'locale' ឱ្យវាប្តូរភាសាផ្អែកតាមនោះ
+        if (session()->has('locale')) {
+            App::setLocale(session()->get('locale'));
         }
 
         return $next($request);

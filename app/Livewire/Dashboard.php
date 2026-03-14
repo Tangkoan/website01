@@ -12,12 +12,14 @@ class Dashboard extends Component
 {
 
 
-    // មុខងារប្តូរភាសាដោយមិនបាច់ Refresh
     public function changeLanguage($locale)
     {
         if (in_array($locale, ['en', 'km'])) {
-            Session::put('locale', $locale); // ចងចាំជម្រើសភាសា
-            App::setLocale($locale);         // ប្តូរភាសាភ្លាមៗនៅក្នុង Component នេះ
+            session()->put('locale', $locale);
+            app()->setLocale($locale);
+            
+            // ស្រែកប្រាប់ Component ផ្សេងៗ (ដូចជា Header) ឱ្យដឹងខ្លួន
+            $this->dispatch('locale-updated'); 
         }
     }
 

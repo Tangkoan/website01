@@ -29,7 +29,10 @@ class Login extends Component
         if (Auth::attempt([$fieldType => $this->email, 'password' => $this->password])) {
             // បើជោគជ័យ ឱ្យវាលោតទៅទំព័រ dashboard 
             // (ចំណាំ៖ ខ្ញុំបានដក navigate: true ចេញ ដើម្បីការពារកុំឱ្យវាគាំងដូចបញ្ហា Logout ដែលយើងជួបមុននេះ)
-            return $this->redirect('/dashboard'); 
+            // return $this->redirect('/dashboard'); 
+
+            // បើជោគជ័យ ឱ្យវាលោតទៅទំព័រ dashboard ដោយមិន Refresh page
+            return $this->redirect('/dashboard', navigate: true);
         } else {
             // បើខុស បង្ហាញសារកំហុស
             $this->errorMessage = 'Name/Email or password is wrong!';
