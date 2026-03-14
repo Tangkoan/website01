@@ -5,8 +5,22 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session; 
+
 class Dashboard extends Component
 {
+
+
+    // មុខងារប្តូរភាសាដោយមិនបាច់ Refresh
+    public function changeLanguage($locale)
+    {
+        if (in_array($locale, ['en', 'km'])) {
+            Session::put('locale', $locale); // ចងចាំជម្រើសភាសា
+            App::setLocale($locale);         // ប្តូរភាសាភ្លាមៗនៅក្នុង Component នេះ
+        }
+    }
+
     public function logout()
     {
         // ១. ធ្វើការចាកចេញពីគណនី
