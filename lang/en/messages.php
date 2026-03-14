@@ -14,5 +14,13 @@ return [
     'guest_user' => 'User',
     'dashboard_desc' => 'This is the page you see after successfully logging in or registering.',
     'logout_btn' => 'Logout',
-    'logging_out' => 'Logging out...'
+    'logging_out' => 'Logging out...',
+
+    // 404 & 403
+    '404_title' => 'Page Not Found',
+    '404_description' => 'Sorry, the page you are looking for might have been removed or relocated.',
+    '403_title' => 'Access Denied',
+    '403_description' => 'Sorry, you do not have permission to access this page.',
+    'go_back' => 'Go Back',
+    'go_home' => 'Home',
 ];

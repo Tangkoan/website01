@@ -25,9 +25,11 @@ class Header extends Component
     public function logout()
     {
         \Illuminate\Support\Facades\Auth::logout();
+
         session()->invalidate();
         session()->regenerateToken();
-        return redirect('/'); // ត្រឡប់ទៅទំព័រ Login
+
+        return $this->redirect('/', navigate: true);
     }
 
     

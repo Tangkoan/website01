@@ -28,7 +28,7 @@
                 <hr class="my-1">
                 <button wire:click="logout" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold">
                     <span wire:loading.remove wire:target="logout">🚪 {{ __('messages.logout_btn') }}</span>
-                    <span wire:loading wire:target="logout">{{ __('messages.logging_out') }}</span>
+                    <span wire:loading wire:target="logout" wire:click="logout">{{ __('messages.logging_out') }}</span>
                 </button>
             </div>
         </div>
