@@ -28,4 +28,16 @@ return [
     'profile' => 'Profile',
     'change_password' => 'Chnage Password',
 
+    // sidebar
+    'app_name' => 'Admin Panel',
+    'profile' => 'Profile',
+    'change_password' => 'Change Password',
+    'logout_btn' => 'Logout',
+    'home' => 'Dashboard',
+    'users' => 'Users',
+    'settings' => 'Settings',
+    'shop_info' => 'Shop Info',
+    'roles' => 'Roles',
+    'permissions' => 'Permissions',
+
 ];

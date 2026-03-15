@@ -27,4 +27,17 @@ return [
     // header
     'profile' => 'រូបតំណាង',
     'change_password' => 'ផ្លាស់ប្ដូរពាក្យសម្ងាត់',
+
+
+    // sidebar
+    'app_name' => 'ប្រព័ន្ធគ្រប់គ្រង',
+    'profile' => 'ប្រវត្តិរូប',
+    'change_password' => 'ប្ដូរពាក្យសម្ងាត់',
+    'logout_btn' => 'ចាកចេញ',
+    'home' => 'ទំព័រដើម',
+    'users' => 'អ្នកប្រើប្រាស់',
+    'settings' => 'ការកំណត់',
+    'shop_info' => 'ព័ត៌មានហាង',
+    'roles' => 'តួនាទី',
+    'permissions' => 'សិទ្ធិប្រើប្រាស់',
 ];
