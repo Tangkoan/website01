@@ -64,6 +64,40 @@ return [
     
     // Buttons
     'save_changes' => 'Save Changes',
+    'save' => 'Save',
     'saving'       => 'Saving...',
+
+    // Profile ទូទៅ
+    'profile' => 'My Profile',
+    'profile_desc' => 'Manage your personal information and account settings here.',
+    'profile_photo' => 'Profile Photo',
+    'profile_photo_desc' => 'Allowed JPG, PNG or GIF. Max size of 2MB. Click on the image to change.',
+    'upload' => 'Upload',
+    'uploading' => 'Uploading...',
+    'name' => 'Name',
+    'email' => 'Email Address',
+    
+    // Toast Messages
+    'profile_updated_success' => 'Profile updated successfully!',
+    'profile_update_error' => 'Failed to update profile. Please try again.',
+
+
+    // សម្រាប់ Change Password
+    'change_password' => 'Change Password',
+    'change_password_desc' => 'Ensure your account is using a long, random password to stay secure.',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'confirm_password' => 'Confirm Password',
+    'cancel' => 'Cancel',
+    'update_password' => 'Update Password',
+    'password_updated_success' => 'Password updated successfully!',
+    'password_update_error' => 'Failed to update password. Please check your inputs.',
+    
+    // Validation Messages សម្រាប់ Password
+    'current_password_req' => 'Please enter your current password.',
+    'current_password_err' => 'The provided password does not match your current password.',
+    'new_password_req' => 'Please enter a new password.',
+    'new_password_min' => 'The new password must be at least 8 characters.',
+    'password_unmatched' => 'The password confirmation does not match.',
 
 ];

@@ -64,6 +64,38 @@ return [
     'muted_secondary_text'  => 'ពណ៌អក្សរបន្ទាប់បន្សំ/ព្រិល',
     
     // Buttons
+    'save' => 'រក្សាទុក',
     'save_changes' => 'រក្សាទុកការផ្លាស់ប្តូរ',
     'saving'       => 'កំពុងរក្សាទុក...',
+
+    // Profile ទូទៅ
+    'profile' => 'ប្រវត្តិរូប',
+    'profile_desc' => 'គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន និងការកំណត់គណនីរបស់អ្នកនៅទីនេះ។',
+    'profile_photo' => 'រូបភាពប្រវត្តិរូប',
+    'profile_photo_desc' => 'អនុញ្ញាតរូបភាពប្រភេទ JPG, PNG ឬ GIF ទំហំមិនលើសពី 2MB។ ចុចលើរូបភាពដើម្បីផ្លាស់ប្តូរ។',
+    'upload' => 'បញ្ជូលរូបភាព',
+    'uploading' => 'កំពុងទាញយក...',
+    'name' => 'ឈ្មោះ',
+    'email' => 'អុីមែល',
+    // Toast Messages
+    'profile_updated_success' => 'ប្រវត្តិរូបត្រូវបានរក្សាទុកដោយជោគជ័យ!',
+    'profile_update_error' => 'បរាជ័យក្នុងការរក្សាទុក។ សូមព្យាយាមម្តងទៀត។',
+
+    // សម្រាប់ Change Password
+    'change_password' => 'Change Password',
+    'change_password_desc' => 'Ensure your account is using a long, random password to stay secure.',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'confirm_password' => 'Confirm Password',
+    'cancel' => 'Cancel',
+    'update_password' => 'Update Password',
+    'password_updated_success' => 'Password updated successfully!',
+    'password_update_error' => 'Failed to update password. Please check your inputs.',
+    
+    // Validation Messages សម្រាប់ Password
+    'current_password_req' => 'Please enter your current password.',
+    'current_password_err' => 'The provided password does not match your current password.',
+    'new_password_req' => 'Please enter a new password.',
+    'new_password_min' => 'The new password must be at least 8 characters.',
+    'password_unmatched' => 'The password confirmation does not match.',
 ];
