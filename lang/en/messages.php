@@ -46,7 +46,6 @@ return [
     // Theme Manager
     'theme' => 'Theme',
     'theme_customization' => 'Theme Customization',
-    'theme_preview_desc'  => 'Live preview your changes. Don\'t forget to save when you\'re happy!',
     'saved_successfully'  => 'Saved Successfully!',
     'light_mode'          => 'Light Mode',
     'dark_mode'           => 'Dark Mode',

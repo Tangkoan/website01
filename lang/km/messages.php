@@ -47,7 +47,6 @@ return [
     // Theme Manager
     'theme' => 'ការកំណត់រចនាប័ទ្ម',
     'theme_customization' => 'ការកំណត់រចនាប័ទ្ម (Theme)',
-    'theme_preview_desc'  => 'មើលការផ្លាស់ប្តូររបស់អ្នកភ្លាមៗ។ កុំភ្លេចរក្សាទុកនៅពេលអ្នករៀបចំរួចរាល់!',
     'saved_successfully'  => 'រក្សាទុកបានជោគជ័យ!',
     'light_mode'          => 'ទម្រង់ភ្លឺ (Light)',
     'dark_mode'           => 'ទម្រង់ងងឹត (Dark)',
