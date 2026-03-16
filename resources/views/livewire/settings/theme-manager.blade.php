@@ -1,7 +1,6 @@
 <div class="max-w-[1000px] mx-auto pb-10" 
      x-data="{ 
         activeTab: 'light',
-        showSuccess: false,
         
         /* ទាញយកទិន្នន័យផ្ទាល់ពី Livewire មក Alpine (Live Preview Magic) */
         light: @entangle('lightColors').live,
@@ -28,7 +27,6 @@
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
         applyLivePreview(); // Run ពេល Load លើកដំបូង
      "
-     @theme-saved.window="showSuccess = true; setTimeout(() => showSuccess = false, 3000)"
 >
 
     <div class="mb-8 flex justify-between items-end">
@@ -41,13 +39,13 @@
             </p>
         </div>
         
-        <div x-show="showSuccess" x-cloak
+        {{-- <div x-show="showSuccess" x-cloak
              x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0"
              x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-4"
              class="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/20 rounded-xl font-bold text-sm shadow-sm">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
             {{ __('messages.saved_successfully') ?? 'Saved Successfully!' }}
-        </div>
+        </div> --}}
     </div>
 
     <div class="bg-card-bg rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)] border border-border-color overflow-hidden transition-colors duration-300">

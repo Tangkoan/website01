@@ -46,19 +46,31 @@ class ThemeManager extends Component
 
     public function saveTheme()
     {
-        $theme = Theme::find($this->themeId);
-        
-        if ($theme) {
-            $theme->update([
-                'colors' => [
-                    'light' => $this->lightColors,
-                    'dark' => $this->darkColors,
-                ]
-            ]);
 
-            // បញ្ជូនសញ្ញា (Event) ទៅកាន់ Frontend ថា Save បានជោគជ័យ ដើម្បីបង្ហាញសារ
-            $this->dispatch('theme-saved');
+        try{
+            $theme = Theme::find($this->themeId);
+                    
+                    if ($theme) {
+                        $theme->update([
+                            'colors' => [
+                                'light' => $this->lightColors,
+                                'dark' => $this->darkColors,
+                            ]
+                        ]);
+
+                        // បាញ់ Toast ពេលជោគជ័យ (Success)
+                        $this->dispatch('notify', 
+                            type: 'success', 
+                            message: __('messages.saved_successfully') ?? 'Saved Successfully!'
+                        );
+            }
+        }catch (\Exception $e){
+            $this->dispatch('notify', 
+                type: 'error', 
+                message: __('messages.save_error') ?? 'Something went wrong!'
+            );
         }
+        
     }
 
     public function render()
