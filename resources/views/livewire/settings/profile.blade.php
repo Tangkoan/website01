@@ -4,9 +4,7 @@
             <span class="text-3xl">👤</span>
             {{ __('messages.profile') }}
         </h2>
-        <p class="mt-1 text-sm text-text-muted">
-            {{ __('messages.profile_desc') }}
-        </p>
+       
     </div>
 
     <div class="bg-card-bg rounded-2xl shadow-sm border border-border-color overflow-hidden">

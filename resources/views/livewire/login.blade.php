@@ -14,7 +14,7 @@
     <form wire:submit="login" class="space-y-6">
         
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email\Name</label>
             <input 
                 type="text" 
                 wire:model="email" 

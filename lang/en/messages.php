@@ -69,7 +69,6 @@ return [
 
     // Profile ទូទៅ
     'profile' => 'My Profile',
-    'profile_desc' => 'Manage your personal information and account settings here.',
     'profile_photo' => 'Profile Photo',
     'profile_photo_desc' => 'Allowed JPG, PNG or GIF. Max size of 2MB. Click on the image to change.',
     'upload' => 'Upload',
