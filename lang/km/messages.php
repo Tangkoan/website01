@@ -27,6 +27,9 @@ return [
     // header
     'profile' => 'រូបតំណាង',
     'change_password' => 'ផ្លាស់ប្ដូរពាក្យសម្ងាត់',
+    'confirm_logout_title'=> "តើអ្នកចង់ធ្វើការចាកចេញមែនទេ?",
+    'confirm'=> 'យល់ព្រម',
+    'cancel'=> 'បោះបង់',
 
 
     // sidebar

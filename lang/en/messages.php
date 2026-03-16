@@ -27,6 +27,9 @@ return [
     // header
     'profile' => 'Profile',
     'change_password' => 'Chnage Password',
+    'confirm_logout_title'=> "Do you want logout?",
+    'confirm'=> 'Confirm',
+    'cancel'=> 'Cancel',
 
     // sidebar
     'app_name' => 'Admin Panel',
