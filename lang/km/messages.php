@@ -43,4 +43,28 @@ return [
     'shop_info' => 'ព័ត៌មានហាង',
     'roles' => 'តួនាទី',
     'permissions' => 'សិទ្ធិប្រើប្រាស់',
+
+    // Theme Manager
+    'theme' => 'ការកំណត់រចនាប័ទ្ម',
+    'theme_customization' => 'ការកំណត់រចនាប័ទ្ម (Theme)',
+    'theme_preview_desc'  => 'មើលការផ្លាស់ប្តូររបស់អ្នកភ្លាមៗ។ កុំភ្លេចរក្សាទុកនៅពេលអ្នករៀបចំរួចរាល់!',
+    'saved_successfully'  => 'រក្សាទុកបានជោគជ័យ!',
+    'light_mode'          => 'ទម្រង់ភ្លឺ (Light)',
+    'dark_mode'           => 'ទម្រង់ងងឹត (Dark)',
+    
+    // Colors Labels
+    'primary_brand_color'   => 'ពណ៌គោលប្រព័ន្ធ (Primary)',
+    'text_on_primary'       => 'ពណ៌អក្សរលើពណ៌គោល',
+    'main_background'       => 'ពណ៌ផ្ទៃខាងក្រោយ',
+    'card_background'       => 'ពណ៌ផ្ទៃកាត (Card)',
+    'header_background'     => 'ពណ៌ផ្ទៃផ្នែកខាងលើ (Header)',
+    'sidebar_background'    => 'ពណ៌ផ្ទៃម៉ឺនុយចំហៀង (Sidebar)',
+    'dropdown_background'   => 'ពណ៌ផ្ទៃម៉ឺនុយទម្លាក់ចុះ',
+    'borders_and_lines'     => 'ពណ៌បន្ទាត់ និងស៊ុម',
+    'main_text_color'       => 'ពណ៌អក្សរចម្បង',
+    'muted_secondary_text'  => 'ពណ៌អក្សរបន្ទាប់បន្សំ/ព្រិល',
+    
+    // Buttons
+    'save_changes' => 'រក្សាទុកការផ្លាស់ប្តូរ',
+    'saving'       => 'កំពុងរក្សាទុក...',
 ];

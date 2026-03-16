@@ -1,4 +1,30 @@
-<header x-data="{ showLogoutModal: false }" class="h-16 bg-white dark:bg-[#0f172a] shadow-sm dark:shadow-[0_1px_2px_rgba(0,0,0,0.5)] border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 z-10 relative transition-colors duration-300">
+<header x-data="{ 
+        showLogoutModal: false,
+        isFullscreen: false,
+        
+        // អនុគមន៍សម្រាប់គ្រប់គ្រង Full-Screen
+        toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+                this.isFullscreen = true;
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    this.isFullscreen = false;
+                }
+            }
+        },
+        
+        // ស្តាប់ព្រឹត្តិការណ៍ពេល Browser ចេញពី Fullscreen ដោយខ្លួនឯង (ឧទាហរណ៍ចុច Esc)
+        init() {
+            document.addEventListener('fullscreenchange', () => {
+                this.isFullscreen = !!document.fullscreenElement;
+            });
+        }
+    }" 
+    class="h-16 bg-white dark:bg-[#0f172a] shadow-sm dark:shadow-[0_1px_2px_rgba(0,0,0,0.5)] border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 z-10 relative transition-colors duration-300">
     
     <div class="flex items-center gap-3">
         <button @click="sidebarOpen = true" class="md:hidden p-2 text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:bg-gray-800 rounded-xl transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/20">
@@ -17,6 +43,19 @@
 
     <div class="flex items-center gap-3 sm:gap-5">
         
+        <button @click="toggleFullscreen()" 
+                class="hidden sm:flex items-center justify-center p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 dark:text-gray-500 dark:hover:text-primary dark:hover:bg-gray-800/80 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 group"
+                :title="isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'">
+            
+            <svg x-show="!isFullscreen" class="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+
+            <svg x-show="isFullscreen" x-cloak class="w-5 h-5 transition-transform group-hover:scale-110 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14h6v6M20 10h-6V4M10 14l-7 7M14 10l7-7"/>
+            </svg>
+        </button>
+
         <button 
             x-data="{ 
                 isDark: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),

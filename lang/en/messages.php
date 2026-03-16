@@ -43,4 +43,28 @@ return [
     'roles' => 'Roles',
     'permissions' => 'Permissions',
 
+    // Theme Manager
+    'theme' => 'Theme',
+    'theme_customization' => 'Theme Customization',
+    'theme_preview_desc'  => 'Live preview your changes. Don\'t forget to save when you\'re happy!',
+    'saved_successfully'  => 'Saved Successfully!',
+    'light_mode'          => 'Light Mode',
+    'dark_mode'           => 'Dark Mode',
+    
+    // Colors Labels
+    'primary_brand_color'   => 'Primary Brand Color',
+    'text_on_primary'       => 'Text on Primary',
+    'main_background'       => 'Main Background',
+    'card_background'       => 'Card Background',
+    'header_background'     => 'Header Background',
+    'sidebar_background'    => 'Sidebar Background',
+    'dropdown_background'   => 'Dropdown Background',
+    'borders_and_lines'     => 'Borders & Lines',
+    'main_text_color'       => 'Main Text Color',
+    'muted_secondary_text'  => 'Muted/Secondary Text',
+    
+    // Buttons
+    'save_changes' => 'Save Changes',
+    'saving'       => 'Saving...',
+
 ];

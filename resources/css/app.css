@@ -5,20 +5,18 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-
-
-
-
-/* បង្ខំឱ្យ Tailwind ប្រើ Class `.dark` សម្រាប់ Dark Mode ជំនួសឱ្យ System Preference */
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    /* ប្រកាសឈ្មោះពណ៌របស់អ្នកនៅទីនេះ វាស្មើនឹងការបង្កើត bg-header, text-text-main ជាដើម */
-    --color-header: var(--theme-header, #ffffff);
-    --color-sidebar: var(--theme-sidebar, #ffffff);
-    --color-dropdown: var(--theme-dropdown, #ffffff);
-    --color-border-color: var(--theme-border-color, #e5e7eb);
-    --color-text-main: var(--theme-text-main, #1f2937);
-    --color-text-muted: var(--theme-text-muted, #6b7280);
-    --color-primary: var(--theme-primary, #3b82f6);
+    /* ត្រូវប្រើសញ្ញាដក (-) ទាំងអស់ សម្រាប់ឈ្មោះ Tailwind ស្គាល់វា */
+    --color-primary: var(--color-primary, #3b82f6);
+    --color-primary-text: var(--color-primary-text, #ffffff);
+    --color-background: var(--color-background, #f3f4f6);
+    --color-card-bg: var(--color-card-bg, #ffffff);
+    --color-header: var(--color-header, #ffffff);
+    --color-sidebar: var(--color-sidebar, #ffffff);
+    --color-dropdown: var(--color-dropdown, #ffffff);
+    --color-text-main: var(--color-text-main, #1f2937);
+    --color-text-muted: var(--color-text-muted, #6b7280);
+    --color-border-color: var(--color-border-color, #e5e7eb);
 }
