@@ -36,29 +36,29 @@
             </svg>
         </button>
 
-        <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 p-2 text-text-main hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
+        <div x-data="{ open: false }" @click.outside="open = false" class="relative">
+            <button @click="open = !open" class="flex items-center gap-2 p-2 text-text-main hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all">
                 <img src="https://flagcdn.com/w40/{{ app()->getLocale() == 'km' ? 'kh' : 'us' }}.png" class="w-5 h-5 rounded-full object-cover shadow-sm">
                 <span class="hidden md:inline text-sm font-semibold">{{ app()->getLocale() == 'km' ? 'ខ្មែរ' : 'English' }}</span>
             </button>
             <div x-show="open" x-cloak x-transition class="absolute right-0 mt-2 w-40 bg-dropdown rounded-xl shadow-xl border border-border-color py-1 z-50 overflow-hidden">
-                <button wire:click="changeLanguage('km')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() == 'km' ? 'text-primary font-bold' : 'text-text-main' }}">
+                <button type="button" wire:click="changeLanguage('km')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() == 'km' ? 'text-primary font-bold' : 'text-text-main' }}">
                     <img src="https://flagcdn.com/w40/kh.png" class="w-5 h-5 rounded-full object-cover"> ខ្មែរ
                 </button>
-                <button wire:click="changeLanguage('en')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() == 'en' ? 'text-primary font-bold' : 'text-text-main' }}">
+                <button type="button" wire:click="changeLanguage('en')" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() == 'en' ? 'text-primary font-bold' : 'text-text-main' }}">
                     <img src="https://flagcdn.com/w40/us.png" class="w-5 h-5 rounded-full object-cover"> English
                 </button>
             </div>
         </div>
 
-        <div x-data="{ open: false }" class="relative border-l border-border-color pl-2">
-            <button @click="open = !open" @click.away="open = false" class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 hover:border-primary/40 transition-all">
+        <div x-data="{ open: false }" @click.outside="open = false" class="relative border-l border-border-color pl-2">
+            <button @click="open = !open" class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 hover:border-primary/40 transition-all">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </button>
             <div x-show="open" x-cloak x-transition class="absolute right-0 mt-2 w-48 bg-dropdown rounded-xl shadow-xl border border-border-color py-2 z-50">
                 <a href="#" class="block px-4 py-2 text-sm text-text-main hover:bg-gray-100 dark:hover:bg-gray-700">👤 {{ __('messages.profile') }}</a>
                 <hr class="my-1 border-border-color">
-                <button wire:click="logout" class="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/10">
+                <button type="button" wire:click="logout" class="w-full text-left px-4 py-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/10">
                     🚪 {{ __('messages.logout_btn') }}
                 </button>
             </div>

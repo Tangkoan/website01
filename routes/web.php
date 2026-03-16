@@ -22,3 +22,7 @@ Route::get('/', function () {
 Route::get('/dashboard', Dashboard::class)
     ->middleware('auth')
     ->name('dashboard');
+
+Route::fallback(function () {
+    abort(404);
+});
