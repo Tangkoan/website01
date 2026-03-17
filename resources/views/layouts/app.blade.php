@@ -8,6 +8,10 @@
         $colors = $theme ? $theme->colors : [];
     @endphp
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Battambang:wght@100;300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
         function applyTheme() {
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia(
@@ -78,13 +82,15 @@
 
     @livewireScripts
 
-    <div x-data="{
+    <div
+     wire:ignore
+     x-data="{
             toasts: [],
             addToast(toast) {
-                const id = Date.now();
+                // ២. បង្កើត ID ដែលមានភាព Unique ខ្លាំងមិនជាន់គ្នា
+                const id = Date.now() + Math.random().toString(36).substring(2, 9);
                 const duration = toast.duration || 3000; 
                 this.toasts.push({ id, duration, ...toast });
-                // ចំណាំ៖ យើងលែងប្រើ setTimeout នៅទីនេះទៀតហើយ យើងនឹងឲ្យ Toast នីមួយៗគ្រប់គ្រងខ្លួនឯង
             },
             removeToast(id) {
                 this.toasts = this.toasts.filter(t => t.id !== id);

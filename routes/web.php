@@ -26,6 +26,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/profile', Profile::class)->name('profile.edit');
     Route::get('/settings/password', ChangePassword::class)->name('password.change');
 
+    // ការពារ Route ទាំងនេះដោយទាមទារសិទ្ធិ view (បងអាចប្ដូរឈ្មោះ permission តាមជាក់ស្ដែង)
+    Route::get('/settings/users', \App\Livewire\Settings\UserManagement::class)
+        ->can('view-user'); 
+        
+    Route::get('/settings/permission', \App\Livewire\Settings\PermissionManagement::class)
+        ->can('view-permission'); 
+
 });
 
 

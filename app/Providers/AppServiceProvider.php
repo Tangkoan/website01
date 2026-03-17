@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 
+use Illuminate\Support\Facades\Gate; // ត្រូវប្រាកដថាបាន import Gate
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -30,5 +32,12 @@ class AppServiceProvider extends ServiceProvider
             // បើចង់ឲ្យវា Default ខ្មែរតែម្ដង កំណត់វានៅទីនេះ
             App::setLocale(config('app.locale')); 
         }
+
+
+        // ផ្ដល់សិទ្ធិទាំងអស់ (Bypass) ទៅឲ្យ user ណាដែលមាន role 'super-admin'
+        Gate::before(function ($user, $ability) {
+            // សូមប្ដូរ 'super-admin' ទៅតាមឈ្មោះ role ជាក់ស្ដែងដែលបងមានក្នុង Database
+            return $user->hasRole('Super Admin') ? true : null;
+        });
     }
 }

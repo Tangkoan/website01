@@ -20,3 +20,31 @@
     --color-text-muted: var(--color-text-muted, #6b7280);
     --color-border-color: var(--color-border-color, #e5e7eb);
 }
+
+
+/* ១. បញ្ចូល Font ដែលបាន Download (Custom @font-face) */
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Poppins-Regular.ttf') format('truetype'); /* ដូរឈ្មោះ File តាមជាក់ស្តែង */
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Battambang';
+    src: url('../fonts/Battambang-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ២. កំណត់ Theme របស់ Tailwind v4 */
+@theme {
+    /* កំណត់ Font ទាំងពីរនេះជា Default បញ្ចូលគ្នា (បើជួបខ្មែរចេញខ្មែរ ជួបអង់គ្លេសចេញអង់គ្លេស) */
+    --font-sans: 'Inter', 'Battambang', ui-sans-serif, system-ui, sans-serif;
+    
+    /* ឬបើអ្នកចង់បង្កើត Class ដាច់ដោយឡែក (ប្រើតាមរយៈ class="font-khmer") */
+    --font-khmer: 'Battambang', sans-serif;
+    --font-english: 'Inter', sans-serif;
+}

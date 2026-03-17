@@ -46,10 +46,10 @@ return [
 
     // Theme Manager
     'theme' => 'ការកំណត់រចនាប័ទ្ម',
-    'theme_customization' => 'ការកំណត់រចនាប័ទ្ម (Theme)',
+    'theme_customization' => 'ការកំណត់រចនាប័ទ្ម',
     'saved_successfully'  => 'រក្សាទុកបានជោគជ័យ!',
-    'light_mode'          => 'ទម្រង់ភ្លឺ (Light)',
-    'dark_mode'           => 'ទម្រង់ងងឹត (Dark)',
+    'light_mode'          => 'ទម្រង់ភ្លឺ',
+    'dark_mode'           => 'ទម្រង់ងងឹត',
     
     // Colors Labels
     'primary_brand_color'   => 'ពណ៌គោលប្រព័ន្ធ (Primary)',
@@ -97,4 +97,37 @@ return [
     'new_password_req' => 'Please enter a new password.',
     'new_password_min' => 'The new password must be at least 8 characters.',
     'password_unmatched' => 'The password confirmation does not match.',
+
+    // permission
+    'permissions' => 'សិទ្ធិអនុញ្ញាត',
+    'permission' => 'សិទ្ធិអនុញ្ញាត',
+    'manage_permissions' => 'គ្រប់គ្រងសិទ្ធិប្រព័ន្ធ',
+    'add_new' => 'បន្ថែមថ្មី',
+    'edit' => 'កែប្រែ',
+    'delete' => 'លុប',
+    'save' => 'រក្សាទុក',
+    'save_next' => 'រក្សាទុក & បន្ត',
+    'cancel' => 'បោះបង់',
+    'skip' => 'រំលង',
+    'search' => 'ស្វែងរក',
+    'name' => 'ឈ្មោះ',
+    'guard' => 'ប្រភេទ (Guard)',
+    'actions' => 'សកម្មភាព',
+    'per_page' => 'ចំនួនក្នុងមួយទំព័រ',
+    'selected' => 'បានជ្រើសរើស',
+    'bulk_edit' => 'កែប្រែច្រើន',
+    'bulk_delete' => 'លុបច្រើន',
+    'confirm_delete' => 'តើអ្នកប្រាកដជាចង់លុបទិន្នន័យនេះមែនទេ?',
+    'no_data' => 'មិនមានទិន្នន័យទេ',
+    'editing' => 'កំពុងកែប្រែ',
+    'items' => 'ទិន្នន័យ',
+    'select_all'=> 'ជ្រើសរើសទាំងអស់',
+
+    // Notifications (ចេញពី Controller)
+    'data_reloaded' => 'ទិន្នន័យត្រូវបានទាញយកឡើងវិញដោយជោគជ័យ!',
+    'permission_saved' => 'សិទ្ធិត្រូវបានរក្សាទុកដោយជោគជ័យ!',
+    'item_deleted' => 'ទិន្នន័យត្រូវបានលុបដោយជោគជ័យ!',
+    'selected_deleted' => 'ទិន្នន័យដែលបានជ្រើសរើសត្រូវបានលុប!',
+    'updated' => 'បានកែប្រែ៖',
+    'bulk_edit_completed' => 'ការកែប្រែច្រើនត្រូវបានបញ្ចប់!',
 ];

@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
+use Spatie\Permission\Traits\HasRoles; // <--- បន្ទាត់ទី ១ (Import)
+use Spatie\Activitylog\Traits\LogsActivity; // <--- ថែមនេះសម្រាប់ Log
+use Spatie\Activitylog\LogOptions;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable, HasRoles, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -46,5 +51,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * កំណត់ការកត់ត្រា Log (សម្រាប់ Activity Log)
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email'])
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}");
     }
 }

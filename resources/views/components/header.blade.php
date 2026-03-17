@@ -160,7 +160,7 @@
                         {{ Str::limit(auth()->user()->name ?? 'User', 10) }}
                     </p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
-                        Admin
+                        {{ auth()->user()->roles->pluck('name')->first() ?? 'User' }}
                     </p>
                 </div>
                 
