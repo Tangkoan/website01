@@ -3,7 +3,8 @@
 namespace App\Livewire\Settings;
 
 use Livewire\Component;
-use Spatie\Permission\Models\Permission;
+// use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 
@@ -159,8 +160,16 @@ class PermissionManagement extends Component
 
     public function saveAndNextBulkItem() {
         $this->validate(['bulkItemName' => ['required', Rule::unique('permissions', 'name')->ignore($this->bulkItemId)]]);
-        Permission::where('id', $this->bulkItemId)->update(['name' => $this->bulkItemName, 'guard_name' => $this->bulkItemGuard]);
         
+        // action who delete
+        $bulkPermission = Permission::find($this->bulkItemId);
+        if ($bulkPermission) {
+            $bulkPermission->update([
+                'name' => $this->bulkItemName, 
+                'guard_name' => $this->bulkItemGuard
+            ]);
+        }
+
         $this->selectedItemsQueue[$this->currentBulkIndex]['name'] = $this->bulkItemName;
         $this->selectedItemsQueue[$this->currentBulkIndex]['guard_name'] = $this->bulkItemGuard;
         

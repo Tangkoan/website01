@@ -41,6 +41,16 @@
             <button wire:click="reloadData" class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-[var(--color-text-main)] hover:brightness-95 dark:hover:brightness-110 transition-all flex-shrink-0">
                 <svg wire:loading.class="animate-spin text-[var(--color-primary)]" wire:target="reloadData" class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
+
+            {{-- ប៊ូតុងចូលទៅធុងសំរាម (Trash Button) --}}
+            @can('delete-permission')
+                <a href="/settings/permissions/trash" wire:navigate class="px-3 py-2 md:px-4 md:py-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Trash / ធុងសំរាម">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span class="hidden md:inline-block text-sm font-black">{{ __('messages.permissions_trash') ?? 'ធុងសំរាម' }}</span>
+                </a>
+            @endcan
             
             @can('create-permission')
                 <button wire:click="openModal" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] font-black rounded-lg shadow-lg shadow-[var(--color-primary)]/20 hover:brightness-110 active:scale-95 transition-all text-sm">
@@ -111,14 +121,40 @@
                             @endcanany
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[var(--color-border-color)] relative">
+                    <tbody x-data="{ isMouseDown: false, checkStatus: true }" 
+                        @mousedown="isMouseDown = true" 
+                        @mouseup.window="isMouseDown = false"
+                        class="divide-y divide-[var(--color-border-color)] relative">
                         {{-- Loading Overlay --}}
                         <div wire:loading wire:target="getPermissionsProperty" class="absolute inset-0 z-10 bg-[var(--color-card-bg)]/50 backdrop-blur-sm flex items-center justify-center">
                             <svg class="animate-spin w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         </div>
 
                         @forelse($permissions as $item)
-                            <tr class="hover:bg-[var(--color-background)]/50 transition-all group">
+                            <tr @mousedown="
+        if(!$event.target.closest('button')) {
+            let cb = $el.querySelector('input[type=checkbox]');
+            if(cb) {
+                if($event.target.tagName !== 'INPUT') {
+                    checkStatus = !cb.checked;
+                    cb.checked = checkStatus;
+                    cb.dispatchEvent(new Event('change'));
+                } else {
+                    checkStatus = !cb.checked;
+                }
+            }
+        }
+    "
+    @mouseenter="
+        if(isMouseDown && !$event.target.closest('button')) {
+            let cb = $el.querySelector('input[type=checkbox]');
+            if(cb && cb.checked !== checkStatus) {
+                cb.checked = checkStatus;
+                cb.dispatchEvent(new Event('change'));
+            }
+        }
+    "
+    class="hover:bg-[var(--color-background)]/50 transition-all group cursor-pointer select-none">
                                 @canany(['bulk-edit-permission', 'bulk-delete-permission'])
                                 <td class="p-4 text-center">
                                     <input type="checkbox" wire:model.live="selectedPermissions" value="{{ $item->id }}" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent dark:bg-[var(--color-background)] checked:bg-[var(--color-primary)] checked:border-[var(--color-primary)] transition-all cursor-pointer">
@@ -151,6 +187,7 @@
                                     </button>
                                     @endcan
                                     
+                                    
                                     @can('delete-permission')
                                     <button wire:click="confirmDelete({{ $item->id }})" class="p-2 rounded-lg transition-all border border-transparent bg-red-50 text-red-500 hover:bg-red-500 hover:text-white dark:bg-[var(--color-background)] dark:border-[var(--color-border-color)] dark:hover:bg-red-500 dark:hover:border-transparent">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -180,8 +217,7 @@
             @endcanany
 
             @forelse($permissions as $item)
-                <div class="bg-[var(--color-card-bg)] p-4 rounded-xl shadow-sm border border-[var(--color-border-color)] flex flex-col gap-3">
-                    <div class="flex items-start justify-between gap-3">
+                    <div x-data @click="if(!$event.target.closest('button') && $event.target.tagName !== 'INPUT') $el.querySelector('input[type=checkbox]').click()" class="bg-[var(--color-card-bg)] p-4 rounded-xl shadow-sm border border-[var(--color-border-color)] flex flex-col gap-3 cursor-pointer hover:bg-[var(--color-background)]/50 transition-all">                    <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 flex-1 min-w-0">
                             @canany(['bulk-edit-permission', 'bulk-delete-permission'])
                             <input type="checkbox" wire:model.live="selectedPermissions" value="{{ $item->id }}" class="w-4 h-4 mt-1 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent cursor-pointer flex-shrink-0">
@@ -236,7 +272,7 @@
         :isOpen="$isDeleteModalOpen" 
         onClose="$set('isDeleteModalOpen', false)" 
         onConfirm="executeDelete" 
-        message="{!! $deleteId ? 'This action cannot be undone. This item will be permanently deleted.' : 'You are about to delete <span class=\'text-red-500\'>' . count($selectedPermissions) . '</span> selected items. This action cannot be undone.' !!}"
+        message="{!! $deleteId ? '' : __('messages.bulk_delete_warning', ['count' => '<span class=\'text-red-500 font-black\'>' . count($selectedPermissions) . '</span>']) !!}"
     />
 
     @if($isBulkEditModalOpen)

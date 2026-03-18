@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Settings\ThemeManager;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\ChangePassword;
+use App\Livewire\Settings\PermissionTrash;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
         
     Route::get('/settings/permission', \App\Livewire\Settings\PermissionManagement::class)
         ->can('view-permission'); 
+
+    Route::get('/settings/permissions/trash', PermissionTrash::class)->name('permissions.trash');
 
 });
 

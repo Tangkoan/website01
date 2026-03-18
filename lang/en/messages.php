@@ -131,4 +131,17 @@ return [
     'selected_deleted' => 'Selected items deleted!',
     'updated' => 'Updated:',
     'bulk_edit_completed' => 'Bulk edit completed!',
+    'created_at' => 'Created At',
+    'bulk_delete_warning' => 'You are about to delete :count selected items. This action cannot be undone.',
+
+    'permissions_trash' => 'Permissions Trash',
+    'back' => 'Back',
+    'search_deleted' => 'Search deleted data...',
+    'restore' => 'Restore',
+    'force_delete' => 'Force Delete',
+    'deleted_at' => 'Deleted At',
+    'trash_is_empty' => 'Trash is empty',
+    'force_delete_warning' => 'Are you sure you want to <strong>permanently delete</strong> this data? This action cannot be undone.',
+    'bulk_force_delete_warning' => 'Are you sure you want to <strong>permanently delete</strong> the selected data?',
+
 ];
