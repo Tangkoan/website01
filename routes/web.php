@@ -6,6 +6,9 @@ use App\Livewire\Settings\ThemeManager;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\ChangePassword;
 use App\Livewire\Settings\PermissionTrash;
+use Illuminate\Support\Facades\Artisan;
+
+use App\Livewire\Settings\PermissionActivityLog;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +39,22 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/settings/permissions/trash', PermissionTrash::class)->name('permissions.trash');
 
+    Route::get('/settings/permissions/logs', PermissionActivityLog::class)->name('permissions.logs');
+
+});
+
+Route::get('/cron/trash/empty/{token}', function ($token) {
+    // កំណត់ Token សម្ងាត់មួយ (អ្នកអាចដូរលេខនេះតាមចិត្ត)
+    $secretToken = 'SiemReapGear-POS-Secret-Key-9988';
+    if ($token !== $secretToken) {
+        abort(403, 'Unauthorized Action.');
+    }
+    // ហៅ Command ដែលយើងបានសរសេរមុននេះ
+    Artisan::call('trash:auto-empty');
+    return response()->json([
+        'status' => 'success',
+        'message' => 'ធុងសំរាមត្រូវបានសម្អាតដោយស្វ័យប្រវត្តិ!'
+    ]);
 });
 
 

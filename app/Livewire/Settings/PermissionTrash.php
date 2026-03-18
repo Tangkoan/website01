@@ -28,10 +28,17 @@ class PermissionTrash extends Component
     }
 
     public function getTrashedPermissionsProperty() {
-        return Permission::onlyTrashed()
+        $query = Permission::onlyTrashed()
             ->where('name', 'like', '%' . $this->searchTerm . '%')
-            ->latest('deleted_at')
-            ->paginate($this->perPage);
+            ->latest('deleted_at');
+
+        // ដោះស្រាយបញ្ហា 'all' និងករណីគ្មានទិន្នន័យ (Count = 0)
+        if ($this->perPage === 'all') {
+            $total = $query->count();
+            return $query->paginate($total > 0 ? $total : 1);
+        }
+
+        return $query->paginate((int) $this->perPage);
     }
 
     public function updatedSelectAll($value) {

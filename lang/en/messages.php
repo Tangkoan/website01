@@ -144,4 +144,10 @@ return [
     'force_delete_warning' => 'Are you sure you want to <strong>permanently delete</strong> this data? This action cannot be undone.',
     'bulk_force_delete_warning' => 'Are you sure you want to <strong>permanently delete</strong> the selected data?',
 
+    // activity Log
+    'activity_logs' => 'Activity Logs',
+    'causer' => 'User (Causer)',
+    'event' => 'Action',
+    'details' => 'Details',
+    'date_time' => 'Date & Time',
 ];

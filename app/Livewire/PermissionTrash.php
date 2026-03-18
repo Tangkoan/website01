@@ -11,9 +11,18 @@ class PermissionTrash extends Component
     use WithPagination;
 
     // ទាញយកទិន្នន័យដែលបានលុបមកបង្ហាញ
-    public function getTrashedPermissionsProperty()
+    public function getTrashedPermissionsProperty() 
     {
-        return Permission::onlyTrashed()->latest('deleted_at')->paginate(10);
+        $query = Permission::onlyTrashed()
+            ->where('name', 'like', '%' . $this->searchTerm . '%')
+            ->latest('deleted_at');
+
+        if ($this->perPage === 'all') {
+            $totalCount = $query->count();
+            return $query->paginate($totalCount > 0 ? $totalCount : 1);
+        }
+
+        return $query->paginate((int) $this->perPage);
     }
 
     // ទាញយកទិន្នន័យត្រឡប់មកវិញ

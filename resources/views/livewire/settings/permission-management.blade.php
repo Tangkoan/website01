@@ -36,6 +36,13 @@
                     </div>
                 </div>
             </div>
+            {{-- ប៊ូតុងចូលទៅមើល Activity Log --}}
+            @can('view-permission-logs') {{-- អាចប្ដូរឈ្មោះសិទ្ធិនេះតាមការចង់បាន --}}
+                <a href="/settings/permissions/logs" wire:navigate class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-blue-500 hover:bg-blue-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Activity Logs / កំណត់ត្រាសកម្មភាព">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span class="hidden md:inline-block text-sm font-black">Logs</span>
+                </a>
+            @endcan
 
             {{-- Reload Button with Animation --}}
             <button wire:click="reloadData" class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-[var(--color-text-main)] hover:brightness-95 dark:hover:brightness-110 transition-all flex-shrink-0">
