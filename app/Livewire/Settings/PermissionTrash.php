@@ -53,14 +53,17 @@ class PermissionTrash extends Component
     // --- Restore Actions ---
     public function restore($id) {
         Permission::onlyTrashed()->findOrFail($id)->restore();
-        $this->dispatch('notify', type: 'success', message: 'ទិន្នន័យត្រូវបានទាញយកមកវិញជោគជ័យ!');
+        
+        $this->dispatch('notify', type: 'success', message: __('messages.permission_restored'));
     }
 
     public function restoreSelected() {
         if (empty($this->selectedPermissions)) return;
+        
         Permission::onlyTrashed()->whereIn('id', $this->selectedPermissions)->restore();
         $this->reset(['selectedPermissions', 'selectAll']);
-        $this->dispatch('notify', type: 'success', message: 'ទិន្នន័យដែលបានជ្រើសរើសត្រូវបានទាញយកមកវិញ!');
+        
+        $this->dispatch('notify', type: 'success', message: __('messages.selected_permissions_restored'));
     }
 
     // --- Force Delete Actions ---
@@ -72,12 +75,13 @@ class PermissionTrash extends Component
     public function executeForceDelete() {
         if ($this->deleteId) {
             Permission::onlyTrashed()->findOrFail($this->deleteId)->forceDelete();
-            $this->dispatch('notify', type: 'success', message: 'ទិន្នន័យត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍!');
+            $this->dispatch('notify', type: 'success', message: __('messages.permission_force_deleted'));
         } else {
             Permission::onlyTrashed()->whereIn('id', $this->selectedPermissions)->forceDelete();
             $this->reset(['selectedPermissions', 'selectAll']);
-            $this->dispatch('notify', type: 'success', message: 'ទិន្នន័យដែលបានជ្រើសរើសត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍!');
+            $this->dispatch('notify', type: 'success', message: __('messages.selected_permissions_force_deleted'));
         }
+        
         $this->isDeleteModalOpen = false;
         $this->deleteId = null;
     }

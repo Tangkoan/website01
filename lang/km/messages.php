@@ -148,4 +148,9 @@ return [
     'event' => 'សកម្មភាព',
     'details' => 'ព័ត៌មានលម្អិត',
     'date_time' => 'កាលបរិច្ឆេទ',
+
+    'permission_restored' => 'ទិន្នន័យត្រូវបានទាញយកមកវិញជោគជ័យ!',
+    'selected_permissions_restored' => 'ទិន្នន័យដែលបានជ្រើសរើសត្រូវបានទាញយកមកវិញ!',
+    'permission_force_deleted' => 'ទិន្នន័យត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍!',
+    'selected_permissions_force_deleted' => 'ទិន្នន័យដែលបានជ្រើសរើសត្រូវបានលុបចោលជាអចិន្ត្រៃយ៍!',
 ];

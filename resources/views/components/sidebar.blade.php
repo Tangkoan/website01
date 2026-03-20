@@ -1,4 +1,5 @@
-<div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-20 md:hidden" x-cloak></div>
+<div>
+    <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-20 md:hidden" x-cloak></div>
 
 <aside 
     :class="{ 'w-[260px]': !sidebarCollapsed, 'w-[80px]': sidebarCollapsed, 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
@@ -139,3 +140,4 @@
         </div>
     </nav>
 </aside>
+</div>

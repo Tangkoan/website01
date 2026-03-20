@@ -150,4 +150,9 @@ return [
     'event' => 'Action',
     'details' => 'Details',
     'date_time' => 'Date & Time',
+
+    'permission_restored' => 'Permission restored successfully!',
+    'selected_permissions_restored' => 'Selected permissions restored successfully!',
+    'permission_force_deleted' => 'Permission permanently deleted!',
+    'selected_permissions_force_deleted' => 'Selected permissions permanently deleted!',
 ];
