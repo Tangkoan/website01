@@ -3,8 +3,7 @@
 namespace App\Livewire\Settings;
 
 use Livewire\Component;
-// use Spatie\Permission\Models\Permission;
-use App\Models\Permission;
+use App\Services\PermissionService;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 
@@ -12,64 +11,48 @@ class PermissionManagement extends Component
 {
     use WithPagination;
 
-    // --- Single CRUD States ---
+    // --- States (រក្សាទុកដដែល) ---
     public $permissionId, $name, $guard_name = 'web';
-    public $isModalOpen = false;
-    public $searchTerm = '', $perPage = 10;
+    public $isModalOpen = false, $searchTerm = '', $perPage = 10;
     public $sortField = 'id', $sortDirection = 'desc';
-
-    // --- Dynamic Columns States ---
-    public $availableColumns = [
-        'name' => 'Name',
-        'guard_name' => 'Guard',
-        'created_at' => 'Created Date'
-    ];
+    public $availableColumns = ['name' => 'Name', 'guard_name' => 'Guard', 'created_at' => 'Created Date'];
     public $selectedColumns = []; 
+    public $selectedPermissions = [], $selectAll = false;
+    public $isBulkEditModalOpen = false, $selectedItemsQueue = [], $currentBulkIndex = 0;
+    public $bulkItemId, $bulkItemName, $bulkItemGuard;
+    public $isDeleteModalOpen = false, $deleteId = null;
+
+    protected $queryString = ['searchTerm', 'perPage'];
+
+    // ហៅ Service មកប្រើ
+    protected function service()
+    {
+        return app(PermissionService::class);
+    }
 
     public function mount() {
         $savedColumns = session()->get('permission_columns', ['name', 'guard_name', 'created_at']);
-        
-        // តម្រង (Filter) យកតែឈ្មោះ Column ណាដែលមានពិតប្រាកដនៅក្នុងអថេរ $availableColumns
         $this->selectedColumns = array_intersect($savedColumns, array_keys($this->availableColumns));
     }
 
-    public function updatedSelectedColumns($value) {
-        // រក្សាទុកជម្រើសទៅក្នុង Session ពេល User ធីក ឬដោះធីក
-        session()->put('permission_columns', $value);
-    }
+    // --- UI Control Methods (Method ដែលបាត់ពីមុន) ---
     
-    // --- Bulk Edit States ---
-    public $selectedPermissions = [];
-    public $selectAll = false;
-
-    public $isBulkEditModalOpen = false;
-    public $selectedItemsQueue = []; 
-    public $currentBulkIndex = 0;
-    public $bulkItemId, $bulkItemName, $bulkItemGuard;
-
-    public $isDeleteModalOpen = false;
-    public $deleteId = null;
-
-    protected $queryString = ['searchTerm', 'perPage'];
-    
-    public function updatedSearchTerm() { $this->resetPage(); }
-    public function updatedPerPage() { $this->resetPage(); }
-
     public function reloadData() {
         $this->reset(['searchTerm', 'selectedPermissions', 'selectAll']);
         $this->resetPage();
         $this->dispatch('notify', type: 'success', message: __('messages.data_reloaded'));
     }
 
+    public function updatedSearchTerm() { $this->resetPage(); }
+    public function updatedPerPage() { $this->resetPage(); }
+
     public function sortBy($field) {
         $this->sortDirection = ($this->sortField === $field && $this->sortDirection === 'asc') ? 'desc' : 'asc';
         $this->sortField = $field;
     }
 
-    public function getPermissionsProperty() {
-        $query = Permission::where('name', 'like', '%' . $this->searchTerm . '%')
-            ->orderBy($this->sortField, $this->sortDirection);
-        return ($this->perPage === 'all') ? $query->paginate(Permission::count()) : $query->paginate((int)$this->perPage);
+    public function updatedSelectedColumns($value) {
+        session()->put('permission_columns', $value);
     }
 
     public function updatedSelectAll($value) {
@@ -81,62 +64,71 @@ class PermissionManagement extends Component
         }
     }
 
-    // --- Single CRUD Logic ---
-    public function openModal() { $this->resetFields(); $this->isModalOpen = true; }    
+    // --- Modal Control Methods (Method ដែលបាត់ពីមុន) ---
 
-    public function resetFields() { 
-        $this->reset(['permissionId', 'name', 'guard_name']); 
-        $this->resetErrorBag(); 
-    }
-
-    public function editPermission($id) {
-        $p = Permission::findOrFail($id);
-        $this->permissionId = $p->id; $this->name = $p->name; $this->guard_name = $p->guard_name;
+    public function openModal() {
+        $this->resetFields();
         $this->isModalOpen = true;
     }
 
+    public function resetFields() {
+        $this->reset(['permissionId', 'name', 'guard_name']);
+        $this->resetErrorBag();
+    }
+
+    public function editPermission($id) {
+        $this->resetFields();
+        $p = \App\Models\Permission::findOrFail($id);
+        $this->permissionId = $p->id;
+        $this->name = $p->name;
+        $this->guard_name = $p->guard_name;
+        $this->isModalOpen = true;
+    }
+
+    public function confirmDelete($id = null) {
+        $this->deleteId = $id;
+        $this->isDeleteModalOpen = true;
+    }
+
+    // --- Computed Property ---
+    public function getPermissionsProperty() {
+        return $this->service()->getPermissions(
+            $this->searchTerm, 
+            $this->perPage, 
+            $this->sortField, 
+            $this->sortDirection
+        );
+    }
+
+    // --- Database Actions (ហៅប្រើ Service) ---
+
     public function savePermission() {
         $this->validate(['name' => ['required', Rule::unique('permissions', 'name')->ignore($this->permissionId)]]);
-        Permission::updateOrCreate(['id' => $this->permissionId], ['name' => $this->name, 'guard_name' => $this->guard_name]);
+
+        $this->service()->savePermission([
+            'name' => $this->name,
+            'guard_name' => $this->guard_name
+        ], $this->permissionId);
+
         $this->isModalOpen = false;
         $this->dispatch('notify', type: 'success', message: __('messages.permission_saved'));
     }
 
-    public function confirmDelete($id = null) {
-        $this->deleteId = $id; 
-        $this->isDeleteModalOpen = true;
-    }
-
     public function executeDelete() {
-        if ($this->deleteId) {
-            Permission::destroy($this->deleteId);
-            $this->dispatch('notify', type: 'success', message: __('messages.item_deleted'));
-        } else {
-            Permission::whereIn('id', $this->selectedPermissions)->delete();
-            $this->reset(['selectedPermissions', 'selectAll']);
-            $this->dispatch('notify', type: 'success', message: __('messages.selected_deleted'));
-        }
-        $this->isDeleteModalOpen = false;
-        $this->deleteId = null;
+        $ids = $this->deleteId ?: $this->selectedPermissions;
+        $this->service()->deletePermissions($ids);
+
+        $this->reset(['selectedPermissions', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
+        $this->dispatch('notify', type: 'success', message: __('messages.item_deleted'));
     }
 
-    public function deleteSelected() {
-        Permission::whereIn('id', $this->selectedPermissions)->delete();
-        $this->reset(['selectedPermissions', 'selectAll']);
-        $this->dispatch('notify', type: 'success', message: __('messages.selected_deleted'));
-    }
+    // --- Bulk Edit Logic ---
 
-    // --- Sequential Bulk Edit Logic ---
     public function bulkEdit() {
         if (empty($this->selectedPermissions)) return;
         
-        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'bulkItemName', 'bulkItemGuard']);
-        $items = Permission::whereIn('id', $this->selectedPermissions)->get(['id', 'name', 'guard_name']);
-        
-        foreach($items as $item) {
-            $this->selectedItemsQueue[] = ['id' => $item->id, 'name' => $item->name, 'guard_name' => $item->guard_name];
-        }
-        
+        $items = $this->service()->getPermissionsByIds($this->selectedPermissions);
+        $this->selectedItemsQueue = $items->toArray();
         $this->currentBulkIndex = 0;
         $this->loadCurrentBulkItem();
         $this->isBulkEditModalOpen = true;
@@ -146,7 +138,6 @@ class PermissionManagement extends Component
         if (!isset($this->selectedItemsQueue[$this->currentBulkIndex])) {
             $this->closeBulkEdit(); return;
         }
-        
         $item = $this->selectedItemsQueue[$this->currentBulkIndex];
         $this->bulkItemId = $item['id'];
         $this->bulkItemName = $item['name'];
@@ -161,18 +152,11 @@ class PermissionManagement extends Component
     public function saveAndNextBulkItem() {
         $this->validate(['bulkItemName' => ['required', Rule::unique('permissions', 'name')->ignore($this->bulkItemId)]]);
         
-        // action who delete
-        $bulkPermission = Permission::find($this->bulkItemId);
-        if ($bulkPermission) {
-            $bulkPermission->update([
-                'name' => $this->bulkItemName, 
-                'guard_name' => $this->bulkItemGuard
-            ]);
-        }
+        $this->service()->savePermission([
+            'name' => $this->bulkItemName,
+            'guard_name' => $this->bulkItemGuard
+        ], $this->bulkItemId);
 
-        $this->selectedItemsQueue[$this->currentBulkIndex]['name'] = $this->bulkItemName;
-        $this->selectedItemsQueue[$this->currentBulkIndex]['guard_name'] = $this->bulkItemGuard;
-        
         $this->dispatch('notify', type: 'success', message: __('messages.updated') . ' ' . $this->bulkItemName);
         $this->nextBulkItem();
     }
