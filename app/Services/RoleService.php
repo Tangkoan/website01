@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Services;
+
+// use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+
+use Spatie\Activitylog\Models\Activity;
+use App\Models\Role; // ប្រើ Custom Role Model ខាងលើ
+
+class RoleService
+{
+
+
+    /**
+     * ទាញយក Role ដែលបានលុប (Soft Deleted)
+     */
+    public function getTrashedRoles($searchTerm, $perPage)
+    {
+        return Role::onlyTrashed()
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            ->paginate((int)$perPage);
+    }
+    /**
+     * ស្តារទិន្នន័យឡើងវិញ (Restore)
+     */
+    public function restoreRoles($ids) {
+        $ids = is_array($ids) ? $ids : [$ids];
+        return Role::onlyTrashed()->whereIn('id', $ids)->get()->each(function($role) {
+            $role->restore(); 
+        });
+    }
+
+    /**
+     * លុបចោលទាំងស្រុង (Force Delete)
+     */
+    public function forceDeleteRoles($ids)
+    {
+        $ids = is_array($ids) ? $ids : [$ids];
+        return Role::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+    }
+
+    /**
+     * ទាញយក Activity Logs របស់ Role
+     */
+    public function getRoleLogs($searchTerm, $perPage)
+    {
+        $query = \Spatie\Activitylog\Models\Activity::where('log_name', 'role')
+            ->with('causer');
+
+        if ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('description', 'like', '%' . $searchTerm . '%') // Search តាមសកម្មភាព (Created, Updated...)
+                
+                // Search តាមឈ្មោះ Role (ដែលនៅក្នុង JSON properties)
+                ->orWhere('properties->attributes->name', 'like', '%' . $searchTerm . '%')
+                ->orWhere('properties->old->name', 'like', '%' . $searchTerm . '%')
+                
+                // Search តាមឈ្មោះ User ដែលជាអ្នកធ្វើ (Causer)
+                ->orWhereHasMorph('causer', [\App\Models\User::class], function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('name', 'like', '%' . $searchTerm . '%');
+                });
+            });
+        }
+
+        return $query->latest()->paginate($perPage === 'all' ? 100 : (int)$perPage);
+    }
+
+    /**
+     * ទាញយកទិន្នន័យ Role ជាមួយ Search, Sort និង Pagination
+     */
+    public function getRoles($searchTerm, $perPage, $sortField, $sortDirection)
+    {
+        $query = Role::with('permissions')->where('name', 'like', '%' . $searchTerm . '%')
+            ->orderBy($sortField, $sortDirection);
+
+        if ($perPage === 'all') {
+            return $query->paginate(Role::count());
+        }
+
+        return $query->paginate((int)$perPage);
+    }
+
+    /**
+     * បង្កើត ឬកែប្រែ Role និងផ្តល់ Permission
+     */
+    public function saveRole(array $data, $id = null)
+    {
+        $role = Role::updateOrCreate(
+            ['id' => $id],
+            [
+                'name' => $data['name'],
+                'guard_name' => $data['guard_name'] ?? 'web'
+            ]
+        );
+
+        // Give permissions to role
+        if (isset($data['permissions'])) {
+            $role->syncPermissions($data['permissions']);
+        }
+
+        return $role;
+    }
+
+    /**
+     * លុប Role
+     */
+    public function deleteRoles($ids) {
+        $ids = is_array($ids) ? $ids : [$ids];
+        // ត្រូវប្រើ find() រួច delete() ដើម្បីឱ្យ Model Event ដំណើរការ
+        return Role::whereIn('id', $ids)->get()->each(function($role) {
+            $role->delete(); 
+        });
+    }
+
+    /**
+     * ទាញយក Roles តាម IDs សម្រាប់ Bulk Edit
+     */
+    public function getRolesByIds(array $ids)
+    {
+        return Role::whereIn('id', $ids)->get();
+    }
+
+    /**
+     * ទាញយក Permission ទាំងអស់សម្រាប់បង្ហាញក្នុង Form
+     */
+    public function getAllPermissions()
+    {
+        return Permission::all();
+    }
+}

@@ -181,7 +181,7 @@ class PermissionManagement extends Component
     }
 
     public function render() {
-        return view('livewire.settings.permission-management', [
+        return view('livewire.settings.permission.permission-management', [
             'permissions' => $this->getPermissionsProperty()
         ]);
     }

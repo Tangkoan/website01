@@ -87,7 +87,7 @@ class PermissionTrash extends Component
     }
 
     public function render() {
-        return view('livewire.settings.permission-trash', [
+        return view('livewire.settings.permission.permission-trash', [
             'permissions' => $this->getTrashedPermissionsProperty()
         ]);
     }

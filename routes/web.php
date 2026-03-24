@@ -8,6 +8,11 @@ use App\Livewire\Settings\ChangePassword;
 use App\Livewire\Settings\PermissionTrash;
 use Illuminate\Support\Facades\Artisan;
 
+
+use App\Livewire\Settings\RoleManagement;
+use App\Livewire\Settings\RoleTrash;
+use App\Livewire\Settings\RoleLogs;
+
 use App\Livewire\Settings\PermissionActivityLog;
 
 /*
@@ -40,6 +45,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/permissions/trash', PermissionTrash::class)->name('permissions.trash');
 
     Route::get('/settings/permissions/logs', PermissionActivityLog::class)->name('permissions.logs');
+
+    // Settings Group
+    Route::prefix('settings')->group(function () {
+        // Route::get('/permissions', PermissionManagement::class)->name('settings.permissions');
+        Route::get('/roles', RoleManagement::class)->name('settings.roles');
+        Route::get('/roles/trash', RoleTrash::class)->name('settings.roles.trash');
+        Route::get('/roles/logs', RoleLogs::class)->name('settings.roles.logs');
+    });
+
+    
 
 });
 

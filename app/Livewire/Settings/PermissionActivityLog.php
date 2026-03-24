@@ -44,7 +44,7 @@ class PermissionActivityLog extends Component
 
     public function render() 
     {
-        return view('livewire.settings.permission-activity-log', [
+        return view('livewire.settings.permission.permission-activity-log', [
             'logs' => $this->getActivityLogsProperty()
         ]);
     }

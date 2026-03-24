@@ -27,8 +27,8 @@
     </div>
 
     {{-- Desktop View --}}
-    <div class="hidden md:block bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border-color)] shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
+    <div class="hidden md:block bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border-color)] shadow-sm ">
+        <div class="overflow-x-auto overflow-hidden rounded-t-xl">
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-[var(--color-background)]/50 border-b border-[var(--color-border-color)]">
@@ -114,7 +114,7 @@
             <div class="bg-[var(--color-card-bg)] p-8 rounded-xl border border-[var(--color-border-color)] text-center text-[var(--color-text-muted)] font-black uppercase tracking-widest text-xs italic">{{ __('messages.no_data') ?? 'No Data' }}</div>
         @endforelse
 
-        <div class="w-full flex justify-center mt-4">
+        <div class="p-4 bg-[var(--color-background)]/30 border-t border-[var(--color-border-color)]">
             {{ $logs->links('livewire.parts.pagination') }}
         </div>
     </div>

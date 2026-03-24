@@ -48,9 +48,13 @@
         
         {{-- ប៊ូតុង Add New --}}
         @can('create-permission')
-            <button wire:click="openModal" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] font-black rounded-lg shadow-lg shadow-[var(--color-primary)]/20 hover:brightness-110 active:scale-95 transition-all text-sm">
+            <button wire:click="openModal" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] font-black rounded-lg shadow-lg hover:brightness-110 active:scale-95 transition-all text-sm">
                 <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                {{ __('messages.add_new') ?? 'Add New' }}
+                
+                {{-- បន្ថែម span ជាមួយ class hidden md:block នៅទីនេះ --}}
+                <span class="hidden md:block">
+                    {{ __('messages.add_new') ?? 'Add New' }}
+                </span>
             </button>
         @endcan
     </div>
