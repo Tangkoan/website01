@@ -79,7 +79,7 @@ return [
     */
 
     // 'locale' => env('APP_LOCALE', 'en'),
-    'locale' => 'km',
+    'locale' => 'en', // ដូរពី 'km' ទៅ 'en' // defalut គឺ english
 
     // 'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
     'fallback_locale' => 'en',

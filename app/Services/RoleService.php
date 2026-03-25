@@ -90,6 +90,7 @@ class RoleService
             ['id' => $id],
             [
                 'name' => $data['name'],
+                'level' => $data['level'],
                 'guard_name' => $data['guard_name'] ?? 'web'
             ]
         );

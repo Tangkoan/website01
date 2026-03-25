@@ -1,4 +1,23 @@
-@component('layouts.app')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>404 Not Found - {{ __('messages.app_name') ?? config('app.name') }}</title>
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <script>
+        // កូដសម្រាប់ឆែក Dark Mode ឱ្យស្គាល់ស្វ័យប្រវត្តិ
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+</head>
+<body class="antialiased bg-white dark:bg-gray-900">
+
     <div class="relative min-h-[calc(100vh-80px)] w-full flex flex-col justify-between bg-gradient-to-b from-white to-gray-50/80 dark:from-gray-900 dark:to-gray-800 overflow-hidden font-sans transition-colors duration-300">
         
         <div class="absolute inset-0 -z-10 opacity-40 dark:opacity-20">
@@ -57,4 +76,6 @@
         </div>
         
     </div>
-@endcomponent
+
+</body>
+</html>

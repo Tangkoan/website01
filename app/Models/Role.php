@@ -11,12 +11,12 @@ class Role extends SpatieRole
 {
     use SoftDeletes, LogsActivity;
 
-    protected $fillable = ['name', 'guard_name'];
+    protected $fillable = ['name', 'guard_name','level'];
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'guard_name'])
+            ->logOnly(['name', 'guard_name','level'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             // បន្ថែមបន្ទាត់ខាងក្រោមនេះ៖ កុំឱ្យវា Log ជា 'updated' ប្រសិនបើប្តូរតែ deleted_at (ពេល Restore)
