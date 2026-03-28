@@ -9,5 +9,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+
+
 // រត់ Command នេះជារៀងរាល់ពាក់កណ្តាលអធ្រាត្រ (ម៉ោង ១២ យប់) ជារៀងរាល់ថ្ងៃ
 Schedule::command('trash:auto-empty')->daily();
+Schedule::command('activitylog:clean')->daily();

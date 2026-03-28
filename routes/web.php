@@ -18,6 +18,7 @@ use App\Livewire\Settings\UserTrash;
 use App\Livewire\Settings\UserLogs;
 
 use App\Livewire\Settings\GenericTrash;
+use App\Livewire\Settings\GenericLog;
 
 
 
@@ -36,6 +37,7 @@ Route::get('/', function () {
 
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/logs/{type}', GenericLog::class)->name('settings.logs');
     
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/settings/theme', ThemeManager::class)->name('settings.theme');
@@ -60,7 +62,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('settings')->group(function () {
         // Route::get('/permissions', PermissionManagement::class)->name('settings.permissions');
         Route::get('/roles', RoleManagement::class)->name('settings.roles');
-        Route::get('/roles/trash', RoleTrash::class)->name('settings.roles.trash');
         Route::get('/roles/logs', RoleLogs::class)->name('settings.roles.logs');
         
         // ==========================================
@@ -70,13 +71,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('settings.users')
             ->can('view-user'); // ការពារដោយ Permission របស់បង
 
-        Route::get('/users/trash', UserTrash::class)
-            ->name('settings.users.trash')
-            ->can('view-user'); // បងអាចប្ដូរទៅជា 'delete-user' បើចង់រឹតបន្តឹង
-
         Route::get('/users/logs', UserLogs::class)
             ->name('settings.users.logs')
             ->can('view-user');
+
+        
     });
 
     Route::get('/trash/{type}', GenericTrash::class)->name('settings.trash');

@@ -242,4 +242,16 @@ return [
     'user'=> 'User',
     'level'=> 'level',
     'created_date'=> 'Created Date',
+
+    'caused_by' => 'Caused By',
+    'view' => 'View',
+    'date_time' => 'Data Time',
+    'action' => 'Action',
+    'details' => 'Details',
+    'search_logs' => 'Search logs...',
+    'no_logs_found' => 'No Logs Found',
+    'log_details' => 'Log Details',
+    'old_values' => 'Old Values',
+    'new_values' => 'New Values',
+    'view_details' => 'View Details',
 ];
