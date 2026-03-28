@@ -13,10 +13,12 @@ use Spatie\Permission\Traits\HasRoles; // <--- បន្ទាត់ទី ១ (
 use Spatie\Activitylog\Traits\LogsActivity; // <--- ថែមនេះសម្រាប់ Log
 use Spatie\Activitylog\LogOptions;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use Notifiable, HasRoles, LogsActivity;
+    use Notifiable, HasRoles, LogsActivity,SoftDeletes,HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -60,8 +62,9 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email'])
-            ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}");
+            ->logOnly(['name', 'email', 'status', 'image']) // កំណត់ Field ណាខ្លះដែលចង់ឱ្យវាចាប់ Log ពេលមានការកែប្រែ
+            ->logOnlyDirty() // ចាប់ Log តែ Field ណាដែលបានកែប្រែពិតប្រាកដប៉ុណ្ណោះ
+            ->dontSubmitEmptyLogs() // បើគ្មានការកែប្រែអ្វីសោះ មិនបាច់រក្សាទុក Log ទេ
+            ->useLogName('user'); // <--- ចំណុចសំខាន់បំផុត! ត្រូវដាក់ឱ្យដូចក្នុង UserService
     }
 }

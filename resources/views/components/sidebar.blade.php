@@ -101,6 +101,15 @@
                         <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                         <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
                     </div>
+
+
+                    <div class="pl-14 pr-6 relative">
+                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                        <x-sidebar-sub-link href="/settings/users" :title="__('messages.user') ?? 'User Styling'" />
+                    </div>
+
+
+
                 </div>
             </div>
 
@@ -130,7 +139,7 @@
                     <div class="p-2 space-y-1 bg-dropdown">
                         <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
                         <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
-                        {{-- <x-sidebar-sub-link href="/users" :title="__('messages.users') ?? 'Users'" /> --}}
+                        <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'Users'" />
                         <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
                         <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
                     </div>

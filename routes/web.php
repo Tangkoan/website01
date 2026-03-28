@@ -5,13 +5,22 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Settings\ThemeManager;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\ChangePassword;
-use App\Livewire\Settings\PermissionTrash;
+// use App\Livewire\Settings\PermissionTrash;
 use Illuminate\Support\Facades\Artisan;
 
 
 use App\Livewire\Settings\RoleManagement;
 use App\Livewire\Settings\RoleTrash;
 use App\Livewire\Settings\RoleLogs;
+
+use App\Livewire\Settings\UserManagement;
+use App\Livewire\Settings\UserTrash;
+use App\Livewire\Settings\UserLogs;
+
+use App\Livewire\Settings\GenericTrash;
+
+
+
 
 use App\Livewire\Settings\PermissionActivityLog;
 
@@ -40,9 +49,10 @@ Route::middleware(['auth'])->group(function () {
         ->can('view-user'); 
         
     Route::get('/settings/permission', \App\Livewire\Settings\PermissionManagement::class)
+        ->name('settings.permissions')
         ->can('view-permission'); 
 
-    Route::get('/settings/permissions/trash', PermissionTrash::class)->name('permissions.trash');
+    // Route::get('/settings/permissions/trash', PermissionTrash::class)->name('permissions.trash');
 
     Route::get('/settings/permissions/logs', PermissionActivityLog::class)->name('permissions.logs');
 
@@ -52,9 +62,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/roles', RoleManagement::class)->name('settings.roles');
         Route::get('/roles/trash', RoleTrash::class)->name('settings.roles.trash');
         Route::get('/roles/logs', RoleLogs::class)->name('settings.roles.logs');
+        
+        // ==========================================
+        // ផ្នែក Users (បន្ថែមថ្មី)
+        // ==========================================
+        Route::get('/users', UserManagement::class)
+            ->name('settings.users')
+            ->can('view-user'); // ការពារដោយ Permission របស់បង
+
+        Route::get('/users/trash', UserTrash::class)
+            ->name('settings.users.trash')
+            ->can('view-user'); // បងអាចប្ដូរទៅជា 'delete-user' បើចង់រឹតបន្តឹង
+
+        Route::get('/users/logs', UserLogs::class)
+            ->name('settings.users.logs')
+            ->can('view-user');
     });
 
-    
+    Route::get('/trash/{type}', GenericTrash::class)->name('settings.trash');
 
 });
 
