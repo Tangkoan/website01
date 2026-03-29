@@ -7,35 +7,41 @@ use Illuminate\Support\Facades\Auth;
 
 class Login extends Component
 {
-    // អថេរសម្រាប់ចាប់ទិន្នន័យពី Form
     public $email = '';
     public $password = '';
     public $errorMessage = '';
 
-    // មុខងារនេះដំណើរការពេលគេចុចប៊ូតុង Login
     public function login()
     {
-        // ១. ត្រួតពិនិត្យទិន្នន័យ (លុបច្បាប់ 'email' ចេញ ដើម្បីកុំឱ្យវាលោត Error ពេលគេវាយឈ្មោះធម្មតា)
         $this->validate([
             'email' => 'required', 
             'password' => 'required',
         ]);
 
-        // ២. ឆែកមើលថាតើទិន្នន័យដែលគេបញ្ចូលជា Email ឬ Name
-        // បើវាមានទម្រង់ជាអ៊ីមែលត្រឹមត្រូវ វាប្រើ column 'email', តែបើមិនមែនទេ វាប្រើ column 'name'
         $fieldType = filter_var($this->email, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
-        // ៣. សាកល្បង Login ជាមួយ Database
         if (Auth::attempt([$fieldType => $this->email, 'password' => $this->password])) {
-            // បើជោគជ័យ ឱ្យវាលោតទៅទំព័រ dashboard 
-            // (ចំណាំ៖ ខ្ញុំបានដក navigate: true ចេញ ដើម្បីការពារកុំឱ្យវាគាំងដូចបញ្ហា Logout ដែលយើងជួបមុននេះ)
-            // return $this->redirect('/dashboard'); 
+            $user = Auth::user();
 
-            // បើជោគជ័យ ឱ្យវាលោតទៅទំព័រ dashboard ដោយមិន Refresh page
+            // ១. ឆែកមើលថាតើគណនីនេះស្ថិតក្នុង Trash ដែរឬទេ (deleted_at មានទិន្នន័យ)
+            if ($user->deleted_at !== null) {
+                Auth::logout(); 
+                $this->errorMessage = __('messages.account_deleted'); // ប្រើភាសា
+                return; 
+            }
+
+            // ២. ឆែកមើលថាតើគណនីនេះត្រូវបានបិទដែរឬទេ (status == 0)
+            if ($user->status == 0) {
+                Auth::logout(); 
+                $this->errorMessage = __('messages.account_disabled'); // ប្រើភាសា
+                return; 
+            }
+
+            // បើគណនីធម្មតា គ្មានបញ្ហា ឱ្យចូល Dashboard
             return $this->redirect('/dashboard', navigate: true);
         } else {
-            // បើខុស បង្ហាញសារកំហុស
-            $this->errorMessage = 'Name/Email or password is wrong!';
+            // បើខុសឈ្មោះ ឬ លេខសម្ងាត់
+            $this->errorMessage = __('messages.invalid_credentials');
         }
     }
 

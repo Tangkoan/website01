@@ -4,28 +4,60 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@import '@simonwep/pickr/dist/themes/nano.min.css';
 
 @custom-variant dark (&:is(.dark *));
 
+/* ៣. (ថ្មី) ប្រកាសតម្លៃពណ៌ពិតប្រាកដទាញចេញពី JSON របស់អ្នក */
+@layer base {
+    /* ពណ៌សម្រាប់ Light Mode (ទាញពី key "light") */
+    :root {
+        --color-header: #ffffff;
+        --color-card-bg: #ffffff;
+        --color-primary: #9900ff;
+        --color-sidebar: #ffffff;
+        --color-dropdown: #ffffff;
+        --color-text-main: #1f2937;
+        --color-background: #f3f4f6;
+        --color-text-muted: #434f65;
+        --color-border-color: #f7f7f7;
+        --color-primary-text: #ffffff;
+    }
+
+    /* ពណ៌សម្រាប់ Dark Mode (ទាញពី key "dark") */
+    .dark {
+        --color-header: #1e293b;
+        --color-card-bg: #1e293b;
+        --color-primary: #198573;
+        --color-sidebar: #1e293b;
+        --color-dropdown: #1e293b;
+        --color-text-main: #f8fafc;
+        --color-background: #0f172a;
+        --color-text-muted: #94a3b8;
+        --color-border-color: #334155;
+        --color-primary-text: #ffffff;
+    }
+}
+
+/* ២. ប្រាប់ Tailwind ឱ្យស្គាល់អថេរទាំងនេះជា Utilities (ឧទាហរណ៍: bg-primary, text-text-main) */
 @theme {
-    /* ត្រូវប្រើសញ្ញាដក (-) ទាំងអស់ សម្រាប់ឈ្មោះ Tailwind ស្គាល់វា */
-    --color-primary: var(--color-primary, #3b82f6);
-    --color-primary-text: var(--color-primary-text, #ffffff);
-    --color-background: var(--color-background, #f3f4f6);
-    --color-card-bg: var(--color-card-bg, #ffffff);
-    --color-header: var(--color-header, #ffffff);
-    --color-sidebar: var(--color-sidebar, #ffffff);
-    --color-dropdown: var(--color-dropdown, #ffffff);
-    --color-text-main: var(--color-text-main, #1f2937);
-    --color-text-muted: var(--color-text-muted, #6b7280);
-    --color-border-color: var(--color-border-color, #e5e7eb);
+    --color-primary: var(--color-primary);
+    --color-primary-text: var(--color-primary-text);
+    --color-background: var(--color-background);
+    --color-card-bg: var(--color-card-bg);
+    --color-header: var(--color-header);
+    --color-sidebar: var(--color-sidebar);
+    --color-dropdown: var(--color-dropdown);
+    --color-text-main: var(--color-text-main);
+    --color-text-muted: var(--color-text-muted);
+    --color-border-color: var(--color-border-color);
 }
 
 
 /* ១. បញ្ចូល Font ដែលបាន Download (Custom @font-face) */
 @font-face {
     font-family: 'Inter';
-    src: url('../fonts/Poppins-Regular.ttf') format('truetype'); /* ដូរឈ្មោះ File តាមជាក់ស្តែង */
+    src: url('../fonts/Poppins-Regular.ttf') format('truetype'); 
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -39,12 +71,10 @@
     font-display: swap;
 }
 
-/* ២. កំណត់ Theme របស់ Tailwind v4 */
+/* ៤. កំណត់ Theme របស់ Tailwind សម្រាប់ Font */
 @theme {
-    /* កំណត់ Font ទាំងពីរនេះជា Default បញ្ចូលគ្នា (បើជួបខ្មែរចេញខ្មែរ ជួបអង់គ្លេសចេញអង់គ្លេស) */
     --font-sans: 'Inter', 'Battambang', ui-sans-serif, system-ui, sans-serif;
     
-    /* ឬបើអ្នកចង់បង្កើត Class ដាច់ដោយឡែក (ប្រើតាមរយៈ class="font-khmer") */
     --font-khmer: 'Battambang', sans-serif;
     --font-english: 'Inter', sans-serif;
 }

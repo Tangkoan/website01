@@ -180,10 +180,13 @@ class GenericLog extends Component
 
         $activities = $query->paginate($perPageValue);
 
-        return view('livewire.settings.generic-log', [
+        $titleKey = 'messages.' . strtolower($this->type) . '_activity_logs';
+
+       return view('livewire.settings.generic-log', [
             'activities' => $activities,
-            'title' => ucfirst($this->type) . ' Activity Logs',
-            'backRoute' => $this->getBackRoute(), // <-- បញ្ជូន backRoute ទៅកាន់ Blade ទីនេះ
+            // ✅ ប្រើមុខងារ __() ដើម្បីទាញយកភាសា
+            'title' => __($titleKey), 
+            'backRoute' => $this->getBackRoute(),
         ])->layout('layouts.app');
     }
 }

@@ -9,7 +9,7 @@
         <div class="flex items-center gap-3 min-w-max">
             <span class="text-2xl drop-shadow-sm transition-transform hover:scale-110">⚡</span>
             <h1 x-show="!sidebarCollapsed" x-transition.opacity class="text-lg font-bold tracking-wide text-text-main uppercase">
-                Nova<span class="text-primary font-black">Dash</span>
+                <span class=" font-black">Nealika </span><span class="text-primary font-black">Backend</span>
             </h1>
         </div>
     </div>
