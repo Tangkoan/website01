@@ -6,7 +6,7 @@
             </div>
             
             <form wire:submit.prevent="saveRole" class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> {{-- ដូរពី grid-cols-2 មក grid-cols-3 --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> 
                     {{-- Role Name --}}
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.role_name') ?? 'Role Name' }}</label>
@@ -14,10 +14,13 @@
                         @error('name') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Level (បន្ថែមថ្មី) --}}
+                    {{-- Level (បន្ថែមថ្មីជាមួយ Max limit) --}}
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.level') ?? 'Level' }}</label>
-                        <input type="number" wire:model="level" min="1" class="w-full h-11 bg-[var(--color-background)] border-transparent rounded-lg px-4 font-bold text-[var(--color-text-main)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.level') ?? 'Level' }}</label>
+                            <span class="text-[9px] text-[var(--color-text-muted)]">Max: {{ $maxAllowedLevel ?? 'N/A' }}</span>
+                        </div>
+                        <input type="number" wire:model="level" min="1" max="{{ $maxAllowedLevel ?? 100 }}" class="w-full h-11 bg-[var(--color-background)] border-transparent rounded-lg px-4 font-bold text-[var(--color-text-main)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
                         @error('level') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
                     </div>
 

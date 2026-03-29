@@ -27,6 +27,7 @@ class RoleManagement extends Component
     public $managingRoleId = null;
     public $managingRoleName = '';
     public $rolePermissionsSelected = [];
+    public $maxAllowedLevel;
 
     protected $queryString = ['searchTerm', 'perPage'];
 
@@ -39,6 +40,7 @@ class RoleManagement extends Component
         // ថែម 'level' ចូលក្នុង Columns លំនាំដើម
         $savedColumns = session()->get('role_columns', ['name', 'guard_name', 'level', 'created_at']);
         $this->selectedColumns = array_intersect($savedColumns, array_keys($this->availableColumns));
+        $this->maxAllowedLevel = $this->service()->getMaxAllowedLevelForCurrentUser();
     }
 
     public function reloadData() {
@@ -81,10 +83,18 @@ class RoleManagement extends Component
     public function editRole($id) {
         $this->resetFields();
         $role = collect($this->getRolesProperty()->items())->firstWhere('id', $id) ?? Role::findOrFail($id);
+        
+        // --- បន្ថែមការការពារលើមុខងារRole Level ធំ ---
+        if ($role->level > $this->maxAllowedLevel) {
+            $this->dispatch('notify', type: 'error', message: __('messages.role_edit_unauthorized'));
+            return; // បញ្ឈប់ដំណើរការ
+        }
+        // ------------------------
+
         $this->roleId = $role->id;
         $this->name = $role->name;
         $this->guard_name = $role->guard_name;
-        $this->level = $role->level ?? 1; // ចាប់យក level បច្ចុប្បន្នមកបង្ហាញ
+        $this->level = $role->level ?? 1;
         $this->isModalOpen = true;
     }
 
@@ -93,16 +103,18 @@ class RoleManagement extends Component
     }
 
     public function saveRole() {
-        // Validation កំណត់ឱ្យ level ត្រូវតែជាលេខ (integer)
+        // Validation កំណត់ឱ្យ level ត្រូវតែជាលេខ និងមិនធំជាង maxAllowedLevel
         $this->validate([
             'name' => ['required', Rule::unique('roles', 'name')->ignore($this->roleId)],
-            'level' => ['required', 'integer', 'min:1']
+            'level' => ['required', 'integer', 'min:1', 'max:' . $this->maxAllowedLevel] // បន្ថែម max
+        ], [
+            'level.max' => __('messages.level_max_error', ['max' => $this->maxAllowedLevel]) ?? "You cannot set a level higher than your own ({$this->maxAllowedLevel})."
         ]);
 
         $this->service()->saveRole([
             'name' => $this->name,
             'guard_name' => $this->guard_name,
-            'level' => $this->level // បញ្ជូន level ទៅកាន់ Service
+            'level' => $this->level
         ], $this->roleId);
 
         $this->isModalOpen = false;
@@ -170,15 +182,18 @@ class RoleManagement extends Component
     }
 
     public function saveAndNextBulkItem() {
+        // Validation កំណត់ឱ្យ level ត្រូវតែជាលេខ និងមិនធំជាង maxAllowedLevel សម្រាប់ Bulk Edit ដែរ
         $this->validate([
             'bulkItemName' => ['required', Rule::unique('roles', 'name')->ignore($this->bulkItemId)],
-            'bulkItemLevel' => ['required', 'integer', 'min:1']
+            'bulkItemLevel' => ['required', 'integer', 'min:1', 'max:' . $this->maxAllowedLevel] // បន្ថែម max
+        ], [
+            'bulkItemLevel.max' => __('messages.level_max_error', ['max' => $this->maxAllowedLevel]) ?? "You cannot set a level higher than your own ({$this->maxAllowedLevel})."
         ]);
         
         $this->service()->saveRole([
             'name' => $this->bulkItemName,
             'guard_name' => $this->bulkItemGuard,
-            'level' => $this->bulkItemLevel // បញ្ជូន level ពេលប្រើ Bulk Edit
+            'level' => $this->bulkItemLevel
         ], $this->bulkItemId);
         $this->nextBulkItem();
     }

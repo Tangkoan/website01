@@ -6,21 +6,48 @@ namespace App\Services;
 use Spatie\Permission\Models\Permission;
 
 use Spatie\Activitylog\Models\Activity;
-use App\Models\Role; // ប្រើ Custom Role Model ខាងលើ
+use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class RoleService
 {
 
+    /**
+     * ទាញយក Level ខ្ពស់បំផុតរបស់អ្នកប្រើប្រាស់ដែលកំពុង Login
+     * បើគ្មាន Role (ករណីមិនទាន់មានសិទ្ធិសោះ) កំណត់ត្រឹម 1 ជាលំនាំដើម
+     */
+    public function getMaxAllowedLevelForCurrentUser()
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return 1; 
+        }
+
+        // សន្មតថាអ្នកកំពុងប្រើ Spatie Permission ហើយ User មាន relationship ជាមួយ roles()
+        // បើលេខ Level កាន់តែធំមានន័យថាសិទ្ធិកាន់តែធំ យក max()
+        $maxLevel = $user->roles()->max('level');
+        
+        // ប្រសិនបើ User ជា Super Admin (អ្នកអាចមាន Logic ឆែក Super Admin ផ្សេង) 
+        // ឧទាហរណ៍បើ Super Admin អាចដាក់ Level ប៉ុន្មានក៏បាន (ឧ. ដល់ 100) អ្នកអាចបន្ថែមលក្ខខណ្ឌនៅទីនេះ
+        // if ($user->hasRole('Super Admin')) { return 100; }
+
+        return $maxLevel ?? 1;
+    }
 
     /**
      * ទាញយក Role ដែលបានលុប (Soft Deleted)
      */
     public function getTrashedRoles($searchTerm, $perPage)
     {
+        $maxLevel = $this->getMaxAllowedLevelForCurrentUser();
+
         return Role::onlyTrashed()
             ->where('name', 'like', '%' . $searchTerm . '%')
+            ->where('level', '<=', $maxLevel) // បិទមិនឲ្យឃើញ Role ធំៗនៅក្នុង Trash ដូចគ្នា
             ->paginate((int)$perPage);
     }
+    
     /**
      * ស្តារទិន្នន័យឡើងវិញ (Restore)
      */
@@ -71,11 +98,18 @@ class RoleService
      */
     public function getRoles($searchTerm, $perPage, $sortField, $sortDirection)
     {
-        $query = Role::with('permissions')->where('name', 'like', '%' . $searchTerm . '%')
+        // ១. ទាញយក Level ធំបំផុតរបស់ User ដែលកំពុង Login (អនុគមន៍ដែលយើងបានបង្កើតពីមុន)
+        $maxLevel = $this->getMaxAllowedLevelForCurrentUser();
+
+        $query = Role::with('permissions')
+            ->where('name', 'like', '%' . $searchTerm . '%')
+            // ២. ត្រងយកតែ Role ណាដែលមាន Level តូចជាង ឬស្មើ Level របស់ User បច្ចុប្បន្ន
+            ->where('level', '<=', $maxLevel) 
             ->orderBy($sortField, $sortDirection);
 
         if ($perPage === 'all') {
-            return $query->paginate(Role::count());
+            // កែពី Role::count() មក $query->count() វិញទើបត្រឹមត្រូវតាមលក្ខខណ្ឌ
+            return $query->paginate($query->count()); 
         }
 
         return $query->paginate((int)$perPage);

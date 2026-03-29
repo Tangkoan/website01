@@ -31,8 +31,11 @@
                     {{-- ផ្នែកបន្ថែម Bulk Level --}}
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <label class="block text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.level') ?? 'Level' }}</label>
-                            <input type="number" wire:model="bulkItemLevel" min="1" class="w-full h-10 md:h-11 bg-[var(--color-background)] border border-transparent focus:border-[var(--color-primary)]/50 text-[var(--color-text-main)] rounded-lg px-3 md:px-4 font-bold focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none text-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.level') ?? 'Level' }}</label>
+                                <span class="text-[9px] text-[var(--color-text-muted)]">Max: {{ $maxAllowedLevel ?? 'N/A' }}</span>
+                            </div>
+                            <input type="number" wire:model="bulkItemLevel" min="1" max="{{ $maxAllowedLevel ?? 100 }}" class="w-full h-10 md:h-11 bg-[var(--color-background)] border border-transparent focus:border-[var(--color-primary)]/50 text-[var(--color-text-main)] rounded-lg px-3 md:px-4 font-bold focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none text-sm">
                             @error('bulkItemLevel') <span class="text-red-500 text-[10px] font-bold italic">{{ $message }}</span> @enderror
                         </div>
                         <div class="space-y-2">
