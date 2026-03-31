@@ -238,4 +238,9 @@ return [
     'borders_and_lines'     => 'Borders & Lines',
     'main_text_color'       => 'Main Text Color',
     'muted_secondary_text'  => 'Muted/Secondary Text',
+
+    'manage_assignable_permissions' => 'Manage Assignable Permissions',
+    'assignable_permissions_updated' => 'Assignable permissions have been updated successfully.',
+    'save_assignable_permissions' => 'Save Assignable',
+    'assignable_permissions_desc' => 'Select the permissions that users with this role can assign to other users/roles.',
 ];

@@ -238,4 +238,9 @@ return [
     'borders_and_lines'     => 'ពណ៌បន្ទាត់ និងស៊ុម',
     'main_text_color'       => 'ពណ៌អក្សរចម្បង',
     'muted_secondary_text'  => 'ពណ៌អក្សរបន្ទាប់បន្សំ/ព្រិល',
+
+    'manage_assignable_permissions' => 'គ្រប់គ្រងសិទ្ធិសម្រាប់ចែកចាយបន្ត',
+    'assignable_permissions_updated' => 'សិទ្ធិសម្រាប់ចែកចាយបន្តត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។',
+    'save_assignable_permissions' => 'រក្សាទុកសិទ្ធិចែកចាយ',
+    'assignable_permissions_desc' => 'កំណត់សិទ្ធិដែល Role នេះអាចយកទៅបំពាក់ (Assign) បន្តឱ្យ User ឬ Role ផ្សេងទៀតបាន។',
 ];

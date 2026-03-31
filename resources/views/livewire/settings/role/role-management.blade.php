@@ -17,8 +17,11 @@
 
     @include('livewire.settings.partials.role.modal-form')
     @include('livewire.settings.partials.role.modal-bulk-edit')
+    @include('livewire.settings.partials.role.permission-modal')
     
     {{-- បន្ថែម Modal ថ្មីនៅទីនេះ --}}
     @include('livewire.settings.partials.role.modal-manage-permissions')
+    {{-- បន្ថែមបន្ទាត់នេះ ដើម្បីហៅ Modal Assignable មកប្រើ --}}
+    @include('livewire.settings.partials.role.modal-assignable-permission')
 
 </div>

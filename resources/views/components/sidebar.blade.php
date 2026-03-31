@@ -16,137 +16,172 @@
 
     <nav class="flex-1 py-4 overflow-y-auto no-scrollbar bg-sidebar">
         
-        <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-2" x-transition.opacity>
-            <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">Main Menu</p>
-        </div>
+        {{-- ============================== --}}
+        {{-- MENU: DASHBOARD                --}}
+        {{-- ============================== --}}
+        @can('view_dashboard')
+            <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-2" x-transition.opacity>
+                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">Main Menu</p>
+            </div>
 
-        <a wire:navigate href="/dashboard" 
-           class="group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200
-                  {{ request()->is('dashboard') 
-                      ? 'text-primary bg-primary/10' 
-                      : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
-            
-            @if(request()->is('dashboard'))
-                <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
-            @endif
-
-            <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 {{ request()->is('dashboard') ? 'drop-shadow-sm scale-110' : 'opacity-70 group-hover:opacity-100' }}">
-                🏠
-            </span>
-            
-            <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('dashboard') ? 'font-extrabold' : 'font-semibold' }}">
-                {{ __('messages.home') ?? 'Dashboard' }}
-            </span>
-        </a>
-
-        <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-6" x-transition.opacity>
-            <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">Management</p>
-        </div>
-
-        <div x-data="{ 
-                open: {{ request()->is('settings*') ? 'true' : 'false' }}, 
-                hovered: false,
-                timeout: null 
-             }" 
-             @mouseenter="hovered = true; clearTimeout(timeout)" 
-             @mouseleave="timeout = setTimeout(() => hovered = false, 200)"
-             class="relative">
-            
-            <button @click="sidebarCollapsed ? null : open = !open" 
-                class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200
-                       {{ request()->is('settings*') 
-                           ? 'text-primary bg-primary/10' 
-                           : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
+            <a wire:navigate href="/dashboard" 
+               class="group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200
+                      {{ request()->is('dashboard') 
+                          ? 'text-primary bg-primary/10' 
+                          : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                 
-                @if(request()->is('settings*'))
+                @if(request()->is('dashboard'))
                     <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
                 @endif
 
-                <div class="flex items-center gap-4">
-                    <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
-                        ⚙️
-                    </span>
-                    <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings*') ? 'font-extrabold' : 'font-semibold' }}">
-                        {{ __('messages.settings') ?? 'Settings' }}
-                    </span>
-                </div>
+                <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 {{ request()->is('dashboard') ? 'drop-shadow-sm scale-110' : 'opacity-70 group-hover:opacity-100' }}">
+                    🏠
+                </span>
                 
-                <div x-show="!sidebarCollapsed" class="flex items-center justify-center transition-colors">
-                    <svg :class="open ? 'rotate-180 text-primary' : 'text-text-muted group-hover:text-text-main'" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </button>
+                <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('dashboard') ? 'font-extrabold' : 'font-semibold' }}">
+                    {{ __('messages.home') ?? 'Dashboard' }}
+                </span>
+            </a>
+        @endcan
 
-            <div x-show="open && !sidebarCollapsed" x-cloak x-collapse class="relative bg-dropdown">
-                <div class="absolute left-[34px] top-0 bottom-0 w-px bg-border-color"></div>
-
-                <div class="py-2 space-y-0.5">
-                    <div class="pl-14 pr-6 relative">
-                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                        <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
-                    </div>
-                    
-                    <div class="pl-14 pr-6 relative">
-                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                        <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
-                    </div>
-
-                    <div class="pl-14 pr-6 relative">
-                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                        <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
-                    </div>
-
-                    <div class="pl-14 pr-6 relative">
-                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                        <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
-                    </div>
-
-
-                    <div class="pl-14 pr-6 relative">
-                        <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                        <x-sidebar-sub-link href="/settings/users" :title="__('messages.user') ?? 'User Styling'" />
-                    </div>
-
-
-
-                </div>
+        {{-- ============================== --}}
+        {{-- MENU GROUP: SETTINGS           --}}
+        {{-- ============================== --}}
+        {{-- ប្រើ @canany ដើម្បីបង្ហាញ Group នេះ លុះត្រាតែគាត់មានសិទ្ធិយ៉ាងហោចណាស់១ ក្នុងចំណោមសិទ្ធិទាំងនេះ --}}
+        @canany(['view_shop_info', 'view_permissions', 'view_roles', 'view_theme', 'view_users'])
+            <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-6" x-transition.opacity>
+                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">Management</p>
             </div>
 
-            <div x-show="hovered && sidebarCollapsed" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 translate-x-2"
-                 x-transition:enter-end="opacity-100 translate-x-0"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 translate-x-0"
-                 x-transition:leave-end="opacity-0 translate-x-2"
-                 @mouseenter="hovered = true; clearTimeout(timeout)"
-                 @mouseleave="hovered = false"
-                 class="fixed left-[80px] top-auto ml-1 w-60 z-50 pointer-events-auto"
-                 x-cloak>
-                 
-                <div class="absolute -left-4 top-0 w-4 h-full"></div>
-
-                <div class="bg-dropdown border border-border-color shadow-xl rounded-xl overflow-hidden relative">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+            <div x-data="{ 
+                    open: {{ request()->is('settings*') ? 'true' : 'false' }}, 
+                    hovered: false,
+                    timeout: null 
+                 }" 
+                 @mouseenter="hovered = true; clearTimeout(timeout)" 
+                 @mouseleave="timeout = setTimeout(() => hovered = false, 200)"
+                 class="relative">
+                
+                {{-- Main Settings Button --}}
+                <button @click="sidebarCollapsed ? null : open = !open" 
+                    class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200
+                           {{ request()->is('settings*') 
+                               ? 'text-primary bg-primary/10' 
+                               : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                     
-                    <div class="px-5 py-3.5 border-b border-border-color bg-primary/5 mt-1">
-                        <span class="text-xs font-bold uppercase tracking-widest text-primary">
+                    @if(request()->is('settings*'))
+                        <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
+                    @endif
+
+                    <div class="flex items-center gap-4">
+                        <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
+                            ⚙️
+                        </span>
+                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings*') ? 'font-extrabold' : 'font-semibold' }}">
                             {{ __('messages.settings') ?? 'Settings' }}
                         </span>
                     </div>
                     
-                    <div class="p-2 space-y-1 bg-dropdown">
-                        <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
-                        <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
-                        <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'Users'" />
-                        <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
-                        <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
+                    <div x-show="!sidebarCollapsed" class="flex items-center justify-center transition-colors">
+                        <svg :class="open ? 'rotate-180 text-primary' : 'text-text-muted group-hover:text-text-main'" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
+
+                {{-- Expanded Sub-menu (ពេលមិនទាន់ Collapse) --}}
+                <div x-show="open && !sidebarCollapsed" x-cloak x-collapse class="relative bg-dropdown">
+                    <div class="absolute left-[34px] top-0 bottom-0 w-px bg-border-color"></div>
+
+                    <div class="py-2 space-y-0.5">
+                        @can('view_shop_info')
+                            <div class="pl-14 pr-6 relative">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
+                            </div>
+                        @endcan
+                        
+                        @can('view_permissions')
+                            <div class="pl-14 pr-6 relative">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
+                            </div>
+                        @endcan
+
+                        @can('view_roles')
+                            <div class="pl-14 pr-6 relative">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
+                            </div>
+                        @endcan
+
+                        @can('view_theme')
+                            <div class="pl-14 pr-6 relative">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
+                            </div>
+                        @endcan
+
+                        @can('view_users')
+                            <div class="pl-14 pr-6 relative">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'User Management'" />
+                            </div>
+                        @endcan
                     </div>
                 </div>
-            </div>
 
-        </div>
+                {{-- Hover Sub-menu (ពេល Sidebar Collapsed បង្រួមតូច) --}}
+                <div x-show="hovered && sidebarCollapsed" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-x-2"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 translate-x-2"
+                     @mouseenter="hovered = true; clearTimeout(timeout)"
+                     @mouseleave="hovered = false"
+                     class="fixed left-[80px] top-auto ml-1 w-60 z-50 pointer-events-auto"
+                     x-cloak>
+                     
+                    <div class="absolute -left-4 top-0 w-4 h-full"></div>
+
+                    <div class="bg-dropdown border border-border-color shadow-xl rounded-xl overflow-hidden relative">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+                        
+                        <div class="px-5 py-3.5 border-b border-border-color bg-primary/5 mt-1">
+                            <span class="text-xs font-bold uppercase tracking-widest text-primary">
+                                {{ __('messages.settings') ?? 'Settings' }}
+                            </span>
+                        </div>
+                        
+                        <div class="p-2 space-y-1 bg-dropdown">
+                            @can('view_shop_info')
+                                <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
+                            @endcan
+                            
+                            @can('view_permissions')
+                                <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
+                            @endcan
+                            
+                            @can('view_users')
+                                <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'Users'" />
+                            @endcan
+                            
+                            @can('view_roles')
+                                <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
+                            @endcan
+                            
+                            @can('view_theme')
+                                <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        @endcanany
+
     </nav>
 </aside>
 </div>

@@ -163,4 +163,29 @@ class RoleService
     {
         return Permission::all();
     }
+
+    /**
+     * ទាញយក Permission ទាំងអស់ដែល User កំពុង Login មានសិទ្ធិចែកចាយបន្ត
+     */
+    public function getAssignablePermissionsForCurrentUser()
+    {
+        $user = Auth::user();
+        
+        if (!$user) return collect();
+
+        // ប្រសិនបើជា Super Admin (Level ធំជាងគេ ឧទាហរណ៍ 999) គាត់អាច Assign បានទាំងអស់
+        if ($this->getMaxAllowedLevelForCurrentUser() >= 999) {
+            return Permission::all();
+        }
+
+        // បើត្រឹមជា Admin ធម្មតា ទាញយកតែ Permission ណាដែល Role គាត់មានសិទ្ធិ Assign ប៉ុណ្ណោះ
+        $assignablePermissions = collect();
+        
+        foreach ($user->roles as $role) {
+            $assignablePermissions = $assignablePermissions->merge($role->assignablePermissions);
+        }
+
+        // ប្រើ unique() ដើម្បីកុំឱ្យស្ទួន ក្នុងករណី User ម្នាក់មាន Role ច្រើន
+        return $assignablePermissions->unique('id');
+    }
 }

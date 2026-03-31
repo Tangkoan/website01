@@ -84,9 +84,19 @@
                         @endif
 
                         <td class="p-4 flex justify-center gap-2">
+    
+                            {{-- ប៊ូតុងទី ១៖ Manage Permissions (ពណ៌លឿង - ចាស់) --}}
                             <button wire:click="managePermissions({{ $item->id }})" title="Manage Permissions" class="p-2 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-all">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                             </button>
+
+                            {{-- ប៊ូតុងទី ២៖ Assignable Permissions (ពណ៌ស្វាយ - ថ្មី) --}}
+                            <button wire:click="manageAssignablePermissions({{ $item->id }})" title="Assignable Permissions" class="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all">
+                                {{-- ប្រើ Icon រូបមនុស្សមានសញ្ញាព្រួញចែកចាយ ឬ ខែល --}}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </button>
+
+                            
 
                             <button wire:click="editRole({{ $item->id }})" title="Edit Role" class="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
