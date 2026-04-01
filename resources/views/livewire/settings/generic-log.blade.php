@@ -26,11 +26,13 @@
         </div>
 
         @if(count($selectedLogs) > 0)
-            <button wire:click="confirmBulkDelete" 
+            {{-- ប្រើ x-auth-button សម្រាប់ Bulk Delete --}}
+            <x-auth-button permission="delete-{{ $type }}-logs" 
+                wire:click="confirmBulkDelete" 
                 class="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-black rounded-lg shadow-sm transition-all flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 {{ __('messages.delete_selected') }} ({{ count($selectedLogs) }})
-            </button>
+            </x-auth-button>
         @endif
     </div>
 
@@ -103,6 +105,7 @@
 
                             <td class="p-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
+                                    {{-- ប៊ូតុង View (មិនបាច់មានសិទ្ធិក៏មើលបាន ព្រោះទាល់តែមានសិទ្ធិមើល Log ទើបចូល Page នេះបាន) --}}
                                     <button wire:click.stop="viewDetails({{ $log->id }})" title="{{ __('messages.view') }}" class="p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] rounded-lg transition-all focus:outline-none">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -110,11 +113,15 @@
                                         </svg>
                                     </button>
                                     
-                                    <button wire:click.stop="confirmDelete({{ $log->id }})" title="{{ __('messages.delete') }}" class="p-2 text-[var(--color-text-muted)] hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all focus:outline-none">
+                                    {{-- ប្រើ x-auth-button សម្រាប់លុបទោល --}}
+                                    <x-auth-button permission="delete-{{ $type }}-logs" 
+                                        wire:click.stop="confirmDelete({{ $log->id }})" 
+                                        title="{{ __('messages.delete') }}" 
+                                        class="p-2 text-[var(--color-text-muted)] hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all focus:outline-none">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
-                                    </button>
+                                    </x-auth-button>
                                 </div>
                             </td>
                         </tr>
@@ -181,11 +188,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                     </button>
-                    <button wire:click.stop="confirmDelete({{ $log->id }})" class="p-1.5 text-[var(--color-text-muted)] hover:text-red-500 transition-colors">
+                    {{-- ប្រើ x-auth-button សម្រាប់លុបទោលលើ Mobile --}}
+                    <x-auth-button permission="delete-{{ $type }}-logs" 
+                        wire:click.stop="confirmDelete({{ $log->id }})" 
+                        class="p-1.5 text-[var(--color-text-muted)] hover:text-red-500 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
-                    </button>
+                    </x-auth-button>
                 </div>
             </div>
         @empty
@@ -202,7 +212,7 @@
         @endif
     </div>
 
-    {{-- Modal View Details --}}
+    {{-- Modal View Details (រក្សាទុកដដែល) --}}
     @if($isModalOpen && $selectedActivity)
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-[var(--color-card-bg)] rounded-xl w-full max-w-2xl shadow-2xl overflow-hidden border border-[var(--color-border-color)]">

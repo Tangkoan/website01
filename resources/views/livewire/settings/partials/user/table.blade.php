@@ -49,9 +49,12 @@
                         $isSelf = $user->id === auth()->id();
                         $isSuperAdmin = auth()->user()->hasRole('Super Admin');
                         
-                        // កែ Logic ថ្មី៖ ខ្លួនឯងអាច Edit/Delete បាន និងបន្តការពារ Level ខ្ពស់ជាង
-                        $canEdit = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
-                        $canDelete = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
+                        // 1. សម្រាប់ប៊ូតុង Edit/Delete: ឆែកតែ Level ព្រោះ <x-auth-button> វាឆែកសិទ្ធិដោយខ្លួនឯងទៀត
+                        $canManage = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
+                        
+                        // 2. សម្រាប់ Status Toggle: ទាមទារសិទ្ធិ 'edit-user' + ឈ្នះ Level + ហាមបិទ/បើក Status ខ្លួនឯង
+                        $hasEditPermission = auth()->user()->can('edit-user');
+                        $canToggleStatus = $hasEditPermission && ($isSuperAdmin || ($targetMaxLevel < $myMaxLevel)) && !$isSelf;
                     @endphp
                     
                     <tr wire:key="user-desktop-{{ $user->id }}" 
@@ -67,7 +70,6 @@
                         <td class="p-4">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 flex-shrink-0">
-                                    {{-- ប្តូរមកប្រើ $user->image --}}
                                     @if($user->image)
                                         <img src="{{ str_starts_with($user->image, 'http') ? $user->image : asset('storage/' . $user->image) }}" alt="{{ $user->name }}" class="h-10 w-10 rounded-full object-cover border border-[var(--color-primary)]/20 shadow-sm">
                                     @else
@@ -114,25 +116,30 @@
                         
                         @if(in_array('status', $selectedColumns))
                         <td class="p-4 text-center">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ (!$canEdit || $isSelf) ? 'disabled' : '' }}>
-                                <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ (!$canEdit || $isSelf) ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
+                            {{-- ប្រើ $canToggleStatus ដើម្បី Disable Toggle ប្រសិនបើគ្មានសិទ្ធិ edit-user ឬខុសលក្ខខណ្ឌ Level --}}
+                            <label class="relative inline-flex items-center cursor-pointer" title="{{ !$canToggleStatus ? 'No Permission or Restricted Level' : 'Toggle Status' }}">
+                                <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ !$canToggleStatus ? 'disabled' : '' }}>
+                                <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ !$canToggleStatus ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
                             </label>
                         </td>
                         @endif
                         
                         <td class="p-4 flex justify-center gap-2 items-center h-full mt-2">
-                            @if($canEdit)
-                                <button wire:click="editUser({{ $user->id }})" title="Edit User" class="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </button>
-                            @endif
+                            <x-auth-button permission="edit-user" 
+                                wire:click="editUser({{ $user->id }})" 
+                                title="Edit User" 
+                                :disabled="!$canManage"
+                                class="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-primary)]/10 disabled:hover:text-[var(--color-primary)]">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </x-auth-button>
                             
-                            @if($canDelete)
-                                <button wire:click="confirmDelete({{ $user->id }})" title="Delete User" class="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            @endif
+                            <x-auth-button permission="delete-user" 
+                                wire:click="confirmDelete({{ $user->id }})" 
+                                title="Delete User" 
+                                :disabled="!$canManage"
+                                class="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500/10 disabled:hover:text-red-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </x-auth-button>
                         </td>
                     </tr>
                 @empty

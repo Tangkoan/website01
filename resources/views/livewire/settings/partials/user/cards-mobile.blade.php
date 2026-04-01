@@ -10,8 +10,7 @@
             $isSelf = $user->id === auth()->id();
             $isSuperAdmin = auth()->user()->hasRole('Super Admin');
             
-            $canEdit = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
-            $canDelete = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
+            $canManage = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
         @endphp
         
         <div wire:key="user-mobile-{{ $user->id }}" x-data @click="if(!$event.target.closest('button') && !$event.target.closest('label') && $event.target.tagName !== 'INPUT') { let cb = $el.querySelector('input[type=checkbox]'); if(cb && !cb.disabled) cb.click() }" class="bg-[var(--color-card-bg)] p-4 rounded-xl shadow-sm border border-[var(--color-border-color)] flex flex-col gap-3 cursor-pointer hover:bg-[var(--color-background)]/50 transition-all">
@@ -61,8 +60,8 @@
                 <div class="flex items-center gap-4">
                     @if(in_array('status', $selectedColumns))
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ (!$canEdit || $isSelf) ? 'disabled' : '' }}>
-                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ (!$canEdit || $isSelf) ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
+                            <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ (!$canManage || $isSelf) ? 'disabled' : '' }}>
+                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ (!$canManage || $isSelf) ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
                         </label>
                     @endif
 
@@ -72,17 +71,19 @@
                 </div>
                 
                 <div class="flex gap-2">
-                    @if($canEdit)
-                    <button wire:click="editUser({{ $user->id }})" class="p-2 rounded-lg transition-all border border-transparent bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white flex items-center justify-center">
+                    <x-auth-button permission="edit-user" 
+                        wire:click="editUser({{ $user->id }})" 
+                        :disabled="!$canManage"
+                        class="p-2 rounded-lg transition-all border border-transparent bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--color-primary)]/10 disabled:hover:text-[var(--color-primary)]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                    @endif
+                    </x-auth-button>
                     
-                    @if($canDelete)
-                    <button wire:click="confirmDelete({{ $user->id }})" class="p-2 rounded-lg transition-all border border-transparent bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center">
+                    <x-auth-button permission="delete-user" 
+                        wire:click="confirmDelete({{ $user->id }})" 
+                        :disabled="!$canManage"
+                        class="p-2 rounded-lg transition-all border border-transparent bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500/10 disabled:hover:text-red-500">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                    @endif
+                    </x-auth-button>
                 </div>
             </div>
         </div>

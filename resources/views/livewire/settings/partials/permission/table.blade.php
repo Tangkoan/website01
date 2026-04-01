@@ -7,11 +7,10 @@
         <table class="w-full text-left">
             <thead>
                 <tr class="bg-[var(--color-background)]/50 border-b border-[var(--color-border-color)]">
-                    @canany(['bulk-edit-permission', 'bulk-delete-permission'])
-                        <th class="p-4 w-16 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent dark:bg-[var(--color-background)] checked:bg-[var(--color-primary)] checked:border-[var(--color-primary)] transition-all cursor-pointer">
-                        </th>
-                    @endcanany
+                    {{-- លុប @canany ចេញពី Select All --}}
+                    <th class="p-4 w-16 text-center">
+                        <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent dark:bg-[var(--color-background)] checked:bg-[var(--color-primary)] checked:border-[var(--color-primary)] transition-all cursor-pointer">
+                    </th>
                     
                     @if(in_array('name', $selectedColumns))
                         <th wire:click="sortBy('name')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors">
@@ -32,7 +31,6 @@
                 </tr>
             </thead>
 
-            {{-- ចំណុចសំខាន់៖ បញ្ចូល Alpine.js States សម្រាប់ Drag-to-Select ក្នុង tbody --}}
             <tbody x-data="{ isMouseDown: false, checkStatus: true }" 
                    @mousedown="isMouseDown = true" 
                    @mouseup.window="isMouseDown = false"
@@ -40,7 +38,6 @@
 
                 @forelse($permissions as $item)
                     <tr wire:key="desktop-row-{{ $item->id }}" 
-                        {{-- logic សម្រាប់ចុចដំបូង --}}
                         @mousedown="
                             if(!$event.target.closest('button')) {
                                 let cb = $el.querySelector('input[type=checkbox]');
@@ -55,7 +52,6 @@
                                 }
                             }
                         "
-                        {{-- logic សម្រាប់អូស Mouse កាត់ --}}
                         @mouseenter="
                             if(isMouseDown && !$event.target.closest('button')) {
                                 let cb = $el.querySelector('input[type=checkbox]');
@@ -67,11 +63,10 @@
                         "
                         class="hover:bg-[var(--color-background)]/50 transition-all group cursor-pointer select-none">
                         
-                        @canany(['bulk-edit-permission', 'bulk-delete-permission'])
-                            <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedPermissions" value="{{ $item->id }}" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent dark:bg-[var(--color-background)] checked:bg-[var(--color-primary)] checked:border-[var(--color-primary)] transition-all cursor-pointer">
-                            </td>
-                        @endcanany
+                        {{-- លុប @canany ចេញពី Checkbox ទោល --}}
+                        <td class="p-4 text-center">
+                            <input type="checkbox" wire:model.live="selectedPermissions" value="{{ $item->id }}" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/30 bg-transparent dark:bg-[var(--color-background)] checked:bg-[var(--color-primary)] checked:border-[var(--color-primary)] transition-all cursor-pointer">
+                        </td>
                         
                         @if(in_array('name', $selectedColumns))
                             <td class="p-4">
@@ -86,19 +81,16 @@
                         @endif
 
                         <td class="p-4 flex justify-end gap-2">
-                            @can('edit-permission')
-                                <button wire:click="editPermission({{ $item->id }})" 
-                                    class="p-2 rounded-lg transition-all border border-transparent bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-text)] dark:bg-[var(--color-background)] dark:border-[var(--color-border-color)] dark:hover:bg-[var(--color-primary)] dark:hover:border-transparent">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </button>
-                            @endcan
+                            {{-- ប្រើ x-auth-button ជំនួស @can --}}
+                            <x-auth-button permission="edit-permission" wire:click="editPermission({{ $item->id }})" 
+                                class="p-2 rounded-lg transition-all border border-transparent bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-text)] dark:bg-[var(--color-background)] dark:border-[var(--color-border-color)] dark:hover:bg-[var(--color-primary)] dark:hover:border-transparent">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </x-auth-button>
                             
-                            @can('delete-permission')
-                                <button wire:click="confirmDelete({{ $item->id }})" 
-                                    class="p-2 rounded-lg transition-all border border-transparent bg-red-50 text-red-500 hover:bg-red-500 hover:text-white dark:bg-[var(--color-background)] dark:border-[var(--color-border-color)] dark:hover:bg-red-500 dark:hover:border-transparent">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            @endcan
+                            <x-auth-button permission="delete-permission" wire:click="confirmDelete({{ $item->id }})" 
+                                class="p-2 rounded-lg transition-all border border-transparent bg-red-50 text-red-500 hover:bg-red-500 hover:text-white dark:bg-[var(--color-background)] dark:border-[var(--color-border-color)] dark:hover:bg-red-500 dark:hover:border-transparent">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </x-auth-button>
                         </td>
                     </tr>
                 @empty

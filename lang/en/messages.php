@@ -243,4 +243,23 @@ return [
     'assignable_permissions_updated' => 'Assignable permissions have been updated successfully.',
     'save_assignable_permissions' => 'Save Assignable',
     'assignable_permissions_desc' => 'Select the permissions that users with this role can assign to other users/roles.',
+
+    // ui config
+    'role_ui_mode' => 'Role UI Mode',
+    'button_display_options' => 'Button Display Options',
+    'role_ui_mode_desc' => 'Configure how the system should react and display action buttons when a user lacks permission to use them. This setting takes effect globally.',
+    'hide_completely' => 'Hide Completely (Hide)',
+    'recommended' => 'Recommended',
+    'hide_desc' => 'Buttons will not be displayed on the screen at all. This keeps the interface clean and provides high security by not exposing unauthorized features.',
+    'show_disabled' => 'Show but Disabled (Disable)',
+    'disable_desc' => 'Buttons remain visible on the screen so users know the feature exists, but they are grayed out and unclickable.',
+    'save_changes' => 'Save Changes',
+    'settings_saved_success' => 'Settings saved successfully!',
+    'user_management' => 'Access Control',
+    'users_roles' => 'Users & Roles',
+    'system' => 'System',
+    'deleted_successfully' => 'Deleted Successfully',
+    'restored_success' => 'Restored Successfully',
+
+    
 ];

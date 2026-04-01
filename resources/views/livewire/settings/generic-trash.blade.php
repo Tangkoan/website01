@@ -8,14 +8,12 @@
             <span class="shrink-0 p-2 md:p-2.5 bg-red-500/10 rounded-lg md:rounded-xl text-red-500 text-lg md:text-2xl flex items-center justify-center">
                 🗑️
             </span>
-            {{-- ប្រើ truncate បើចង់ឲ្យវាកាត់ជាសញ្ញា ... ពេលអក្សរវែងពេក ឬលុប truncate ចោលបើចង់ឲ្យវាធ្លាក់ចុះបន្ទាត់ --}}
             <span class="leading-tight truncate">{{ $title }}</span>
         </h2>
 
         {{-- Back Button --}}
         <a href="{{ route($backRoute) }}" wire:navigate class="shrink-0 p-2 sm:px-4 sm:py-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-sm font-black text-[var(--color-text-main)] hover:brightness-95 flex items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 mt-0.5 sm:mt-0">
             <svg class="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            {{-- លាក់អក្សរ Back លើ Mobile និងបង្ហាញវិញលើអក្រង់ធំ (sm:block) --}}
             <span class="hidden sm:block">{{ __('messages.back') ?? 'Back' }}</span>
         </a>
 
@@ -36,14 +34,21 @@
             <div class="w-full sm:w-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 p-2 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 animate-in fade-in zoom-in-95 duration-200">
                 <span class="text-sm font-black text-[var(--color-primary)] px-2">{{ count($selectedItems) }} Selected</span>
                 <div class="flex items-center gap-2">
-                    <button wire:click="restore()" class="px-4 py-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xs font-black rounded-md transition-colors shadow-sm flex items-center gap-1.5">
+                    {{-- ប្រើ x-auth-button សម្រាប់ Bulk Restore --}}
+                    <x-auth-button permission="restore-{{ $type }}" 
+                        wire:click="restore()" 
+                        class="px-4 py-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xs font-black rounded-md transition-colors shadow-sm flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         Restore
-                    </button>
-                    <button wire:click="confirmForceDelete()" class="px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xs font-black rounded-md transition-colors shadow-sm flex items-center gap-1.5">
+                    </x-auth-button>
+                    
+                    {{-- ប្រើ x-auth-button សម្រាប់ Bulk Force Delete --}}
+                    <x-auth-button permission="force-delete-{{ $type }}" 
+                        wire:click="confirmForceDelete()" 
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xs font-black rounded-md transition-colors shadow-sm flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         Delete
-                    </button>
+                    </x-auth-button>
                 </div>
             </div>
         @endif
@@ -64,7 +69,6 @@
                 </tr>
             </thead>
             
-            {{-- មុខងារ Drag-to-select ប្រើ Alpine.js --}}
             <tbody x-data="{ isMouseDown: false, checkStatus: true }" 
                    @mousedown="isMouseDown = true" 
                    @mouseup.window="isMouseDown = false"
@@ -101,12 +105,21 @@
                             <div class="text-[10px] text-[var(--color-text-muted)] font-black uppercase">{{ $item->deleted_at->format('h:i A') }}</div>
                         </td>
                         <td class="p-4 flex justify-end gap-2">
-                            <button wire:click="restore({{ $item->id }})" title="Restore" class="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm border border-green-100">
+                            {{-- ប្រើ x-auth-button សម្រាប់ Single Restore --}}
+                            <x-auth-button permission="restore-{{ $type }}" 
+                                wire:click="restore({{ $item->id }})" 
+                                title="Restore" 
+                                class="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm border border-green-100 dark:bg-green-500/10 dark:border-green-500/30 dark:hover:bg-green-500 dark:hover:text-white">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            </button>
-                            <button wire:click="confirmForceDelete({{ $item->id }})" title="Delete Permanently" class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100">
+                            </x-auth-button>
+                            
+                            {{-- ប្រើ x-auth-button សម្រាប់ Single Force Delete --}}
+                            <x-auth-button permission="force-delete-{{ $type }}" 
+                                wire:click="confirmForceDelete({{ $item->id }})" 
+                                title="Delete Permanently" 
+                                class="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100 dark:bg-red-500/10 dark:border-red-500/30 dark:hover:bg-red-500 dark:hover:text-white">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            </x-auth-button>
                         </td>
                     </tr>
                 @empty
@@ -142,15 +155,19 @@
                     </div>
                     
                     <div class="flex items-center gap-2">
-                        {{-- Icon Restore (ប្រើសញ្ញាព្រួញបង្វិលត្រឡប់) --}}
-                        <button wire:click="restore({{ $item->id }})" class="p-2.5 bg-green-50 text-green-600 rounded-lg border border-green-100 shadow-sm active:bg-green-600 active:text-white transition-all focus:outline-none focus:ring-2 focus:ring-green-500/30">
+                        {{-- Icon Restore Mobile --}}
+                        <x-auth-button permission="restore-{{ $type }}" 
+                            wire:click="restore({{ $item->id }})" 
+                            class="p-2.5 bg-green-50 text-green-600 rounded-lg border border-green-100 shadow-sm active:bg-green-600 active:text-white transition-all focus:outline-none focus:ring-2 focus:ring-green-500/30 dark:bg-green-500/10 dark:border-green-500/30">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        </button>
+                        </x-auth-button>
                         
-                        {{-- Icon Delete Forever (ប្រើសញ្ញាធុងសំរាម) --}}
-                        <button wire:click="confirmForceDelete({{ $item->id }})" class="p-2.5 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:bg-red-600 active:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500/30">
+                        {{-- Icon Delete Forever Mobile --}}
+                        <x-auth-button permission="force-delete-{{ $type }}" 
+                            wire:click="confirmForceDelete({{ $item->id }})" 
+                            class="p-2.5 bg-red-50 text-red-600 rounded-lg border border-red-100 shadow-sm active:bg-red-600 active:text-white transition-all focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:bg-red-500/10 dark:border-red-500/30">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
+                        </x-auth-button>
                     </div>
                 </div>
                 

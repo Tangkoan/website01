@@ -12,12 +12,10 @@
         <div class="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 w-full lg:w-auto">
             <span class="text-xs font-black text-[var(--color-primary)] px-3">{{ count($selectedPermissions) }} {{ __('messages.selected') ?? 'Selected' }}</span>
             <div class="flex gap-2 w-full sm:w-auto">
-                @can('bulk-edit-permission')
-                    <button wire:click="bulkEdit" class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_edit') ?? 'Bulk Edit' }}</button>
-                @endcan
-                @can('bulk-delete-permission')
-                    <button wire:click="confirmDelete()" class="flex-1 sm:flex-none px-3 py-2 bg-red-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_delete') ?? 'Bulk Delete' }}</button>
-                @endcan
+                {{-- ប្រើ x-auth-button ជំនួស @can --}}
+                <x-auth-button permission="bulk-edit-permission" wire:click="bulkEdit" class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_edit') ?? 'Bulk Edit' }}</x-auth-button>
+                
+                <x-auth-button permission="bulk-delete-permission" wire:click="confirmDelete()" class="flex-1 sm:flex-none px-3 py-2 bg-red-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_delete') ?? 'Bulk Delete' }}</x-auth-button>
             </div>
         </div>
     @endif

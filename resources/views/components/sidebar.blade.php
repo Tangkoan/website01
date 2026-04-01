@@ -1,3 +1,18 @@
+@php
+    $uiMode = Illuminate\Support\Facades\Cache::rememberForever('setting_role_ui_mode', function () {
+        $setting = \App\Models\Setting::where('key', 'role_ui_mode')->first();
+        return $setting ? $setting->value : 'hide';
+    });
+
+    // ឆែកសិទ្ធិសម្រាប់ក្រុម USER MANAGEMENT
+    $hasAnyUserMgmtPerm = auth()->user()->canany(['view_users', 'view_roles', 'view_permissions', 'manage_role_ui']);
+    $showUserMgmtGroup = $hasAnyUserMgmtPerm || $uiMode === 'disable';
+
+    // ឆែកសិទ្ធិសម្រាប់ក្រុម SYSTEM SETTINGS
+    $hasAnySystemSettingPerm = auth()->user()->canany(['view_shop_info', 'view_theme']);
+    $showSystemSettingGroup = $hasAnySystemSettingPerm || $uiMode === 'disable';
+@endphp
+
 <div>
     <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-20 md:hidden" x-cloak></div>
 
@@ -39,22 +54,21 @@
                 </span>
                 
                 <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('dashboard') ? 'font-extrabold' : 'font-semibold' }}">
-                    {{ __('messages.home') ?? 'Dashboard' }}
+                    {{ __('messages.home') }}
                 </span>
             </a>
         @endcan
 
         {{-- ============================== --}}
-        {{-- MENU GROUP: SETTINGS           --}}
+        {{-- GROUP 1: USER MANAGEMENT       --}}
         {{-- ============================== --}}
-        {{-- ប្រើ @canany ដើម្បីបង្ហាញ Group នេះ លុះត្រាតែគាត់មានសិទ្ធិយ៉ាងហោចណាស់១ ក្នុងចំណោមសិទ្ធិទាំងនេះ --}}
-        @canany(['view_shop_info', 'view_permissions', 'view_roles', 'view_theme', 'view_users'])
+        @if($showUserMgmtGroup)
             <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-6" x-transition.opacity>
-                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">Management</p>
+                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">{{ __('messages.user_management') ?? 'Access Control' }}</p>
             </div>
 
             <div x-data="{ 
-                    open: {{ request()->is('settings*') ? 'true' : 'false' }}, 
+                    open: {{ request()->is('settings/users*') || request()->is('settings/roles*') || request()->is('settings/permission*') || request()->is('settings/role-ui*') ? 'true' : 'false' }}, 
                     hovered: false,
                     timeout: null 
                  }" 
@@ -62,23 +76,24 @@
                  @mouseleave="timeout = setTimeout(() => hovered = false, 200)"
                  class="relative">
                 
-                {{-- Main Settings Button --}}
                 <button @click="sidebarCollapsed ? null : open = !open" 
                     class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200
-                           {{ request()->is('settings*') 
+                           {{ request()->is('settings/users*') || request()->is('settings/roles*') || request()->is('settings/permission*') || request()->is('settings/role-ui*')
                                ? 'text-primary bg-primary/10' 
                                : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                     
-                    @if(request()->is('settings*'))
+                    @if(request()->is('settings/users*') || request()->is('settings/roles*') || request()->is('settings/permission*') || request()->is('settings/role-ui*'))
                         <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
                     @endif
 
                     <div class="flex items-center gap-4">
-                        <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
-                            ⚙️
+                        <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 {{ request()->is('settings/users*') || request()->is('settings/roles*') || request()->is('settings/permission*') || request()->is('settings/role-ui*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
+                            👥
                         </span>
-                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings*') ? 'font-extrabold' : 'font-semibold' }}">
-                            {{ __('messages.settings') ?? 'Settings' }}
+
+                         
+                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings/users*') || request()->is('settings/roles*') || request()->is('settings/permission*') || request()->is('settings/role-ui*') ? 'font-extrabold' : 'font-semibold' }}">
+                            {{ __('messages.users_roles') ?? 'Users & Roles' }}
                         </span>
                     </div>
                     
@@ -89,49 +104,44 @@
                     </div>
                 </button>
 
-                {{-- Expanded Sub-menu (ពេលមិនទាន់ Collapse) --}}
                 <div x-show="open && !sidebarCollapsed" x-cloak x-collapse class="relative bg-dropdown">
                     <div class="absolute left-[34px] top-0 bottom-0 w-px bg-border-color"></div>
 
                     <div class="py-2 space-y-0.5">
-                        @can('view_shop_info')
-                            <div class="pl-14 pr-6 relative">
+                        @php $canUsers = auth()->user()->can('view_users'); @endphp
+                        @if($canUsers || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canUsers ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
+                                <x-sidebar-sub-link href="/settings/users" :title="__('messages.users')" />
                             </div>
-                        @endcan
+                        @endif
+
+                        @php $canRoles = auth()->user()->can('view_roles'); @endphp
+                        @if($canRoles || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canRoles ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles')" />
+                            </div>
+                        @endif
                         
-                        @can('view_permissions')
-                            <div class="pl-14 pr-6 relative">
+                        @php $canPerm = auth()->user()->can('view_permissions'); @endphp
+                        @if($canPerm || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canPerm ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
+                                <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission')" />
                             </div>
-                        @endcan
+                        @endif
 
-                        @can('view_roles')
-                            <div class="pl-14 pr-6 relative">
+                        @php $canRoleUi = auth()->user()->can('manage_role_ui'); @endphp
+                        @if($canRoleUi || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canRoleUi ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
+                                <x-sidebar-sub-link href="/settings/role-ui" :title="__('messages.role_ui_mode') ?? 'Role UI Mode'" />
                             </div>
-                        @endcan
-
-                        @can('view_theme')
-                            <div class="pl-14 pr-6 relative">
-                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
-                            </div>
-                        @endcan
-
-                        @can('view_users')
-                            <div class="pl-14 pr-6 relative">
-                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'User Management'" />
-                            </div>
-                        @endcan
+                        @endif
                     </div>
                 </div>
 
-                {{-- Hover Sub-menu (ពេល Sidebar Collapsed បង្រួមតូច) --}}
                 <div x-show="hovered && sidebarCollapsed" 
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 translate-x-2"
@@ -151,36 +161,141 @@
                         
                         <div class="px-5 py-3.5 border-b border-border-color bg-primary/5 mt-1">
                             <span class="text-xs font-bold uppercase tracking-widest text-primary">
-                                {{ __('messages.settings') ?? 'Settings' }}
+                                {{ __('messages.users_roles') ?? 'Users & Roles' }}
                             </span>
                         </div>
                         
                         <div class="p-2 space-y-1 bg-dropdown">
-                            @can('view_shop_info')
-                                <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info') ?? 'Shop Info'" />
-                            @endcan
-                            
-                            @can('view_permissions')
-                                <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission') ?? 'Permission'" />
-                            @endcan
-                            
-                            @can('view_users')
-                                <x-sidebar-sub-link href="/settings/users" :title="__('messages.users') ?? 'Users'" />
-                            @endcan
-                            
-                            @can('view_roles')
-                                <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles') ?? 'Roles'" />
-                            @endcan
-                            
-                            @can('view_theme')
-                                <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme') ?? 'Theme Styling'" />
-                            @endcan
+                            @if($canUsers || $uiMode === 'disable')
+                                <div class="{{ !$canUsers ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/users" :title="__('messages.users')" />
+                                </div>
+                            @endif
+                            @if($canRoles || $uiMode === 'disable')
+                                <div class="{{ !$canRoles ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles')" />
+                                </div>
+                            @endif
+                            @if($canPerm || $uiMode === 'disable')
+                                <div class="{{ !$canPerm ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission')" />
+                                </div>
+                            @endif
+                            @if($canRoleUi || $uiMode === 'disable')
+                                <div class="{{ !$canRoleUi ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/role-ui" :title="__('messages.role_ui_mode') ?? 'Role UI Mode'" />
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
-
             </div>
-        @endcanany
+        @endif
+
+        {{-- ============================== --}}
+        {{-- GROUP 2: SYSTEM SETTINGS       --}}
+        {{-- ============================== --}}
+        @if($showSystemSettingGroup)
+            <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-6" x-transition.opacity>
+                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">{{ __('messages.system') ?? 'System' }}</p>
+            </div>
+
+            <div x-data="{ 
+                    open: {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'true' : 'false' }}, 
+                    hovered: false,
+                    timeout: null 
+                 }" 
+                 @mouseenter="hovered = true; clearTimeout(timeout)" 
+                 @mouseleave="timeout = setTimeout(() => hovered = false, 200)"
+                 class="relative">
+                
+                <button @click="sidebarCollapsed ? null : open = !open" 
+                    class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200
+                           {{ request()->is('settings/shop*') || request()->is('settings/theme*')
+                               ? 'text-primary bg-primary/10' 
+                               : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
+                    
+                    @if(request()->is('settings/shop*') || request()->is('settings/theme*'))
+                        <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
+                    @endif
+
+                    <div class="flex items-center gap-4">
+                        <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
+                            ⚙️
+                        </span>
+                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'font-extrabold' : 'font-semibold' }}">
+                            {{ __('messages.settings') }}
+                        </span>
+                    </div>
+                    
+                    <div x-show="!sidebarCollapsed" class="flex items-center justify-center transition-colors">
+                        <svg :class="open ? 'rotate-180 text-primary' : 'text-text-muted group-hover:text-text-main'" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
+
+                <div x-show="open && !sidebarCollapsed" x-cloak x-collapse class="relative bg-dropdown">
+                    <div class="absolute left-[34px] top-0 bottom-0 w-px bg-border-color"></div>
+
+                    <div class="py-2 space-y-0.5">
+                        @php $canShop = auth()->user()->can('view_shop_info'); @endphp
+                        @if($canShop || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canShop ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info')" />
+                            </div>
+                        @endif
+
+                        @php $canTheme = auth()->user()->can('view_theme'); @endphp
+                        @if($canTheme || $uiMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canTheme ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div x-show="hovered && sidebarCollapsed" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-x-2"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 translate-x-2"
+                     @mouseenter="hovered = true; clearTimeout(timeout)"
+                     @mouseleave="hovered = false"
+                     class="fixed left-[80px] top-auto ml-1 w-60 z-50 pointer-events-auto"
+                     x-cloak>
+                     
+                    <div class="absolute -left-4 top-0 w-4 h-full"></div>
+
+                    <div class="bg-dropdown border border-border-color shadow-xl rounded-xl overflow-hidden relative">
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+                        
+                        <div class="px-5 py-3.5 border-b border-border-color bg-primary/5 mt-1">
+                            <span class="text-xs font-bold uppercase tracking-widest text-primary">
+                                {{ __('messages.settings') }}
+                            </span>
+                        </div>
+                        
+                        <div class="p-2 space-y-1 bg-dropdown">
+                            @if($canShop || $uiMode === 'disable')
+                                <div class="{{ !$canShop ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info')" />
+                                </div>
+                            @endif
+                            @if($canTheme || $uiMode === 'disable')
+                                <div class="{{ !$canTheme ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
     </nav>
 </aside>

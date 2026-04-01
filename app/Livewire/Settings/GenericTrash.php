@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
+use Illuminate\Support\Facades\Gate;
 
 class GenericTrash extends Component
 {
@@ -39,12 +40,51 @@ class GenericTrash extends Component
         $this->type = $type;
     }
 
+    // ==========================================
+    // Core Logic: Query សម្រាប់ត្រួតពិនិត្យ Level
+    // ==========================================
+    private function getBaseQuery()
+    {
+        $modelClass = $this->getModelMap()[$this->type];
+        
+        // យក Level ខ្ពស់បំផុតរបស់ User បច្ចុប្បន្ន (បើគ្មានកំណត់ជា 0)
+        $myLevel = auth()->user()->roles->max('level') ?? 0;
+
+        $query = $modelClass::onlyTrashed()
+            ->when($this->searchTerm, function ($q) {
+                // ស្វែងរកតាមឈ្មោះ ឬអុីមែល (បើជា User)
+                $q->where('name', 'like', '%' . $this->searchTerm . '%')
+                  ->when($this->type === 'user', function($q2) {
+                      $q2->orWhere('email', 'like', '%' . $this->searchTerm . '%');
+                  });
+            });
+
+        // ត្រួតពិនិត្យ Level សម្រាប់ User និង Role
+        if ($this->type === 'user') {
+            $query->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
+                // មិនឱ្យឃើញ User ដែលមាន Role Level ខ្ពស់ជាងខ្លួន
+                $roleQuery->where('level', '>', $myLevel);
+            });
+        } elseif ($this->type === 'role') {
+            // អនុញ្ញាតឱ្យឃើញតែ Role ដែលមាន Level តូចជាង ឬស្មើខ្លួន
+            $query->where('level', '<=', $myLevel);
+        }
+        // បើជា Permission គឺមិនបាច់ឆែក Level ទេ ព្រោះ Permission អត់មាន Level
+
+        return $query;
+    }
+
     public function updatedSelectAll($value)
     {
         if ($value) {
-            $modelClass = $this->getModelMap()[$this->type];
-            $this->selectedItems = $modelClass::onlyTrashed()
-                ->where('name', 'like', '%' . $this->searchTerm . '%')
+            // ប្រើ getBaseQuery ដើម្បីកុំឱ្យ Select ចំ Item ដែលគ្មានសិទ្ធិមើល
+            $query = $this->getBaseQuery();
+            
+            $perPageValue = (strtolower($this->perPage) === 'all') 
+                ? ($query->count() > 0 ? $query->count() : 1) 
+                : (int) $this->perPage;
+
+            $this->selectedItems = $query->paginate($perPageValue)
                 ->pluck('id')
                 ->map(fn($id) => (string)$id)
                 ->toArray();
@@ -53,13 +93,22 @@ class GenericTrash extends Component
         }
     }
 
+    public function updatingPage()
+    {
+        $this->selectAll = false;
+        $this->selectedItems = [];
+    }
+
     public function restore($id = null)
     {
+        abort_if(Gate::denies("restore-{$this->type}"), 403);
+
         $ids = $id ? [$id] : $this->selectedItems;
         if (empty($ids)) return;
 
-        $modelClass = $this->getModelMap()[$this->type];
-        $modelClass::onlyTrashed()->whereIn('id', $ids)->restore();
+        // ប្រើ getBaseQuery ជំនួស $modelClass::onlyTrashed() ដើម្បីធានាថា
+        // មិនអាច Restore Item ដែលមាន Level ខ្ពស់ជាងបាន ទោះបីជាបន្លំបញ្ជូន ID មកក៏ដោយ
+        $this->getBaseQuery()->whereIn('id', $ids)->restore();
 
         $this->reset(['selectedItems', 'selectAll']);
         $this->dispatch('notify', type: 'success', message: __('messages.restored_success') ?? 'Items restored successfully!');
@@ -67,17 +116,21 @@ class GenericTrash extends Component
 
     public function confirmForceDelete($id = null)
     {
+        abort_if(Gate::denies("force-delete-{$this->type}"), 403);
+
         $this->deleteId = $id;
         $this->isDeleteModalOpen = true;
     }
 
     public function executeDelete()
     {
+        abort_if(Gate::denies("force-delete-{$this->type}"), 403);
+
         $ids = $this->deleteId ? [$this->deleteId] : $this->selectedItems;
         if (empty($ids)) return;
 
-        $modelClass = $this->getModelMap()[$this->type];
-        $modelClass::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+        // ប្រើ getBaseQuery ដើម្បីការពារការ Force Delete លើ Item ដែលមាន Level ខ្ពស់ជាង
+        $this->getBaseQuery()->whereIn('id', $ids)->forceDelete();
         
         $this->isDeleteModalOpen = false;
         $this->reset(['selectedItems', 'selectAll', 'deleteId']);
@@ -86,23 +139,20 @@ class GenericTrash extends Component
 
     public function render()
     {
-        $modelClass = $this->getModelMap()[$this->type];
-        
         $backRouteMap = [
             'user' => 'settings.users',
             'role' => 'settings.roles',
             'permission' => 'settings.permissions',
         ];
 
-        // ជួសជុលបញ្ហា String "ALL"
+        // ហៅ BaseQuery មកប្រើ
+        $query = $this->getBaseQuery()->latest('deleted_at');
+
         $perPageValue = (strtolower($this->perPage) === 'all') 
-            ? ($modelClass::onlyTrashed()->count() > 0 ? $modelClass::onlyTrashed()->count() : 1) 
+            ? ($query->count() > 0 ? $query->count() : 1) 
             : (int) $this->perPage;
 
-        $items = $modelClass::onlyTrashed()
-            ->where('name', 'like', '%' . $this->searchTerm . '%')
-            ->latest('deleted_at')
-            ->paginate($perPageValue); // ប្រើអថេរដែលបាន convert រួច
+        $items = $query->paginate($perPageValue); 
 
         return view('livewire.settings.generic-trash', [
             'items' => $items,

@@ -8,6 +8,7 @@ use Spatie\Activitylog\Models\Activity;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
+use Illuminate\Support\Facades\Gate;
 
 class GenericLog extends Component
 {
@@ -17,15 +18,12 @@ class GenericLog extends Component
     public $searchTerm = '';
     public $perPage = 10;
     
-    // Properties សម្រាប់ Bulk Actions
     public $selectedLogs = [];
     public $selectAll = false;
     
-    // Properties សម្រាប់ View Details Modal
     public $isModalOpen = false;
     public $selectedActivity = null;
 
-    // Properties សម្រាប់ Custom Delete Modal
     public $showDeleteModal = false;
     public $logToDeleteId = null;
     public $isBulkDelete = false;
@@ -47,24 +45,74 @@ class GenericLog extends Component
         $this->type = $type;
     }
 
-    // --- ចាប់ផ្តើមមុខងារគ្រប់គ្រង Delete Modal ---
-    
-    // បើក Modal ពេលចុចលុបមួយៗ
+    // ==========================================
+    // Core Logic: Query សម្រាប់ត្រួតពិនិត្យ Level
+    // ==========================================
+    private function getBaseQuery()
+    {
+        $modelClass = $this->getModelMap()[$this->type];
+        
+        // យក Level ខ្ពស់បំផុតរបស់ User បច្ចុប្បន្ន (បើគ្មានកំណត់ជា 0)
+        $myLevel = auth()->user()->roles->max('level') ?? 0;
+
+        $query = Activity::where('subject_type', $modelClass)
+            ->when($this->searchTerm, function ($q) {
+                $q->where('description', 'like', '%' . $this->searchTerm . '%')
+                  ->orWhereHasMorph('causer', [User::class], function ($q2) {
+                      $q2->where('name', 'like', '%' . $this->searchTerm . '%');
+                  });
+            })
+            // 1. ត្រួតពិនិត្យលើអ្នកធ្វើសកម្មភាព (Causer)
+            ->where(function ($q) use ($myLevel) {
+                $q->whereNull('causer_id') // អនុញ្ញាតឲ្យឃើញ Log របស់ System
+                  ->orWhereHasMorph('causer', [User::class], function ($userQuery) use ($myLevel) {
+                      // ទាញយកតែ Causer ណាដែល "គ្មាន Role Level ណាដែលធំជាង Level របស់ខ្ញុំ"
+                      $userQuery->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
+                          $roleQuery->where('level', '>', $myLevel);
+                      });
+                  });
+            });
+
+        // 2. ត្រួតពិនិត្យលើប្រធានបទដែលរងអំពើ (Subject: User ឬ Role)
+        if ($this->type === 'user') {
+            $query->where(function($q) use ($myLevel) {
+                 $q->whereNull('subject_id')
+                   ->orWhereHasMorph('subject', [User::class], function ($userQuery) use ($myLevel) {
+                     $userQuery->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
+                         $roleQuery->where('level', '>', $myLevel);
+                     });
+                 });
+            });
+        } elseif ($this->type === 'role') {
+            $query->where(function($q) use ($myLevel) {
+                 $q->whereNull('subject_id')
+                   ->orWhereHasMorph('subject', [Role::class], function ($roleQuery) use ($myLevel) {
+                     // ទាញយកតែ Role ណាដែលមាន Level ស្មើ ឬតូចជាង Level របស់ខ្ញុំ
+                     $roleQuery->where('level', '<=', $myLevel);
+                 });
+            });
+        }
+
+        return $query;
+    }
+
     public function confirmDelete($id)
     {
+        abort_if(Gate::denies("delete-{$this->type}-logs"), 403);
+
         $this->logToDeleteId = $id;
         $this->isBulkDelete = false;
         $this->showDeleteModal = true;
     }
 
-    // បើក Modal ពេលចុច Bulk Delete
     public function confirmBulkDelete()
     {
+        abort_if(Gate::denies("delete-{$this->type}-logs"), 403);
+
         $this->isBulkDelete = true;
         $this->showDeleteModal = true;
     }
 
-    // បិទ Delete Modal
     public function closeDeleteModal()
     {
         $this->showDeleteModal = false;
@@ -72,74 +120,61 @@ class GenericLog extends Component
         $this->isBulkDelete = false;
     }
 
-    // ដំណើរការលុបពិតប្រាកដពេលចុច Confirm ក្នុង Modal
     public function executeDelete()
     {
+        abort_if(Gate::denies("delete-{$this->type}-logs"), 403);
+
         if ($this->isBulkDelete) {
             $this->bulkDelete();
+            $message = __('messages.deleted_successfully') ?? 'Logs deleted successfully!';
         } else {
             $this->deleteLog($this->logToDeleteId);
+            $message = __('messages.deleted_successfully') ?? 'Log deleted successfully!';
         }
         
         $this->closeDeleteModal();
+        $this->dispatch('notify', type: 'success', message: $message);
     }
 
-    // --- ចាប់ផ្តើមមុខងារ Delete & Bulk Delete (ដំណើរការទិន្នន័យ) ---
-    
     public function deleteLog($id)
     {
         Activity::find($id)?->delete();
-        $this->selectedLogs = array_diff($this->selectedLogs, [$id]); // ដកចេញពី array បើវាត្រូវបាន select
+        $this->selectedLogs = array_diff($this->selectedLogs, [$id]);
     }
 
     public function bulkDelete()
     {
         if (count($this->selectedLogs) > 0) {
             Activity::whereIn('id', $this->selectedLogs)->delete();
-            $this->selectedLogs = []; // Reset វិញ
+            $this->selectedLogs = [];
             $this->selectAll = false;
         }
     }
 
-    // មុខងារ Select All ក្នុង Page នីមួយៗ
     public function updatedSelectAll($value)
     {
         if ($value) {
-            $modelClass = $this->getModelMap()[$this->type];
-            
-            // កសាង Query ដូចគ្នានឹងក្នុង render()
-            $query = Activity::where('subject_type', $modelClass)
-                ->when($this->searchTerm, function ($q) {
-                    $q->where('description', 'like', '%' . $this->searchTerm . '%')
-                      ->orWhereHasMorph('causer', [User::class], function ($q2) {
-                          $q2->where('name', 'like', '%' . $this->searchTerm . '%');
-                      });
-                })
-                ->latest();
+            // ហៅកូដ Query ដែលមានត្រួតពិនិត្យ Level រួចជាស្រេច
+            $query = $this->getBaseQuery()->latest();
 
-            // កំណត់ចំនួន Per Page
             $perPageValue = (strtolower($this->perPage) === 'all') 
                 ? ($query->count() > 0 ? $query->count() : 1) 
                 : (int) $this->perPage;
 
-            // ប្រើ paginate() ជំនួសការទាញយកទាំងអស់ ដើម្បីយកតែ ID លើ Page បច្ចុប្បន្ន
             $this->selectedLogs = $query->paginate($perPageValue)
                                         ->pluck('id')
-                                        ->map(fn($id) => (string) $id) // បំប្លែងទៅជា String ដើម្បីឲ្យត្រូវជាមួយ Checkbox value
+                                        ->map(fn($id) => (string) $id)
                                         ->toArray();
         } else {
             $this->selectedLogs = [];
         }
     }
 
-    // បន្ថែមសម្រាប់ UX
     public function updatingPage()
     {
         $this->selectAll = false;
         $this->selectedLogs = [];
     }
-
-    // --- មុខងារ View Details ---
 
     public function viewDetails($id)
     {
@@ -147,12 +182,10 @@ class GenericLog extends Component
         $this->isModalOpen = true;
     }
 
-    // --- កំណត់ Route សម្រាប់ប៊ូតុង Back ទៅតាមប្រភេទ (Type) ---
     public function getBackRoute()
     {
-        // ទីនេះអ្នកត្រូវប្រាកដថាឈ្មោះ Route ត្រូវនឹងឈ្មោះក្នុង web.php របស់អ្នក
         $routes = [
-            'user' => 'settings.users', // ឧទាហរណ៍៖ បើ route ឈ្មោះផ្សេង សូមដូរទីនេះ
+            'user' => 'settings.users',
             'role' => 'settings.roles',
             'permission' => 'settings.permissions',
         ];
@@ -162,17 +195,8 @@ class GenericLog extends Component
 
     public function render()
     {
-        $modelClass = $this->getModelMap()[$this->type];
-
-        $query = Activity::with(['causer', 'subject'])
-            ->where('subject_type', $modelClass)
-            ->when($this->searchTerm, function ($q) {
-                $q->where('description', 'like', '%' . $this->searchTerm . '%')
-                  ->orWhereHasMorph('causer', [User::class], function ($q2) {
-                      $q2->where('name', 'like', '%' . $this->searchTerm . '%');
-                  });
-            })
-            ->latest();
+        // ហៅកូដ Query ដែលមានត្រួតពិនិត្យ Level រួចជាស្រេច ហើយភ្ជាប់ Relationship
+        $query = $this->getBaseQuery()->with(['causer', 'subject'])->latest();
 
         $perPageValue = (strtolower($this->perPage) === 'all') 
             ? ($query->count() > 0 ? $query->count() : 1) 
@@ -184,7 +208,6 @@ class GenericLog extends Component
 
        return view('livewire.settings.generic-log', [
             'activities' => $activities,
-            // ✅ ប្រើមុខងារ __() ដើម្បីទាញយកភាសា
             'title' => __($titleKey), 
             'backRoute' => $this->getBackRoute(),
         ])->layout('layouts.app');

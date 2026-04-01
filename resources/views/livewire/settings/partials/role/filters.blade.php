@@ -9,11 +9,25 @@
     </div>
 
     @if(count($selectedRoles) > 0)
-        <div class="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 w-full lg:w-auto">
+        {{-- លុប @canany ចេញពីទីនេះ ដើម្បីឱ្យ <x-auth-button> ជាអ្នកគ្រប់គ្រងការ Disable ដោយខ្លួនឯង --}}
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 w-full lg:w-auto animate-pulse-once">
             <span class="text-xs font-black text-[var(--color-primary)] px-3">{{ count($selectedRoles) }} {{ __('messages.selected') }}</span>
             <div class="flex gap-2 w-full sm:w-auto">
-                <button wire:click="bulkEdit" class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_edit') }}</button>
-                <button wire:click="confirmDelete()" class="flex-1 sm:flex-none px-3 py-2 bg-red-500 text-white text-xs font-black rounded-md">{{ __('messages.bulk_delete') }}</button>
+                
+                {{-- ប៊ូតុង Bulk Edit --}}
+                <x-auth-button permission="edit-role" 
+                    wire:click="bulkEdit" 
+                    class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 hover:brightness-110 text-white text-xs font-black rounded-md transition-all">
+                    {{ __('messages.bulk_edit') ?? 'Bulk Edit' }}
+                </x-auth-button>
+
+                {{-- ប៊ូតុង Bulk Delete --}}
+                <x-auth-button permission="delete-role" 
+                    wire:click="confirmDelete()" 
+                    class="flex-1 sm:flex-none px-3 py-2 bg-red-500 hover:brightness-110 text-white text-xs font-black rounded-md transition-all">
+                    {{ __('messages.bulk_delete') ?? 'Bulk Delete' }}
+                </x-auth-button>
+
             </div>
         </div>
     @endif

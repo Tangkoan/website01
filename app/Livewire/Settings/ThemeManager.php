@@ -9,19 +9,33 @@ class ThemeManager extends Component
 {
     public $themeId;
     
-    // បញ្ចូលពណ៌ស្តង់ដារតាម JSON របស់អ្នក
+    // បញ្ចូលពណ៌ស្តង់ដារ (អាចជា Hex ឬ RGBA)
     public $lightColors = [
-        'header' => '#ffffff', 'card_bg' => '#ffffff', 'primary' => '#ff0000', 
-        'sidebar' => '#ffffff', 'dropdown' => '#ffffff', 'text_main' => '#1f2937', 
-        'background' => '#f3f4f6', 'text_muted' => '#6b7280', 'border_color' => '#e5e7eb', 
-        'primary_text' => '#ffffff'
+        'header' => 'rgba(255, 255, 255, 0.9)', 
+        'card_bg' => '#ffffff', 
+        'primary' => '#ff0000', 
+        'sidebar' => 'rgba(255, 255, 255, 0.9)', 
+        'dropdown' => 'rgba(255, 255, 255, 0.95)', 
+        'text_main' => '#1f2937', 
+        'background' => '#f3f4f6', 
+        'text_muted' => '#6b7280', 
+        'border_color' => 'rgba(229, 231, 235, 1)', 
+        'primary_text' => '#ffffff',
+        'blur' => '8px'
     ];
 
     public $darkColors = [
-        'header' => '#1e293b', 'card_bg' => '#1e293b', 'primary' => '#3b82f6', 
-        'sidebar' => '#1e293b', 'dropdown' => '#1e293b', 'text_main' => '#f8fafc', 
-        'background' => '#0f172a', 'text_muted' => '#94a3b8', 'border_color' => '#334155', 
-        'primary_text' => '#ffffff'
+        'header' => 'rgba(30, 41, 59, 0.85)', 
+        'card_bg' => '#1e293b', 
+        'primary' => '#3b82f6', 
+        'sidebar' => 'rgba(30, 41, 59, 0.85)', 
+        'dropdown' => 'rgba(30, 41, 59, 0.95)', 
+        'text_main' => '#f8fafc', 
+        'background' => '#0f172a', 
+        'text_muted' => '#94a3b8', 
+        'border_color' => 'rgba(51, 65, 85, 1)', 
+        'primary_text' => '#ffffff',
+        'blur' => '12px'
     ];
 
     public function mount()
@@ -46,23 +60,23 @@ class ThemeManager extends Component
 
     public function saveTheme()
     {
-
         try{
             $theme = Theme::find($this->themeId);
                     
-                    if ($theme) {
-                        $theme->update([
-                            'colors' => [
-                                'light' => $this->lightColors,
-                                'dark' => $this->darkColors,
-                            ]
-                        ]);
+            if ($theme) {
+                $theme->update([
+                    'colors' => [
+                        'light' => $this->lightColors,
+                        'dark' => $this->darkColors,
+                    ]
+                ]);
 
-                        // បាញ់ Toast ពេលជោគជ័យ (Success)
-                        $this->dispatch('notify', 
-                            type: 'success', 
-                            message: __('messages.saved_successfully') ?? 'Saved Successfully!'
-                        );
+                \Illuminate\Support\Facades\Cache::forget('global_theme_colors');
+
+                $this->dispatch('notify', 
+                    type: 'success', 
+                    message: __('messages.saved_successfully') ?? 'Saved Successfully!'
+                );
             }
         }catch (\Exception $e){
             $this->dispatch('notify', 
@@ -70,7 +84,6 @@ class ThemeManager extends Component
                 message: __('messages.save_error') ?? 'Something went wrong!'
             );
         }
-        
     }
 
     public function render()

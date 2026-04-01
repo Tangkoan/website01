@@ -21,6 +21,8 @@ use App\Livewire\Settings\PermissionActivityLog;
 use App\Livewire\Settings\GenericTrash;
 use App\Livewire\Settings\GenericLog;
 
+use App\Livewire\Settings\RoleSetting; // Import Component របស់អ្នកនៅទីនេះ
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -49,10 +51,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('dashboard')
         ->can('view_dashboard');
 
+    
+
+
     // ==========================================
     // Settings Group
     // ==========================================
     Route::prefix('settings')->group(function () {
+
+       Route::get('/role-ui', RoleSetting::class)->name('settings.role-ui')->can('manage_role_ui');
         
         // --- Theme ---
         Route::get('/theme', ThemeManager::class)
@@ -95,8 +102,8 @@ Route::middleware(['auth'])->group(function () {
         ->can('view_logs');
         
     Route::get('/trash/{type}', GenericTrash::class)
-        ->name('settings.trash')
-        ->can('view_trash');
+        ->name('settings.trash');
+        // ->can('view_trash');
 });
 
 

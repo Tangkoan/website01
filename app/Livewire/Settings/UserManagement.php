@@ -8,6 +8,8 @@ use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 use App\Models\User;
 
+use Illuminate\Support\Facades\Gate;
+
 class UserManagement extends Component
 {
     use WithPagination;
@@ -184,8 +186,32 @@ class UserManagement extends Component
         $this->isModalOpen = true;
     }
 
-    public function toggleStatus($id) {
+    public function toggleStatus($id) 
+    {
+        // ១. ឆែកមើលថាតើអ្នកប្រើប្រាស់មានសិទ្ធិ update-user-status ដែរឬទេ
+        abort_if(Gate::denies('update-user-status'), 403);
+
+        // ២. ទាញយកទិន្នន័យ User ដែលត្រូវកែប្រែ Status
+        $targetUser = User::findOrFail($id);
+        
+        // ៣. ទាញយក Level ខ្ពស់បំផុតរបស់ User ដែលត្រូវកែ (Target User) និង User បច្ចុប្បន្ន (My User)
+        $targetMaxLevel = $targetUser->roles->max('level') ?? 0;
+        
+        // សន្មតថាអ្នកមានអថេរ $this->myMaxLevel ឬអាចហៅផ្ទាល់តាមរយៈ auth()
+        $myMaxLevel = auth()->user()->roles->max('level') ?? 0;
+        $isSuperAdmin = auth()->user()->hasRole('Super Admin');
+        
+        // ៤. លក្ខខណ្ឌការពារ (Security Checks)
+        // - មិនអាចបិទ/បើក Status ខ្លួនឯងបានទេ (ការពារកុំឱ្យច្រឡំបិទខ្លួនឯងហើយចូលវិញអត់បាន)
+        // - បើមិនមែនជា Super Admin ទេ មិនអាចបិទ/បើក Status របស់ User ដែលមាន Level ធំជាង ឬស្មើខ្លួនឯងបានទេ
+        if ($targetUser->id === auth()->id() || (!$isSuperAdmin && $targetMaxLevel >= $myMaxLevel)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // ៥. បើឆ្លងកាត់លក្ខខណ្ឌខាងលើអស់ហើយ ទើបអនុញ្ញាតឱ្យប្តូរ Status
         $newStatus = $this->service()->toggleStatus($id);
+        
+        // ៦. បង្ហាញសារជូនដំណឹង
         $this->dispatch('notify', type: 'success', message: $newStatus ? __('messages.user_activated') : __('messages.user_deactivated'));
     }
 

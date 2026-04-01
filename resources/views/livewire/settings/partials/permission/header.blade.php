@@ -25,37 +25,29 @@
             </div>
         </div>
 
-        {{-- ប៊ូតុង Activity Log --}}
-        @can('view-permission-logs')
-            <a href="{{ route('settings.logs', 'permission') }}" wire:navigate class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-blue-500 hover:bg-blue-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Activity Logs / កំណត់ត្រាសកម្មភាព">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="hidden md:inline-block text-sm font-black">Logs</span>
-            </a>
-        @endcan
+        {{-- ប៊ូតុង Activity Log (ប្រើ x-auth-link) --}}
+        <x-auth-link permission="view-permission-logs" href="{{ route('settings.logs', 'permission') }}" wire:navigate class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-blue-500 hover:bg-blue-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Activity Logs / កំណត់ត្រាសកម្មភាព">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="hidden md:inline-block text-sm font-black">Logs</span>
+        </x-auth-link>
 
         {{-- ប៊ូតុង Reload --}}
         <button wire:click="reloadData" class="p-2 md:p-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-[var(--color-text-main)] hover:brightness-95 transition-all">
             <svg wire:loading.class="animate-spin text-[var(--color-primary)]" wire:target="reloadData" class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
 
-        {{-- ប៊ូតុង Trash --}}
-        @can('delete-permission')
-            <a href="{{ route('settings.trash', 'permission') }}" wire:navigate class="px-3 py-2 md:px-4 md:py-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Trash / ធុងសំរាម">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                <span class="hidden md:inline-block text-sm font-black">{{ __('messages.permissions_trash') ?? 'ធុងសំរាម' }}</span>
-            </a>
-        @endcan
+        {{-- ប៊ូតុង Trash (ប្រើ x-auth-link) --}}
+        <x-auth-link permission="delete-permission" href="{{ route('settings.trash', 'permission') }}" wire:navigate class="px-3 py-2 md:px-4 md:py-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 flex items-center gap-2" title="Trash / ធុងសំរាម">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <span class="hidden md:inline-block text-sm font-black">{{ __('messages.permissions_trash') ?? 'ធុងសំរាម' }}</span>
+        </x-auth-link>
         
-        {{-- ប៊ូតុង Add New --}}
-        @can('create-permission')
-            <button wire:click="openModal" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] font-black rounded-lg shadow-lg hover:brightness-110 active:scale-95 transition-all text-sm">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                
-                {{-- បន្ថែម span ជាមួយ class hidden md:block នៅទីនេះ --}}
-                <span class="hidden md:block">
-                    {{ __('messages.add_new') ?? 'Add New' }}
-                </span>
-            </button>
-        @endcan
+        {{-- ប៊ូតុង Add New (ប្រើ x-auth-button) --}}
+        <x-auth-button permission="create-permission" wire:click="openModal" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] font-black rounded-lg shadow-lg hover:brightness-110 active:scale-95 transition-all text-sm">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span class="hidden md:block">
+                {{ __('messages.add_new') ?? 'Add New' }}
+            </span>
+        </x-auth-button>
     </div>
 </div>

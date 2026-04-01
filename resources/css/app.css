@@ -10,51 +10,75 @@
 
 /* ៣. (ថ្មី) ប្រកាសតម្លៃពណ៌ពិតប្រាកដទាញចេញពី JSON របស់អ្នក */
 @layer base {
-    /* ពណ៌សម្រាប់ Light Mode (ទាញពី key "light") */
     :root {
-        --color-header: #ffffff;
+        /* តម្លៃដើម (Fallbacks) ករណី DB អត់ទាន់ដើរ */
+        --color-header: rgba(255, 255, 255, 0.9);
         --color-card-bg: #ffffff;
         --color-primary: #9900ff;
-        --color-sidebar: #ffffff;
-        --color-dropdown: #ffffff;
+        --color-sidebar: rgba(255, 255, 255, 0.9);
+        --color-dropdown: rgba(255, 255, 255, 0.95);
         --color-text-main: #1f2937;
         --color-background: #f3f4f6;
         --color-text-muted: #434f65;
-        --color-border-color: #f7f7f7;
+        --color-border-color: rgba(247, 247, 247, 1);
         --color-primary-text: #ffffff;
+        --theme-blur: 8px; /* Default Blur */
     }
 
-    /* ពណ៌សម្រាប់ Dark Mode (ទាញពី key "dark") */
     .dark {
-        --color-header: #1e293b;
+        --color-header: rgba(30, 41, 59, 0.85);
         --color-card-bg: #1e293b;
         --color-primary: #198573;
-        --color-sidebar: #1e293b;
-        --color-dropdown: #1e293b;
+        --color-sidebar: rgba(30, 41, 59, 0.85);
+        --color-dropdown: rgba(30, 41, 59, 0.95);
         --color-text-main: #f8fafc;
         --color-background: #0f172a;
         --color-text-muted: #94a3b8;
-        --color-border-color: #334155;
+        --color-border-color: rgba(51, 65, 85, 1);
         --color-primary-text: #ffffff;
+        --theme-blur: 12px; /* Default Blur */
     }
 }
 
-/* ២. ប្រាប់ Tailwind ឱ្យស្គាល់អថេរទាំងនេះជា Utilities (ឧទាហរណ៍: bg-primary, text-text-main) */
+/* ២. ប្រាប់ Tailwind ឱ្យស្គាល់អថេរទាំងនេះជា Utilities */
 @theme {
     --color-primary: var(--color-primary);
     --color-primary-text: var(--color-primary-text);
     --color-background: var(--color-background);
     --color-card-bg: var(--color-card-bg);
+    
+    /* ប្រើប្រាស់ពណ៌ផ្ទាល់ មិនបាច់បំប្លែងទៅជា rgb(...) ទៀតទេ ព្រោះយើងអាចវាយ rgba ពី UI បានហើយ */
     --color-header: var(--color-header);
     --color-sidebar: var(--color-sidebar);
     --color-dropdown: var(--color-dropdown);
+    
     --color-text-main: var(--color-text-main);
     --color-text-muted: var(--color-text-muted);
     --color-border-color: var(--color-border-color);
 }
 
+/* ៤. បង្កើត Custom Class សម្រាប់ដាក់ Blur ទូទាំងប្រព័ន្ធ */
+@layer utilities {
+    .bg-header {
+        background-color: var(--color-header);
+        backdrop-filter: blur(var(--theme-blur));
+        -webkit-backdrop-filter: blur(var(--theme-blur));
+    }
+    
+    .bg-sidebar {
+        background-color: var(--color-sidebar);
+        backdrop-filter: blur(var(--theme-blur));
+        -webkit-backdrop-filter: blur(var(--theme-blur));
+    }
+    
+    .bg-dropdown {
+        background-color: var(--color-dropdown);
+        backdrop-filter: blur(var(--theme-blur));
+        -webkit-backdrop-filter: blur(var(--theme-blur));
+    }
+}
 
-/* ១. បញ្ចូល Font ដែលបាន Download (Custom @font-face) */
+/* ៥. កំណត់ Theme របស់ Tailwind សម្រាប់ Font */
 @font-face {
     font-family: 'Inter';
     src: url('../fonts/Poppins-Regular.ttf') format('truetype'); 
@@ -71,10 +95,8 @@
     font-display: swap;
 }
 
-/* ៤. កំណត់ Theme របស់ Tailwind សម្រាប់ Font */
 @theme {
     --font-sans: 'Inter', 'Battambang', ui-sans-serif, system-ui, sans-serif;
-    
     --font-khmer: 'Battambang', sans-serif;
     --font-english: 'Inter', sans-serif;
 }
