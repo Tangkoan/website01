@@ -42,7 +42,12 @@ class GenericLog extends Component
     public function mount($type)
     {
         if (!array_key_exists($type, $this->getModelMap())) abort(404);
+        
         $this->type = $type;
+
+        // បន្ថែមជញ្ជាំងការពារការចូលមើល Route (Route Protection)
+        // ទាមទារសិទ្ធិ 'view-user-logs', 'view-role-logs' ឬ 'view-permission-logs'
+        abort_if(Gate::denies("view-{$this->type}-logs"), 403);
     }
 
     // ==========================================
@@ -59,18 +64,22 @@ class GenericLog extends Component
             ->when($this->searchTerm, function ($q) {
                 $q->where('description', 'like', '%' . $this->searchTerm . '%')
                   ->orWhereHasMorph('causer', [User::class], function ($q2) {
-                      $q2->where('name', 'like', '%' . $this->searchTerm . '%');
-                  });
+                      $q2->withTrashed()->where('name', 'like', '%' . $this->searchTerm . '%');
+                  })
+                  // បន្ថែមការស្វែងរកតាម Properties ព្រោះពេល User ត្រូវ Force Delete យើងនៅសល់តែ Properties ទេ
+                  ->orWhere('properties->attributes->name', 'like', '%' . $this->searchTerm . '%');
             })
             // 1. ត្រួតពិនិត្យលើអ្នកធ្វើសកម្មភាព (Causer)
             ->where(function ($q) use ($myLevel) {
                 $q->whereNull('causer_id') // អនុញ្ញាតឲ្យឃើញ Log របស់ System
                   ->orWhereHasMorph('causer', [User::class], function ($userQuery) use ($myLevel) {
                       // ទាញយកតែ Causer ណាដែល "គ្មាន Role Level ណាដែលធំជាង Level របស់ខ្ញុំ"
-                      $userQuery->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
+                      $userQuery->withTrashed()->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
                           $roleQuery->where('level', '>', $myLevel);
                       });
-                  });
+                  })
+                  // ✅ ចំណុចទី១៖ អនុញ្ញាតឱ្យបង្ហាញ Log របស់ Causer ដែលត្រូវ Force Delete បាត់ពី DB 
+                  ->orWhereDoesntHaveMorph('causer', [User::class]); 
             });
 
         // 2. ត្រួតពិនិត្យលើប្រធានបទដែលរងអំពើ (Subject: User ឬ Role)
@@ -78,18 +87,21 @@ class GenericLog extends Component
             $query->where(function($q) use ($myLevel) {
                  $q->whereNull('subject_id')
                    ->orWhereHasMorph('subject', [User::class], function ($userQuery) use ($myLevel) {
-                     $userQuery->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
-                         $roleQuery->where('level', '>', $myLevel);
-                     });
-                 });
+                       $userQuery->withTrashed()->whereDoesntHave('roles', function ($roleQuery) use ($myLevel) {
+                           $roleQuery->where('level', '>', $myLevel);
+                       });
+                 })
+                 // ✅ ចំណុចទី២៖ អនុញ្ញាតឱ្យបង្ហាញ Log របស់ User ដែលត្រូវ Force Delete បាត់ពី DB 
+                 ->orWhereDoesntHaveMorph('subject', [User::class]);
             });
         } elseif ($this->type === 'role') {
             $query->where(function($q) use ($myLevel) {
                  $q->whereNull('subject_id')
                    ->orWhereHasMorph('subject', [Role::class], function ($roleQuery) use ($myLevel) {
-                     // ទាញយកតែ Role ណាដែលមាន Level ស្មើ ឬតូចជាង Level របស់ខ្ញុំ
-                     $roleQuery->where('level', '<=', $myLevel);
-                 });
+                       $roleQuery->withTrashed()->where('level', '<=', $myLevel);
+                 })
+                 // ✅ ចំណុចទី៣៖ អនុញ្ញាតឱ្យបង្ហាញ Log របស់ Role ដែលត្រូវ Force Delete 
+                 ->orWhereDoesntHaveMorph('subject', [Role::class]);
             });
         }
 

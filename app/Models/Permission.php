@@ -11,6 +11,9 @@ class Permission extends SpatiePermission
 {
     use SoftDeletes, LogsActivity;
 
+    // 👇 បន្ថែមបន្ទាត់នេះ ដើម្បីប្រាប់ឲ្យវាចាប់ Action របស់ SoftDeletes ទាំងមូល
+    protected static $recordEvents = ['created', 'updated', 'deleted', 'restored', 'forceDeleted'];
+
     // កំណត់ការកត់ត្រា Audit Trail (Activity Log)
     public function getActivitylogOptions(): LogOptions
     {

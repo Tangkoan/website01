@@ -189,30 +189,35 @@ class UserManagement extends Component
     public function toggleStatus($id) 
     {
         // ១. ឆែកមើលថាតើអ្នកប្រើប្រាស់មានសិទ្ធិ update-user-status ដែរឬទេ
-        abort_if(Gate::denies('update-user-status'), 403);
+        if (Gate::denies('update-user-status')) {
+            $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'You do not have permission to update user status.');
+            return; // បញ្ឈប់កូដត្រឹមនេះ
+        }
 
         // ២. ទាញយកទិន្នន័យ User ដែលត្រូវកែប្រែ Status
         $targetUser = User::findOrFail($id);
         
-        // ៣. ទាញយក Level ខ្ពស់បំផុតរបស់ User ដែលត្រូវកែ (Target User) និង User បច្ចុប្បន្ន (My User)
+        // ៣. ទាញយក Level ខ្ពស់បំផុតរបស់ User ដែលត្រូវកែ និង User បច្ចុប្បន្ន
         $targetMaxLevel = $targetUser->roles->max('level') ?? 0;
-        
-        // សន្មតថាអ្នកមានអថេរ $this->myMaxLevel ឬអាចហៅផ្ទាល់តាមរយៈ auth()
         $myMaxLevel = auth()->user()->roles->max('level') ?? 0;
         $isSuperAdmin = auth()->user()->hasRole('Super Admin');
         
         // ៤. លក្ខខណ្ឌការពារ (Security Checks)
-        // - មិនអាចបិទ/បើក Status ខ្លួនឯងបានទេ (ការពារកុំឱ្យច្រឡំបិទខ្លួនឯងហើយចូលវិញអត់បាន)
-        // - បើមិនមែនជា Super Admin ទេ មិនអាចបិទ/បើក Status របស់ User ដែលមាន Level ធំជាង ឬស្មើខ្លួនឯងបានទេ
-        if ($targetUser->id === auth()->id() || (!$isSuperAdmin && $targetMaxLevel >= $myMaxLevel)) {
-            abort(403, 'Unauthorized action.');
+        if ($targetUser->id === auth()->id()) {
+            $this->dispatch('notify', type: 'warning', message: __('messages.cannot_change_self') ?? 'You cannot change your own status.');
+            return; // បញ្ឈប់កូដត្រឹមនេះ
+        }
+
+        if (!$isSuperAdmin && $targetMaxLevel >= $myMaxLevel) {
+            $this->dispatch('notify', type: 'error', message: __('messages.restricted_level') ?? 'You cannot modify a user with a higher or equal role level.');
+            return; // បញ្ឈប់កូដត្រឹមនេះ
         }
 
         // ៥. បើឆ្លងកាត់លក្ខខណ្ឌខាងលើអស់ហើយ ទើបអនុញ្ញាតឱ្យប្តូរ Status
         $newStatus = $this->service()->toggleStatus($id);
         
-        // ៦. បង្ហាញសារជូនដំណឹង
-        $this->dispatch('notify', type: 'success', message: $newStatus ? __('messages.user_activated') : __('messages.user_deactivated'));
+        // ៦. បង្ហាញសារជូនដំណឹងពេលជោគជ័យ
+        $this->dispatch('notify', type: 'success', message: $newStatus ? (__('messages.user_activated') ?? 'User Activated') : (__('messages.user_deactivated') ?? 'User Deactivated'));
     }
 
     public function saveUser() {

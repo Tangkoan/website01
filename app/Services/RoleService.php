@@ -64,9 +64,17 @@ class RoleService
     public function forceDeleteRoles($ids)
     {
         $ids = is_array($ids) ? $ids : [$ids];
-        return Role::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+        
+        // ទាញយកទិន្នន័យពី Trash មកសិន
+        $roles = Role::onlyTrashed()->whereIn('id', $ids)->get();
+        
+        // Loop លុបម្ដងមួយៗ ដើម្បីឱ្យ Model Event 'forceDeleted' ដំណើរការ
+        foreach ($roles as $role) {
+            $role->forceDelete();
+        }
+        
+        return true;
     }
-
     /**
      * ទាញយក Activity Logs របស់ Role
      */

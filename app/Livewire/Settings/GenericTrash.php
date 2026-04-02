@@ -37,7 +37,12 @@ class GenericTrash extends Component
     public function mount($type)
     {
         if (!array_key_exists($type, $this->getModelMap())) abort(404);
+        
         $this->type = $type;
+
+        // ការពារការចូលមើលទំព័រ (Route Protection)
+        // ឧទាហរណ៍: ទាមទារសិទ្ធិ 'view-user-trash', 'view-role-trash' ឬ 'view-permission-trash'
+        abort_if(Gate::denies("view-{$this->type}-trash"), 403);
     }
 
     // ==========================================
@@ -106,12 +111,32 @@ class GenericTrash extends Component
         $ids = $id ? [$id] : $this->selectedItems;
         if (empty($ids)) return;
 
-        // ប្រើ getBaseQuery ជំនួស $modelClass::onlyTrashed() ដើម្បីធានាថា
-        // មិនអាច Restore Item ដែលមាន Level ខ្ពស់ជាងបាន ទោះបីជាបន្លំបញ្ជូន ID មកក៏ដោយ
-        $this->getBaseQuery()->whereIn('id', $ids)->restore();
+        // កែមកប្រើទម្រង់នេះ ដើម្បីឲ្យ Model Event ដើរ និងចាប់ Log បាន
+        $items = $this->getBaseQuery()->whereIn('id', $ids)->get();
+        foreach ($items as $item) {
+            $item->restore();
+        }
 
         $this->reset(['selectedItems', 'selectAll']);
         $this->dispatch('notify', type: 'success', message: __('messages.restored_success') ?? 'Items restored successfully!');
+    }
+
+    public function executeDelete()
+    {
+        abort_if(Gate::denies("force-delete-{$this->type}"), 403);
+
+        $ids = $this->deleteId ? [$this->deleteId] : $this->selectedItems;
+        if (empty($ids)) return;
+
+        // កែមកប្រើទម្រង់នេះ ដើម្បីឲ្យ Model Event ដើរ និងចាប់ Log បាន
+        $items = $this->getBaseQuery()->whereIn('id', $ids)->get();
+        foreach ($items as $item) {
+            $item->forceDelete();
+        }
+        
+        $this->isDeleteModalOpen = false;
+        $this->reset(['selectedItems', 'selectAll', 'deleteId']);
+        $this->dispatch('notify', type: 'success', message: __('messages.deleted_permanently') ?? 'Deleted permanently!');
     }
 
     public function confirmForceDelete($id = null)
@@ -122,20 +147,7 @@ class GenericTrash extends Component
         $this->isDeleteModalOpen = true;
     }
 
-    public function executeDelete()
-    {
-        abort_if(Gate::denies("force-delete-{$this->type}"), 403);
-
-        $ids = $this->deleteId ? [$this->deleteId] : $this->selectedItems;
-        if (empty($ids)) return;
-
-        // ប្រើ getBaseQuery ដើម្បីការពារការ Force Delete លើ Item ដែលមាន Level ខ្ពស់ជាង
-        $this->getBaseQuery()->whereIn('id', $ids)->forceDelete();
-        
-        $this->isDeleteModalOpen = false;
-        $this->reset(['selectedItems', 'selectAll', 'deleteId']);
-        $this->dispatch('notify', type: 'success', message: __('messages.deleted_permanently') ?? 'Deleted permanently!');
-    }
+    
 
     public function render()
     {

@@ -115,13 +115,17 @@
                         @endif
                         
                         @if(in_array('status', $selectedColumns))
-                        <td class="p-4 text-center">
-                            {{-- ប្រើ $canToggleStatus ដើម្បី Disable Toggle ប្រសិនបើគ្មានសិទ្ធិ edit-user ឬខុសលក្ខខណ្ឌ Level --}}
-                            <label class="relative inline-flex items-center cursor-pointer" title="{{ !$canToggleStatus ? 'No Permission or Restricted Level' : 'Toggle Status' }}">
-                                <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ !$canToggleStatus ? 'disabled' : '' }}>
-                                <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ !$canToggleStatus ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
-                            </label>
-                        </td>
+                            <td class="p-4 text-center">
+                                <label class="relative inline-flex items-center cursor-pointer" title="{{ !$canToggleStatus ? 'No Permission or Restricted Level' : 'Toggle Status' }}">
+                                    
+                                    {{-- ១. ប្រើ wire:click.prevent និង ដក disabled ចេញពីទីនេះ --}}
+                                    <input type="checkbox" wire:click.prevent="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }}>
+                                    
+                                    {{-- ២. រក្សាទុក style 'opacity-50' ដដែលដើម្បីអោយមើលទៅដឹងថាគ្មានសិទ្ធិ --}}
+                                    <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ !$canToggleStatus ? 'opacity-50' : '' }}"></div>
+                                
+                                </label>
+                            </td>
                         @endif
                         
                         <td class="p-4 flex justify-center gap-2 items-center h-full mt-2">

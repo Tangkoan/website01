@@ -261,6 +261,9 @@ return [
 
     'deleted_successfully' => 'ការលុបទិន្នន័យទទួលជោគជ័យ!',
     'restored_success' => 'ការដាក់ឱ្យប្រើប្រាស់ឡើងវិញជោគជ័យ!',
+    'deleted_permanently' => 'លុបអចិន្ត្រៃយ៍',
+    'no_permission' => 'អ្នកគ្មានសិទ្ធកែប្រែស្ថានភាព',
+
 
 
 ];

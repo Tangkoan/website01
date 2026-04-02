@@ -111,39 +111,51 @@ class UserService
     public function getUserLogs($searchTerm, $perPage, $myMaxLevel)
     {
         $query = \Spatie\Activitylog\Models\Activity::where('log_name', 'user')
-            ->with(['causer', 'subject']);
+            ->with(['causer' => function($q) {
+                // ប្រាប់វាឲ្យទាញយកទាំងអ្នកដែលត្រូវបានលុបចូល Trash
+                $q->withTrashed(); 
+            }, 'subject' => function($q) {
+                // ប្រាប់វាឲ្យទាញយកទាំងអ្នកដែលត្រូវបានលុបចូល Trash
+                $q->withTrashed(); 
+            }]);
 
-        // ១. ឆែកអ្នកធ្វើសកម្មភាព (Causer): ត្រូវតែមាន Level <= យើង ឬជា System (null)
+        // ១. ឆែកអ្នកធ្វើសកម្មភាព (Causer)
         $query->where(function ($q) use ($myMaxLevel) {
-            $q->whereHasMorph('causer', [\App\Models\User::class], function ($subQuery) use ($myMaxLevel) {
-                // ប្រើ whereDoesntHave ដើម្បីប្រាកដថាគ្មាន Role ណាដែលមាន Level ធំជាងយើងឡើយ
-                $subQuery->whereDoesntHave('roles', function ($roleQuery) use ($myMaxLevel) {
-                    $roleQuery->where('level', '>', $myMaxLevel);
-                });
-            })
-            ->orWhereNull('causer_id'); // បង្ហាញ Log ដែលកើតចេញពីប្រព័ន្ធ
+            $q->whereNull('causer_id') // បង្ហាញ Log ដែលកើតចេញពីប្រព័ន្ធ
+              ->orWhereHasMorph('causer', [\App\Models\User::class], function ($subQuery) use ($myMaxLevel) {
+                  // ថែម withTrashed ទីនេះ
+                  $subQuery->withTrashed()->whereDoesntHave('roles', function ($roleQuery) use ($myMaxLevel) {
+                      $roleQuery->where('level', '>', $myMaxLevel);
+                  });
+              })
+              // ⚠️ ចំណុចសំខាន់៖ អនុញ្ញាតឲ្យបង្ហាញ Log ទោះបីជា Causer ត្រូវ Force Deleted ក៏ដោយ (causer លែងមានក្នុង DB)
+              ->orWhereDoesntHaveMorph('causer', [\App\Models\User::class]); 
         });
 
-        // ២. ឆែកអ្នកដែលរងគ្រោះ (Subject): ត្រូវតែមាន Level <= យើង
+        // ២. ឆែកអ្នកដែលរងគ្រោះ (Subject)
         $query->where(function ($q) use ($myMaxLevel) {
-            $q->whereHasMorph('subject', [\App\Models\User::class], function ($subQuery) use ($myMaxLevel) {
-                $subQuery->whereDoesntHave('roles', function ($roleQuery) use ($myMaxLevel) {
-                    $roleQuery->where('level', '>', $myMaxLevel);
-                });
-            })
-            // ករណី Subject ត្រូវបាន Force Delete (បាត់ទិន្នន័យពី User Table) ក៏អនុញ្ញាតឱ្យបង្ហាញដែរ
-            ->orWhereDoesntHaveMorph('subject', [\App\Models\User::class]); 
+            $q->whereNull('subject_id')
+              ->orWhereHasMorph('subject', [\App\Models\User::class], function ($subQuery) use ($myMaxLevel) {
+                  // ថែម withTrashed ទីនេះ
+                  $subQuery->withTrashed()->whereDoesntHave('roles', function ($roleQuery) use ($myMaxLevel) {
+                      $roleQuery->where('level', '>', $myMaxLevel);
+                  });
+              })
+              // ⚠️ ចំណុចសំខាន់៖ អនុញ្ញាតឲ្យបង្ហាញ Log ទោះបីជា Subject ត្រូវ Force Deleted ក៏ដោយ (subject លែងមានក្នុង DB)
+              ->orWhereDoesntHaveMorph('subject', [\App\Models\User::class]); 
         });
 
         // ផ្នែក Search
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('description', 'like', '%' . $searchTerm . '%')
-                ->orWhereHasMorph('causer', [\App\Models\User::class], function ($subQuery) use ($searchTerm) {
-                    $subQuery->where('name', 'like', '%' . $searchTerm . '%');
-                })
-                ->orWhere('properties->attributes->name', 'like', '%' . $searchTerm . '%')
-                ->orWhere('properties->old->name', 'like', '%' . $searchTerm . '%');
+                  ->orWhereHasMorph('causer', [\App\Models\User::class], function ($subQuery) use ($searchTerm) {
+                      // ថែម withTrashed ទីនេះ
+                      $subQuery->withTrashed()->where('name', 'like', '%' . $searchTerm . '%');
+                  })
+                  // ស្វែងរកក្នុង Properties Json (មានប្រយោជន៍ខ្លាំងពេល Model ត្រូវ Force Deleted)
+                  ->orWhere('properties->attributes->name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('properties->old->name', 'like', '%' . $searchTerm . '%');
             });
         }
 

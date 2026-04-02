@@ -260,6 +260,11 @@ return [
     'system' => 'System',
     'deleted_successfully' => 'Deleted Successfully',
     'restored_success' => 'Restored Successfully',
+    'deleted_permanently' => 'Deleted Permanently',
+    'no_permission' => 'No Permission',
+
+    
+    
 
     
 ];

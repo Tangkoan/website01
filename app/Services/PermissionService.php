@@ -40,11 +40,16 @@ class PermissionService
      */
     public function deletePermissions($ids)
     {
-        // បំប្លែងឱ្យទៅជា Array ទោះជាបញ្ជូនមកតែ ID មួយក៏ដោយ
-        $ids = is_array($ids) ? $ids : [$ids];
-        return Permission::whereIn('id', $ids)->delete();
+        $idArray = is_array($ids) ? $ids : [$ids];
+        
+        // ✅ ទាញយកជា Collection នៃ Models
+        $permissions = Permission::whereIn('id', $idArray)->get();
+        
+        // ✅ Loop ដើម្បីបញ្ជាឱ្យ Model នីមួយៗលុប ទើប Event 'deleted' ដំណើរការ
+        foreach ($permissions as $permission) {
+            $permission->delete();
+        }
     }
-
     /**
      * ទាញយកទិន្នន័យសម្រាប់ធ្វើ Bulk Edit Queue
      */

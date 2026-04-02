@@ -87,13 +87,13 @@
                                     } elseif (str_contains($desc, 'bulk') && (str_contains($desc, 'edit') || str_contains($desc, 'update'))) {
                                         $colorClass = 'bg-teal-50 text-teal-600 border-teal-100 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/30';
                                     } elseif (str_contains($desc, 'create')) {
-                                        $colorClass = 'bg-green-50 text-green-600 border-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30';
-                                    } elseif (str_contains($desc, 'restore')) {
                                         $colorClass = 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30';
+                                    } elseif (str_contains($desc, 'restore')) {
+                                        $colorClass = 'bg-green-50 text-green-600 border-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30';
                                     } elseif (str_contains($desc, 'delete')) {
                                         $colorClass = 'bg-red-50 text-red-600 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30';
                                     } elseif (str_contains($desc, 'update') || str_contains($desc, 'edit')) {
-                                        $colorClass = 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/30';
+                                        $colorClass = 'bg-yellow-50 text-yellow-600 border-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/30';
                                     } else {
                                         $colorClass = 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/30';
                                     }
@@ -106,7 +106,7 @@
                             <td class="p-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     {{-- ប៊ូតុង View (មិនបាច់មានសិទ្ធិក៏មើលបាន ព្រោះទាល់តែមានសិទ្ធិមើល Log ទើបចូល Page នេះបាន) --}}
-                                    <button wire:click.stop="viewDetails({{ $log->id }})" title="{{ __('messages.view') }}" class="p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] rounded-lg transition-all focus:outline-none">
+                                    <button wire:click.stop="viewDetails({{ $log->id }})" title="{{ __('messages.view') }}" class="bg-(--color-primary)/30 p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] rounded-lg transition-all focus:outline-none">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -117,7 +117,7 @@
                                     <x-auth-button permission="delete-{{ $type }}-logs" 
                                         wire:click.stop="confirmDelete({{ $log->id }})" 
                                         title="{{ __('messages.delete') }}" 
-                                        class="p-2 text-[var(--color-text-muted)] hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all focus:outline-none">
+                                        class="p-2 text-red-500 bg-red-500/30   hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all focus:outline-none">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
