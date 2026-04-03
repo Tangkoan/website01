@@ -1,16 +1,17 @@
 @php
-    $uiMode = Illuminate\Support\Facades\Cache::rememberForever('setting_role_ui_mode', function () {
-        $setting = \App\Models\Setting::where('key', 'role_ui_mode')->first();
+    // ទាញយក Setting ថ្មីសម្រាប់ Sidebar
+    $sidebarMode = Illuminate\Support\Facades\Cache::rememberForever('setting_sidebar_ui_mode', function () {
+        $setting = \App\Models\Setting::where('key', 'sidebar_ui_mode')->first();
         return $setting ? $setting->value : 'hide';
     });
 
     // ឆែកសិទ្ធិសម្រាប់ក្រុម USER MANAGEMENT
     $hasAnyUserMgmtPerm = auth()->user()->canany(['view_users', 'view_roles', 'view_permissions', 'manage_role_ui']);
-    $showUserMgmtGroup = $hasAnyUserMgmtPerm || $uiMode === 'disable';
+    $showUserMgmtGroup = $hasAnyUserMgmtPerm || $sidebarMode === 'disable';
 
     // ឆែកសិទ្ធិសម្រាប់ក្រុម SYSTEM SETTINGS
     $hasAnySystemSettingPerm = auth()->user()->canany(['view_shop_info', 'view_theme']);
-    $showSystemSettingGroup = $hasAnySystemSettingPerm || $uiMode === 'disable';
+    $showSystemSettingGroup = $hasAnySystemSettingPerm || $sidebarMode === 'disable';
 @endphp
 
 <div>
@@ -54,7 +55,7 @@
                 </span>
                 
                 <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('dashboard') ? 'font-extrabold' : 'font-semibold' }}">
-                    {{ __('messages.home') }}
+                    {{ __('messages.home') ?? 'Dashboard' }}
                 </span>
             </a>
         @endcan
@@ -109,7 +110,7 @@
 
                     <div class="py-2 space-y-0.5">
                         @php $canUsers = auth()->user()->can('view_users'); @endphp
-                        @if($canUsers || $uiMode === 'disable')
+                        @if($canUsers || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canUsers ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/users" :title="__('messages.users')" />
@@ -117,7 +118,7 @@
                         @endif
 
                         @php $canRoles = auth()->user()->can('view_roles'); @endphp
-                        @if($canRoles || $uiMode === 'disable')
+                        @if($canRoles || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canRoles ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles')" />
@@ -125,7 +126,7 @@
                         @endif
                         
                         @php $canPerm = auth()->user()->can('view_permissions'); @endphp
-                        @if($canPerm || $uiMode === 'disable')
+                        @if($canPerm || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canPerm ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission')" />
@@ -133,7 +134,7 @@
                         @endif
 
                         @php $canRoleUi = auth()->user()->can('manage_role_ui'); @endphp
-                        @if($canRoleUi || $uiMode === 'disable')
+                        @if($canRoleUi || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canRoleUi ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/role-ui" :title="__('messages.role_ui_mode') ?? 'Role UI Mode'" />
@@ -166,22 +167,22 @@
                         </div>
                         
                         <div class="p-2 space-y-1 bg-dropdown">
-                            @if($canUsers || $uiMode === 'disable')
+                            @if($canUsers || $sidebarMode === 'disable')
                                 <div class="{{ !$canUsers ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/users" :title="__('messages.users')" />
                                 </div>
                             @endif
-                            @if($canRoles || $uiMode === 'disable')
+                            @if($canRoles || $sidebarMode === 'disable')
                                 <div class="{{ !$canRoles ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/roles" :title="__('messages.roles')" />
                                 </div>
                             @endif
-                            @if($canPerm || $uiMode === 'disable')
+                            @if($canPerm || $sidebarMode === 'disable')
                                 <div class="{{ !$canPerm ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/permission" :title="__('messages.permission')" />
                                 </div>
                             @endif
-                            @if($canRoleUi || $uiMode === 'disable')
+                            @if($canRoleUi || $sidebarMode === 'disable')
                                 <div class="{{ !$canRoleUi ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/role-ui" :title="__('messages.role_ui_mode') ?? 'Role UI Mode'" />
                                 </div>
@@ -224,7 +225,7 @@
                             ⚙️
                         </span>
                         <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'font-extrabold' : 'font-semibold' }}">
-                            {{ __('messages.settings') }}
+                            {{ __('messages.settings') ?? 'Settings' }}
                         </span>
                     </div>
                     
@@ -240,7 +241,7 @@
 
                     <div class="py-2 space-y-0.5">
                         @php $canShop = auth()->user()->can('view_shop_info'); @endphp
-                        @if($canShop || $uiMode === 'disable')
+                        @if($canShop || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canShop ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info')" />
@@ -248,7 +249,7 @@
                         @endif
 
                         @php $canTheme = auth()->user()->can('view_theme'); @endphp
-                        @if($canTheme || $uiMode === 'disable')
+                        @if($canTheme || $sidebarMode === 'disable')
                             <div class="pl-14 pr-6 relative {{ !$canTheme ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
@@ -276,17 +277,17 @@
                         
                         <div class="px-5 py-3.5 border-b border-border-color bg-primary/5 mt-1">
                             <span class="text-xs font-bold uppercase tracking-widest text-primary">
-                                {{ __('messages.settings') }}
+                                {{ __('messages.settings') ?? 'Settings' }}
                             </span>
                         </div>
                         
                         <div class="p-2 space-y-1 bg-dropdown">
-                            @if($canShop || $uiMode === 'disable')
+                            @if($canShop || $sidebarMode === 'disable')
                                 <div class="{{ !$canShop ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/shop" :title="__('messages.shop_info')" />
                                 </div>
                             @endif
-                            @if($canTheme || $uiMode === 'disable')
+                            @if($canTheme || $sidebarMode === 'disable')
                                 <div class="{{ !$canTheme ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
                                 </div>

@@ -262,6 +262,10 @@ return [
     'restored_success' => 'Restored Successfully',
     'deleted_permanently' => 'Deleted Permanently',
     'no_permission' => 'No Permission',
+    'sidebar_display_options' => 'Sidebar Display Options',
+    'sidebar_ui_mode_desc'    => 'Configure how the sidebar menus should behave when a user lacks permission.',
+    'hide_sidebar_desc'       => 'Menu items will not be shown if the user does not have permission.',
+    'disable_sidebar_desc'    => 'Menu items remain visible but are grayed out and unclickable.',
 
     
     
