@@ -8,26 +8,21 @@
             </span>
             <span class="leading-tight truncate">{{ $title }}</span>
         </h2>
-        <a href="{{ route($backRoute) }}" wire:navigate class="shrink-0 p-2 sm:px-4 sm:py-2.5 bg-[var(--color-card-bg)] border border-[var(--color-border-color)] rounded-lg shadow-sm text-sm font-black text-[var(--color-text-main)] hover:brightness-95 flex items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 mt-0.5 sm:mt-0">
-            <svg class="w-5 h-5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            <span class="hidden sm:block">{{ __('messages.back') }}</span>
-        </a>
     </div>
 
     {{-- Filters & Bulk Actions --}}
-    <div class="bg-[var(--color-card-bg)] p-3 rounded-xl z-10 border border-[var(--color-border-color)] shadow-sm flex flex-wrap justify-between items-center gap-4">
+    <div class="bg-[var(--color-card-bg)] p-3 rounded-xl border border-[var(--color-border-color)] shadow-sm flex flex-wrap justify-between items-center gap-4">
         <div class="relative w-full sm:w-96 group">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--color-text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </span>
             <input type="text" wire:model.live.debounce.300ms="searchTerm" 
-                class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg pl-10 pr-4 text-sm font-bold focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all relative z-10" 
+                class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg pl-10 pr-4 text-sm font-bold focus:ring-4 focus:ring-[var(--color-primary)]/10 outline-none transition-all" 
                 placeholder="{{ __('messages.search_logs') }}">
         </div>
 
         @if(count($selectedLogs) > 0)
-            {{-- ប្រើ x-auth-button សម្រាប់ Bulk Delete --}}
-            <x-auth-button permission="delete-{{ $type }}-logs" 
+            <x-auth-button permission="delete-activity-logs" 
                 wire:click="confirmBulkDelete" 
                 class="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-black rounded-lg shadow-sm transition-all flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -37,7 +32,7 @@
     </div>
 
     {{-- Desktop Table View --}}
-    <div class="hidden md:block bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border-color)] shadow-sm overflow-hidden min-h-[300px] relative z-30 overflow-visible">
+    <div class="hidden md:block bg-[var(--color-card-bg)] rounded-xl border border-[var(--color-border-color)] shadow-sm overflow-hidden min-h-[300px] relative">
         <div class="w-full overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -47,6 +42,7 @@
                         </th>
                         <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.date_time') }}</th>
                         <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.caused_by') }}</th>
+                        <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center">{{ __('messages.module') }}</th>
                         <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center">{{ __('messages.action') }}</th>
                         <th class="p-4 w-28 text-center text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.actions') }}</th>
                     </tr>
@@ -80,6 +76,12 @@
                             </td>
 
                             <td class="p-4 text-center">
+                                <span class="px-2 py-1 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-muted)] text-[10px] font-bold rounded">
+                                    {{ $log->log_name ?? 'default' }}
+                                </span>
+                            </td>
+
+                            <td class="p-4 text-center">
                                 @php
                                     $desc = strtolower($log->description);
                                     if (str_contains($desc, 'bulk') && str_contains($desc, 'delete')) {
@@ -105,38 +107,29 @@
 
                             <td class="p-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    {{-- ប៊ូតុង View (មិនបាច់មានសិទ្ធិក៏មើលបាន ព្រោះទាល់តែមានសិទ្ធិមើល Log ទើបចូល Page នេះបាន) --}}
-                                    <button wire:click.stop="viewDetails({{ $log->id }})" title="{{ __('messages.view') }}" class="bg-(--color-primary)/30 p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] rounded-lg transition-all focus:outline-none">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
+                                    <button wire:click.stop="viewDetails({{ $log->id }})" title="{{ __('messages.view') }}" class="bg-[var(--color-primary)]/10 p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 rounded-lg transition-all focus:outline-none">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                     </button>
                                     
-                                    {{-- ប្រើ x-auth-button សម្រាប់លុបទោល --}}
-                                    <x-auth-button permission="delete-{{ $type }}-logs" 
+                                    <x-auth-button permission="delete-activity-logs" 
                                         wire:click.stop="confirmDelete({{ $log->id }})" 
                                         title="{{ __('messages.delete') }}" 
-                                        class="p-2 text-red-500 bg-red-500/30   hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-all focus:outline-none">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
+                                        class="p-2 text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all focus:outline-none">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </x-auth-button>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-16 text-center text-[var(--color-text-muted)] uppercase text-xs italic opacity-50">{{ __('messages.no_logs_found') }}</td></tr>
+                        <tr><td colspan="6" class="p-16 text-center text-[var(--color-text-muted)] uppercase text-xs italic opacity-50">{{ __('messages.no_logs_found') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
         
-        
-            <div class="p-4 bg-[var(--color-background)]/30 border-t border-[var(--color-border-color)]">
+       <div class="p-4 bg-[var(--color-background)]/30 border-t border-[var(--color-border-color)]">
                 {{ $activities->links('livewire.parts.pagination') }}
-            </div>
-        
+        </div>
     </div>
 
     {{-- Mobile View --}}
@@ -188,8 +181,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
                     </button>
-                    {{-- ប្រើ x-auth-button សម្រាប់លុបទោលលើ Mobile --}}
-                    <x-auth-button permission="delete-{{ $type }}-logs" 
+                    <x-auth-button permission="delete-activity-logs" 
                         wire:click.stop="confirmDelete({{ $log->id }})" 
                         class="p-1.5 text-[var(--color-text-muted)] hover:text-red-500 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,14 +197,12 @@
             </div>
         @endforelse
         
-        
-            <div class="mt-4">
+        <div class="mt-4">
                 {{ $activities->links('livewire.parts.pagination') }}
-            </div>
-        
+        </div>
     </div>
 
-    {{-- Modal View Details (រក្សាទុកដដែល) --}}
+    {{-- Modal View Details --}}
     @if($isModalOpen && $selectedActivity)
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-[var(--color-card-bg)] rounded-xl w-full max-w-2xl shadow-2xl overflow-hidden border border-[var(--color-border-color)]">

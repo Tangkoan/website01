@@ -104,10 +104,13 @@ class RoleManagement extends Component
 
         $ids = $this->deleteId ?: $this->selectedRoles;
         $this->service()->deleteRoles($ids);
+        // 💡 កែត្រង់នេះ៖ បន្ថែមការហៅ closeDeleteModal()
+        $this->closeDeleteModal(); 
         $this->reset(['selectedRoles', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
         $this->dispatch('notify', type: 'success', message: __('messages.item_deleted'));
     }
 
+    
     // ==========================================
     // Manage Permissions (Modal 1)
     // ==========================================
@@ -156,6 +159,115 @@ class RoleManagement extends Component
     }
 
     public function getRolesProperty() { return $this->service()->getRoles($this->searchTerm, $this->perPage, $this->sortField, $this->sortDirection); }
+
+
+    // ==========================================
+    // Modal Controllers (មុខងារបើក/បិទ Modal)
+    // ==========================================
+
+    // សម្រាប់លុប ១ ជួរ (Single Delete)
+    public function confirmDelete($id)
+    {
+        if (!$this->checkAccess('delete_roles')) return;
+
+        $this->deleteId = $id;
+        $this->isDeleteModalOpen = true;
+    }
+
+    // សម្រាប់លុបច្រើនជួរ (Bulk Delete)
+    public function confirmBulkDelete()
+    {
+        if (!$this->checkAccess('delete_roles')) return;
+
+        if (empty($this->selectedRoles)) {
+            $this->dispatch('notify', type: 'error', message: __('messages.no_items_selected') ?? 'Please select at least one item.');
+            return;
+        }
+
+        $this->deleteId = null; // null មានន័យថាលុបតាម Array $selectedRoles
+        $this->isDeleteModalOpen = true;
+    }
+
+    // សម្រាប់បិទ Modal លុប
+    public function closeDeleteModal()
+    {
+        $this->isDeleteModalOpen = false;
+        $this->deleteId = null;
+    }
+
+
+    // ==========================================
+    // Bulk Edit (កែប្រែច្រើនជួរ)
+    // ==========================================
+
+    // ពេលចុចប៊ូតុង Bulk Edit ធំ
+    public function bulkEdit()
+    {
+        if (!$this->checkAccess('edit_roles')) return;
+
+        if (empty($this->selectedRoles)) {
+            $this->dispatch('notify', type: 'error', message: __('messages.no_items_selected') ?? 'Please select at least one item.');
+            return;
+        }
+
+        // ទាញយក Role ទាំងនោះពី Database
+        $this->selectedItemsQueue = $this->service()->getRolesByIds($this->selectedRoles)->toArray();
+        $this->currentBulkIndex = 0;
+
+        if (count($this->selectedItemsQueue) > 0) {
+            $this->loadBulkItemData();
+            $this->isBulkEditModalOpen = true;
+        }
+    }
+
+    // ទាញយកទិន្នន័យដាក់ចូលប្រអប់ Input សម្រាប់ Item នីមួយៗ
+    private function loadBulkItemData()
+    {
+        $item = $this->selectedItemsQueue[$this->currentBulkIndex];
+        $this->bulkItemId = $item['id'];
+        $this->bulkItemName = $item['name'];
+        $this->bulkItemGuard = $item['guard_name'];
+        $this->bulkItemLevel = $item['level'];
+    }
+
+    // ពេលចុច Save Next ក្នុង Bulk Edit Modal
+    public function saveBulkEditNext()
+    {
+        if (!$this->checkAccess('edit_roles')) return;
+
+        $this->validate([
+            'bulkItemName' => ['required', Rule::unique('roles', 'name')->ignore($this->bulkItemId)],
+            'bulkItemLevel' => ['required', 'integer', 'min:1', 'max:' . $this->maxAllowedLevel] 
+        ], ['bulkItemLevel.max' => __('messages.level_max_error', ['max' => $this->maxAllowedLevel])]);
+
+        // Save ទិន្នន័យ
+        $this->service()->saveRole([
+            'name' => $this->bulkItemName, 
+            'guard_name' => $this->bulkItemGuard, 
+            'level' => $this->bulkItemLevel
+        ], $this->bulkItemId);
+
+        // ប្តូរទៅកាន់ Item បន្ទាប់
+        $this->currentBulkIndex++;
+
+        // បើអស់ហើយ បិទ Modal
+        if ($this->currentBulkIndex >= count($this->selectedItemsQueue)) {
+            $this->isBulkEditModalOpen = false;
+            $this->reset(['selectedRoles', 'selectAll', 'selectedItemsQueue']);
+            $this->dispatch('notify', type: 'success', message: __('messages.bulk_edit_completed') ?? 'All selected items updated successfully!');
+        } else {
+            // បើមិនទាន់អស់ Load Item បន្ទាប់
+            $this->loadBulkItemData();
+        }
+    }
+
+    // សម្រាប់បិទ Modal Bulk Edit កណ្តាលទី
+    public function closeBulkEdit()
+    {
+        $this->isBulkEditModalOpen = false;
+        $this->selectedItemsQueue = [];
+        $this->reset(['bulkItemId', 'bulkItemName', 'bulkItemGuard', 'bulkItemLevel']);
+    }
 
     public function render() {
         $allPermissions = collect($this->service()->getAssignablePermissionsForCurrentUser())

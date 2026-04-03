@@ -10,16 +10,18 @@
     $showUserMgmtGroup = $hasAnyUserMgmtPerm || $sidebarMode === 'disable';
 
     // ឆែកសិទ្ធិសម្រាប់ក្រុម SYSTEM SETTINGS
-    $hasAnySystemSettingPerm = auth()->user()->canany(['view_shop_info', 'view_theme']);
+    $hasAnySystemSettingPerm = auth()->user()->canany(['view_shop_info', 'view_theme', 'manage_system_configs']);
     $showSystemSettingGroup = $hasAnySystemSettingPerm || $sidebarMode === 'disable';
 @endphp
 
 <div>
-    <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-20 md:hidden" x-cloak></div>
+    {{-- 💡 កែប្រែទី១៖ ដំឡើង z-20 ទៅ z-40 សម្រាប់ផ្ទៃពណ៌ខ្មៅពេលបើកលើទូរស័ព្ទ --}}
+    <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm z-40 md:hidden" x-cloak></div>
 
+{{-- 💡 កែប្រែទី២៖ ដំឡើង z-30 ទៅ z-99 សម្រាប់ Sidebar ទាំងមូល --}}
 <aside 
     :class="{ 'w-[260px]': !sidebarCollapsed, 'w-[80px]': sidebarCollapsed, 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
-    class="fixed inset-y-0 left-0 z-30 bg-sidebar text-text-main border-r border-border-color flex flex-col h-full shadow-sm transition-all duration-300 ease-in-out md:relative md:translate-x-0"
+    class="fixed inset-y-0 left-0 z-99 bg-sidebar text-text-main border-r border-border-color flex flex-col h-full shadow-sm transition-all duration-300 ease-in-out md:relative md:translate-x-0"
 >
     <div class="h-16 flex items-center justify-center sm:justify-start px-6 border-b border-border-color bg-sidebar">
         <div class="flex items-center gap-3 min-w-max">
@@ -152,7 +154,7 @@
                      x-transition:leave-end="opacity-0 translate-x-2"
                      @mouseenter="hovered = true; clearTimeout(timeout)"
                      @mouseleave="hovered = false"
-                     class="fixed left-[80px] top-auto ml-1 w-60 z-50 pointer-events-auto"
+                     class="fixed left-[80px] top-auto ml-1 w-60 z-99 pointer-events-auto"
                      x-cloak>
                      
                     <div class="absolute -left-4 top-0 w-4 h-full"></div>
@@ -202,7 +204,7 @@
             </div>
 
             <div x-data="{ 
-                    open: {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'true' : 'false' }}, 
+                    open: {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action') ? 'true' : 'false' }}, 
                     hovered: false,
                     timeout: null 
                  }" 
@@ -212,19 +214,19 @@
                 
                 <button @click="sidebarCollapsed ? null : open = !open" 
                     class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200
-                           {{ request()->is('settings/shop*') || request()->is('settings/theme*')
+                           {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action')
                                ? 'text-primary bg-primary/10' 
                                : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                     
-                    @if(request()->is('settings/shop*') || request()->is('settings/theme*'))
+                    @if(request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action'))
                         <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
                     @endif
 
                     <div class="flex items-center gap-4">
-                        <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
+                        <span class="text-[22px] transition-transform duration-300 group-hover:rotate-45 {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
                             ⚙️
                         </span>
-                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings/shop*') || request()->is('settings/theme*') ? 'font-extrabold' : 'font-semibold' }}">
+                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action') ? 'font-extrabold' : 'font-semibold' }}">
                             {{ __('messages.settings') ?? 'Settings' }}
                         </span>
                     </div>
@@ -255,6 +257,23 @@
                                 <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
                             </div>
                         @endif
+
+                        @php $canConfigs = auth()->user()->can('manage_system_configs'); @endphp
+                        @if($canConfigs || $sidebarMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canConfigs ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/configs" :title="__('messages.system_configs')" />
+                            </div>
+                        @endif
+
+                        {{-- Menu សម្រាប់ Activity Logs ដែលទើបបន្ថែមមុននេះ --}}
+                        @php $canViewLogs = auth()->user()->can('view-activity-logs'); @endphp
+                        @if($canViewLogs || $sidebarMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canViewLogs ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/action" :title="__('messages.activity_logs')" />
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -267,7 +286,7 @@
                      x-transition:leave-end="opacity-0 translate-x-2"
                      @mouseenter="hovered = true; clearTimeout(timeout)"
                      @mouseleave="hovered = false"
-                     class="fixed left-[80px] top-auto ml-1 w-60 z-50 pointer-events-auto"
+                     class="fixed left-[80px] top-auto ml-1 w-60 z-99 pointer-events-auto"
                      x-cloak>
                      
                     <div class="absolute -left-4 top-0 w-4 h-full"></div>
@@ -290,6 +309,16 @@
                             @if($canTheme || $sidebarMode === 'disable')
                                 <div class="{{ !$canTheme ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                     <x-sidebar-sub-link href="/settings/theme" :title="__('messages.theme')" />
+                                </div>
+                            @endif
+                            @if($canConfigs || $sidebarMode === 'disable')
+                                <div class="{{ !$canConfigs ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/configs" :title="__('messages.system_configs')" />
+                                </div>
+                            @endif
+                            @if($canViewLogs || $sidebarMode === 'disable')
+                                <div class="{{ !$canViewLogs ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                    <x-sidebar-sub-link href="/settings/activity-logs" :title="__('messages.activity_logs')" />
                                 </div>
                             @endif
                         </div>

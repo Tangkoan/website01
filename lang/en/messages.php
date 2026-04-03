@@ -267,6 +267,46 @@ return [
     'hide_sidebar_desc'       => 'Menu items will not be shown if the user does not have permission.',
     'disable_sidebar_desc'    => 'Menu items remain visible but are grayed out and unclickable.',
 
+    'system_configs_title' => 'System Configs',
+    'save' => 'Save Changes',
+    'add_new_builder' => '+ Add New (Builder)',
+    'settings_for' => 'Settings for:',
+    'delete_confirm' => 'Are you sure you want to delete the \':name\' config? This action might affect the system!',
+    'delete' => 'Delete',
+    'enable' => 'Enable',
+    'disable' => 'Disable',
+    'please_select' => 'Please Select',
+    'no_configs_in_group' => 'No configurations in this group yet. Please click "Add New".',
+    'create_new_config' => 'Create New Config (Builder)',
+    'group_category' => 'Group Category',
+    'eg_group' => 'e.g., general, email, contact...',
+    'name_display' => 'Name (Display on UI)',
+    'eg_name' => 'e.g., Company Phone Number',
+    'key_identifier' => 'Key (Identifier for retrieval)',
+    'eg_key' => 'e.g., site.phone',
+    'input_type' => 'Input Type',
+    'type_string' => 'String (Short Text)',
+    'type_text' => 'Text (Long Text)',
+    'type_number' => 'Number',
+    'type_boolean' => 'Boolean (Toggle)',
+    'type_select' => 'Select (Dropdown)',
+    'type_color' => 'Color Picker',
+    'type_image' => 'Image / File',
+    'options_format' => 'Options (Format: value:Label)',
+    'eg_options' => 'e.g., en:English, km:Khmer',
+    'options_hint' => 'Separate each option with a comma (,).',
+    'cancel' => 'Cancel',
+    'create_new' => 'Create New',
+
+    'all_activity_logs' => 'All Activity Logs',
+    'module' => 'Module',
+    'or_upload_file' => 'Or Updated File',
+    'system_configs' => 'System Configs',
+    'file_ready_to_save' => 'File Ready To Save',
+
+    
+
+
     
     
 

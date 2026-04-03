@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col md:flex-row items-center justify-between gap-4 relative z-50">
+<div class="w-full flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
     
     <div x-data="{ open: false, perPage: @entangle('perPage').live }" class="relative w-full md:w-auto">
         <div class="flex items-center justify-between md:justify-start gap-3 bg-[var(--color-card-bg)] px-4 py-2.5 rounded-xl md:rounded-2xl border border-[var(--color-border-color)] shadow-sm">
