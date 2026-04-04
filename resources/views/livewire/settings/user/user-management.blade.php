@@ -1,5 +1,6 @@
 <div class="w-full max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6 relative">
     
+
     @include('livewire.settings.partials.user.header')
     @include('livewire.settings.partials.user.filters')
 
@@ -18,5 +19,6 @@
 
     @include('livewire.settings.partials.user.modal-form')
     @include('livewire.settings.partials.user.modal-bulk-edit')
+    
 
 </div>

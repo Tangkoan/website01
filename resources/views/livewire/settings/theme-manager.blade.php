@@ -19,12 +19,14 @@
         }
      }"
      x-init="
-        $watch('light', () => applyLivePreview());
-        $watch('dark', () => applyLivePreview());
-        
-        const observer = new MutationObserver(() => applyLivePreview());
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        applyLivePreview();
+        $nextTick(() => {
+            $watch('light', () => applyLivePreview());
+            $watch('dark', () => applyLivePreview());
+            
+            const observer = new MutationObserver(() => applyLivePreview());
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+            applyLivePreview();
+        });
      "
 >
 
@@ -45,13 +47,13 @@
                     :class="activeTab === 'light' ? 'border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--color-card-bg)] shadow-[0_-2px_10px_rgba(0,0,0,0.03)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-background)]/80'" 
                     class="flex items-center gap-2 px-6 py-3.5 text-sm font-semibold transition-all duration-200 border-b-2 rounded-t-xl outline-none relative top-[1px]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-                <span>{{ __('messages.light_mode') }}</span>
+                <span>{{ __('messages.light_mode') ?? 'Light Mode' }}</span>
             </button>
             <button @click="activeTab = 'dark'" 
                     :class="activeTab === 'dark' ? 'border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--color-card-bg)] shadow-[0_-2px_10px_rgba(0,0,0,0.03)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-background)]/80'" 
                     class="flex items-center gap-2 px-6 py-3.5 text-sm font-semibold transition-all duration-200 border-b-2 rounded-t-xl outline-none ml-2 relative top-[1px]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                <span>{{ __('messages.dark_mode') }}</span>
+                <span>{{ __('messages.dark_mode') ?? 'Dark Mode' }}</span>
             </button>
         </div>
 
@@ -81,8 +83,8 @@
                             <label class="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{{ $label }}</label>
                             
                             @if($key !== 'blur')
-                                {{-- Color Picker សម្រាប់ Light Mode --}}
-                                <div x-data="colorPicker('light', '{{ $key }}')" class="space-y-3 p-3 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)]">
+                                {{-- ✅ កែប្រែ៖ បោះទិន្នន័យពណ៌ពី PHP ទៅឱ្យ Alpine ដោយផ្ទាល់ --}}
+                                <div x-data="colorPicker('light', '{{ $key }}', '{{ $lightColors[$key] ?? '' }}')" class="space-y-3 p-3 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)]">
                                     <div class="flex items-center gap-3">
                                         <div class="relative w-12 h-12 rounded-lg overflow-hidden shadow-sm border border-[var(--color-border-color)] flex-shrink-0 checkerboard-bg transition-transform hover:scale-105">
                                             <div class="absolute inset-0 pointer-events-none" :style="`background-color: ${rgbaString}`"></div>
@@ -99,15 +101,13 @@
                                     </div>
                                 </div>
                             @else
-                                {{-- ប្រអប់ Blur កម្រិតព្រិល --}}
                                 <div class="flex items-center gap-3 bg-[var(--color-background)]/50 p-2.5 rounded-xl border border-[var(--color-border-color)]">
                                     <div class="w-10 h-10 rounded-lg bg-[var(--color-card-bg)] flex items-center justify-center border border-[var(--color-border-color)] flex-shrink-0">
-                                        <svg class="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        <svg class="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                     </div>
                                     <input type="text" wire:model.live.debounce.500ms="lightColors.{{ $key }}" class="w-full bg-transparent border-none text-[var(--color-text-main)] px-2 font-mono text-sm focus:ring-0 placeholder-gray-400">
                                 </div>
                             @endif
-
                         </div>
                     @endforeach
                 </div>
@@ -121,8 +121,8 @@
                             <label class="block text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{{ $label }}</label>
                             
                             @if($key !== 'blur')
-                                {{-- Color Picker សម្រាប់ Dark Mode --}}
-                                <div x-data="colorPicker('dark', '{{ $key }}')" class="space-y-3 p-3 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)]">
+                                {{-- ✅ កែប្រែ៖ បោះទិន្នន័យពណ៌ពី PHP ទៅឱ្យ Alpine ដោយផ្ទាល់ --}}
+                                <div x-data="colorPicker('dark', '{{ $key }}', '{{ $darkColors[$key] ?? '' }}')" class="space-y-3 p-3 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)]">
                                     <div class="flex items-center gap-3">
                                         <div class="relative w-12 h-12 rounded-lg overflow-hidden shadow-sm border border-[var(--color-border-color)] flex-shrink-0 checkerboard-bg transition-transform hover:scale-105">
                                             <div class="absolute inset-0 pointer-events-none" :style="`background-color: ${rgbaString}`"></div>
@@ -139,15 +139,13 @@
                                     </div>
                                 </div>
                             @else
-                                {{-- ប្រអប់ Blur កម្រិតព្រិល --}}
                                 <div class="flex items-center gap-3 bg-[var(--color-background)]/50 p-2.5 rounded-xl border border-[var(--color-border-color)]">
                                     <div class="w-10 h-10 rounded-lg bg-[var(--color-card-bg)] flex items-center justify-center border border-[var(--color-border-color)] flex-shrink-0">
-                                        <svg class="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        <svg class="w-5 h-5 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                     </div>
                                     <input type="text" wire:model.live.debounce.500ms="darkColors.{{ $key }}" class="w-full bg-transparent border-none text-[var(--color-text-main)] px-2 font-mono text-sm focus:ring-0 placeholder-gray-400">
                                 </div>
                             @endif
-
                         </div>
                     @endforeach
                 </div>
@@ -168,21 +166,31 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
+        // ✅ ត្រលប់មកប្រើទម្រង់ដើមវិញ (មិនបាច់បោះ initialColor ទេ)
         Alpine.data('colorPicker', (themeMode, colorKey) => ({
             hexColor: '#000000',
             opacity: 100,
             rgbaString: '',
             
             init() {
-                let initialValue = themeMode === 'light' ? this.$wire.lightColors[colorKey] : this.$wire.darkColors[colorKey];
-                this.rgbaString = initialValue;
-                this.parseInitialColor(initialValue);
-
-                this.$watch(`$wire.${themeMode}Colors.${colorKey}`, (val) => {
-                    if(val !== this.rgbaString) {
-                        this.rgbaString = val;
-                        this.parseInitialColor(val);
+                // ✅ អាថ៌កំបាំងទី ១៖ រង់ចាំឱ្យ Livewire component ដើរស្រួលបួលសិន ទើបយើងទាញយកតម្លៃ
+                this.$nextTick(() => {
+                    // ទាញយកតម្លៃពី Livewire
+                    let initialValue = themeMode === 'light' ? this.$wire.lightColors[colorKey] : this.$wire.darkColors[colorKey];
+                    
+                    // បើទាញបាន ទើបយកទៅ Parse (ដើម្បីការពារកុំឱ្យវាចេញ Error "undefined")
+                    if (initialValue) {
+                        this.rgbaString = initialValue;
+                        this.parseInitialColor(initialValue);
                     }
+
+                    // ✅ អាថ៌កំបាំងទី ២៖ ចាប់ផ្តើមតាមដានតម្លៃ (Watch) បន្ទាប់ពីទាញបានតម្លៃដំបូងរួច
+                    this.$watch(`$wire.${themeMode}Colors.${colorKey}`, (val) => {
+                        if (val && val !== this.rgbaString) {
+                            this.rgbaString = val;
+                            this.parseInitialColor(val);
+                        }
+                    });
                 });
             },
 

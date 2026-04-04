@@ -8,13 +8,21 @@
             placeholder="{{ __('messages.search_name_or_email') ?? 'Search name or email...' }}">
     </div>
 
-    @if(count($selectedUsers) > 0)
-        <div class="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 w-full lg:w-auto animate-in fade-in zoom-in-95 duration-200">
-            <span class="text-xs font-black text-[var(--color-primary)] px-3">{{ count($selectedUsers) }} {{ __('messages.selected') ?? 'Selected' }}</span>
-            <div class="flex gap-2 w-full sm:w-auto">
-                <x-auth-button permission="edit-user" wire:click="bulkEdit" class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-md transition-colors shadow-sm">{{ __('messages.bulk_edit') ?? 'Bulk Edit' }}</x-auth-button>
-                <x-auth-button permission="delete-user" wire:click="confirmDelete()" class="flex-1 sm:flex-none px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-black rounded-md transition-colors shadow-sm">{{ __('messages.bulk_delete') ?? 'Bulk Delete' }}</x-auth-button>
-            </div>
+    {{-- ✅ កែប្រែ៖ ប្រើ Alpine.js ដើម្បីបង្ហាញ/លាក់ Animation អោយរលូន និងមិនរំខានដល់ Livewire DOM Diffing --}}
+    <div x-data="{ hasSelection: @entangle('selectedUsers').live }" 
+         x-show="hasSelection.length > 0" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         style="display: none;"
+         class="flex flex-col sm:flex-row items-center gap-2 p-1.5 bg-[var(--color-primary)]/10 rounded-lg border border-[var(--color-primary)]/20 w-full lg:w-auto">
+        <span class="text-xs font-black text-[var(--color-primary)] px-3"><span x-text="hasSelection.length"></span> {{ __('messages.selected') ?? 'Selected' }}</span>
+        <div class="flex gap-2 w-full sm:w-auto">
+            <x-auth-button permission="edit-user" wire:click="bulkEdit" class="flex-1 sm:flex-none px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-md transition-colors shadow-sm">{{ __('messages.bulk_edit') ?? 'Bulk Edit' }}</x-auth-button>
+            <x-auth-button permission="delete-user" wire:click="confirmDelete()" class="flex-1 sm:flex-none px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-black rounded-md transition-colors shadow-sm">{{ __('messages.bulk_delete') ?? 'Bulk Delete' }}</x-auth-button>
         </div>
-    @endif
+    </div>
 </div>

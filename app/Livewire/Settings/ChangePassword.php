@@ -55,6 +55,6 @@ class ChangePassword extends Component
 
     public function render()
     {
-        return view('livewire.settings.change-password');
+        return view('livewire.settings.change-password')->title(__('messages.change_password'));
     }
 }

@@ -1,6 +1,5 @@
-@props([
-    'permission', 
-])
+
+@props(['permission' => null])
 
 @php
     $hasPermission = auth()->user()->can($permission);

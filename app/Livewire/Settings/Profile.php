@@ -74,6 +74,6 @@ class Profile extends Component
 
     public function render()
     {
-        return view('livewire.settings.profile');
+        return view('livewire.settings.profile')->title(__('messages.profile'));
     }
 }

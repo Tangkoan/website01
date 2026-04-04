@@ -183,6 +183,6 @@ class PermissionManagement extends Component
     public function render() {
         return view('livewire.settings.permission.permission-management', [
             'permissions' => $this->getPermissionsProperty()
-        ]);
+        ])->title(__('messages.permissions'));
     }
 }

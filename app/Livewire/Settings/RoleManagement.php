@@ -281,6 +281,6 @@ class RoleManagement extends Component
         return view('livewire.settings.role.role-management', [
             'roles' => $this->getRolesProperty(),
             'groupedPermissions' => $groupedPermissions 
-        ]);
+        ])->title(__('messages.role'));
     }
 }

@@ -170,6 +170,6 @@ class GenericTrash extends Component
             'items' => $items,
             'title' => __('messages.' . $this->type . 's_trash') ?? ucfirst($this->type) . ' Trash',
             'backRoute' => $backRouteMap[$this->type] ?? 'dashboard'
-        ])->layout('layouts.app');
+        ])->layout('layouts.app')->title(__('messages.trash'));
     }
 }

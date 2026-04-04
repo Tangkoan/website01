@@ -162,6 +162,6 @@ class ActivityLogManager extends Component
         return view('livewire.settings.activity-log-manager', [
             'activities' => $activities,
             'title' => __('messages.all_activity_logs') ?? 'All Activity Logs', 
-        ])->layout('layouts.app');
+        ])->layout('layouts.app')->title(__('messages.logs'));
     }
 }

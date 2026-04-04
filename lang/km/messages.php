@@ -306,7 +306,10 @@ return [
     'or_upload_file' => 'ឬកែជាឯកសា',
     'system_configs' => 'ការកំណត់រចនាសម្ព័ន្ធ',
     'file_ready_to_save' => 'ឯកសារត្រៀមរួចរាល់ដើម្បីរក្សាទុក',
+    'recycle_bin' => 'Recycle Bin',
+    'search_deleted' => 'Search deleted items...',
 
-
+    'no_permission_to_toggle' => 'អ្នកគ្មានសិទ្ធិផ្លាស់ប្ដូរស្ថានភាពទិន្នន័យនេះទេ!',
+    'toggle_status' => 'បិទ/បើក គណនី',
 
 ];

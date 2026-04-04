@@ -7,10 +7,12 @@
     @forelse($users as $user)
         @php
             $targetMaxLevel = $user->roles->max('level') ?? 0;
-            $isSelf = $user->id === auth()->id();
-            $isSuperAdmin = auth()->user()->hasRole('Super Admin');
+            $isSelf = $user->id === auth()->id(); 
             
             $canManage = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
+            
+            // ✅ ខ្ញុំបានបន្ថែមអថេរនេះចូលវិញហើយ ដើម្បីដោះស្រាយ Error របស់បង
+            $canToggleStatus = auth()->user()->can('update-user-status') && ($isSuperAdmin || ($targetMaxLevel < $myMaxLevel)) && !$isSelf;
         @endphp
         
         <div wire:key="user-mobile-{{ $user->id }}" x-data @click="if(!$event.target.closest('button') && !$event.target.closest('label') && $event.target.tagName !== 'INPUT') { let cb = $el.querySelector('input[type=checkbox]'); if(cb && !cb.disabled) cb.click() }" class="bg-[var(--color-card-bg)] p-4 rounded-xl shadow-sm border border-[var(--color-border-color)] flex flex-col gap-3 cursor-pointer hover:bg-[var(--color-background)]/50 transition-all">
@@ -44,8 +46,8 @@
                         
                         @if(in_array('role', $selectedColumns))
                         <div class="flex flex-wrap items-center gap-1 mt-2">
-                            @foreach($user->getRoleNames() as $r)
-                                <span class="px-2 py-0.5 bg-[var(--color-background)] border border-[var(--color-border-color)] rounded-md text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ $r }}</span>
+                            @foreach($user->roles as $r)
+                                <span class="px-2 py-0.5 bg-[var(--color-background)] border border-[var(--color-border-color)] rounded-md text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ $r->name }}</span>
                             @endforeach
                             <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-md text-[10px] font-black uppercase tracking-widest">Lv. {{ $targetMaxLevel }}</span>
                         </div>
@@ -59,9 +61,11 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     @if(in_array('status', $selectedColumns))
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" wire:click="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ (!$canManage || $isSelf) ? 'disabled' : '' }}>
-                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ (!$canManage || $isSelf) ? 'opacity-50 cursor-not-allowed' : '' }}"></div>
+                        <label class="relative inline-flex items-center {{ $canToggleStatus ? 'cursor-pointer' : 'cursor-not-allowed' }}" 
+       title="{{ !$canToggleStatus ? (__('messages.no_permission_to_toggle') ?? 'No Permission or Restricted Level') : (__('messages.toggle_status') ?? 'Toggle Status') }}">
+                            {{-- ✅ ប្រើ wire:change ដើម្បីអោយ UI លោតលឿន និង disabled បើគ្មានសិទ្ធិ --}}
+                            <input type="checkbox" wire:change="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ !$canToggleStatus ? 'disabled' : '' }}>
+                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ !$canToggleStatus ? 'opacity-50' : '' }}"></div>
                         </label>
                     @endif
 

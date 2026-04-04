@@ -88,6 +88,6 @@ class ThemeManager extends Component
 
     public function render()
     {
-        return view('livewire.settings.theme-manager');
+        return view('livewire.settings.theme-manager')->title(__('messages.theme_customization'));
     }
 }

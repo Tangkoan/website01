@@ -56,6 +56,6 @@ class RoleSetting extends Component
 
     public function render()
     {
-        return view('livewire.settings.role-setting');
+        return view('livewire.settings.role-setting')->title(__('messages.role_ui_mode'));
     }
 }

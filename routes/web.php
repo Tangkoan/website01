@@ -24,6 +24,7 @@ use App\Livewire\Settings\GenericLog;
 use App\Livewire\Settings\RoleSetting;
 use App\Livewire\Settings\SystemConfigManager;
 use App\Livewire\Settings\ActivityLogManager;
+use App\Livewire\Settings\GlobalTrashManager;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     // បង្កើត Route ទៅកាន់ទំព័រ Config
     Route::get('/settings/configs', SystemConfigManager::class)->name('settings.configs')->can('manage_system_configs');
     Route::get('/settings/action', ActivityLogManager::class)->name('settings.action')->can('view-activity-logs');
+    Route::get('/settings/recycle', GlobalTrashManager::class)->name('settings.recycle-bin'); // សិទ្ធិជាក់លាក់ត្រូវបានឆែកក្នុងកូដ PHP តាម Tab រួចហើយ
     
     // ==========================================
     // Profile & Password (គ្រប់គ្នាដែល Login អាចចូលបាន)
@@ -77,27 +79,20 @@ Route::middleware(['auth'])->group(function () {
             ->name('settings.permissions')
             ->can('view_permissions');
             
-        Route::get('/permissions/logs', PermissionActivityLog::class)
-            ->name('permissions.logs')
-            ->can('view_permissions');
+        
 
         // --- Roles ---
         Route::get('/roles', RoleManagement::class)
             ->name('settings.roles')
             ->can('view_roles');
             
-        Route::get('/roles/logs', RoleLogs::class)
-            ->name('settings.roles.logs')
-            ->can('view_roles');
             
         // --- Users ---
         Route::get('/users', UserManagement::class)
             ->name('settings.users')
             ->can('view_users');
 
-        Route::get('/users/logs', UserLogs::class)
-            ->name('settings.users.logs')
-            ->can('view_users');
+        
     });
 
     // ==========================================

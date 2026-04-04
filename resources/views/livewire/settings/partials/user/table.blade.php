@@ -45,16 +45,12 @@
             <tbody x-data="{ isMouseDown: false, checkStatus: true }" @mousedown="isMouseDown = true" @mouseup.window="isMouseDown = false" class="divide-y divide-[var(--color-border-color)]">
                 @forelse($users as $user)
                     @php
+                        // ✅ កែប្រែ៖ ប្រើអថេរដែលបោះពី Component មកស្រាប់ កុំអោយហៅ auth()->user() ម្តងហើយម្តងទៀត
                         $targetMaxLevel = $user->roles->max('level') ?? 0;
                         $isSelf = $user->id === auth()->id();
-                        $isSuperAdmin = auth()->user()->hasRole('Super Admin');
                         
-                        // 1. សម្រាប់ប៊ូតុង Edit/Delete: ឆែកតែ Level ព្រោះ <x-auth-button> វាឆែកសិទ្ធិដោយខ្លួនឯងទៀត
                         $canManage = $isSelf || $isSuperAdmin || ($targetMaxLevel < $myMaxLevel);
-                        
-                        // 2. សម្រាប់ Status Toggle: ទាមទារសិទ្ធិ 'edit-user' + ឈ្នះ Level + ហាមបិទ/បើក Status ខ្លួនឯង
-                        $hasEditPermission = auth()->user()->can('edit-user');
-                        $canToggleStatus = $hasEditPermission && ($isSuperAdmin || ($targetMaxLevel < $myMaxLevel)) && !$isSelf;
+                        $canToggleStatus = auth()->user()->can('update-user-status') && ($isSuperAdmin || ($targetMaxLevel < $myMaxLevel)) && !$isSelf;
                     @endphp
                     
                     <tr wire:key="user-desktop-{{ $user->id }}" 
@@ -97,9 +93,9 @@
                         <td class="p-4">
                             <div class="flex flex-col gap-1.5 justify-center">
                                 <div class="flex flex-wrap gap-1">
-                                    @foreach($user->getRoleNames() as $r)
+                                    @foreach($user->roles as $r) {{-- ✅ កែប្រែ៖ ប្រើ $user->roles ត្រង់ៗដើម្បីទាញយកអត្ថប្រយោជន៍ពី with('roles') កុំអោយ N+1 --}}
                                         <span class="px-2 py-0.5 bg-[var(--color-background)] border border-[var(--color-border-color)] rounded-full text-[10px] font-black text-[var(--color-text-muted)] uppercase">
-                                            {{ $r }}
+                                            {{ $r->name }}
                                         </span>
                                     @endforeach
                                 </div>
@@ -116,14 +112,15 @@
                         
                         @if(in_array('status', $selectedColumns))
                             <td class="p-4 text-center">
-                                <label class="relative inline-flex items-center cursor-pointer" title="{{ !$canToggleStatus ? 'No Permission or Restricted Level' : 'Toggle Status' }}">
+                                {{-- ✅ បើគ្មានសិទ្ធិ ប្តូរ Cursor ទៅជាសញ្ញាហាមឃាត់ (cursor-not-allowed) --}}
+                                <label class="relative inline-flex items-center {{ $canToggleStatus ? 'cursor-pointer' : 'cursor-not-allowed' }}" 
+                                    title="{{ !$canToggleStatus ? (__('messages.no_permission_to_toggle') ?? 'No Permission or Restricted Level') : (__('messages.toggle_status') ?? 'Toggle Status') }}">
                                     
-                                    {{-- ១. ប្រើ wire:click.prevent និង ដក disabled ចេញពីទីនេះ --}}
-                                    <input type="checkbox" wire:click.prevent="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }}>
+                                    {{-- ✅ ប្រើ wire:change ឱ្យលឿន និងបន្ថែម disabled បើគ្មានសិទ្ធិ --}}
+                                    <input type="checkbox" wire:change="toggleStatus({{ $user->id }})" class="sr-only peer" {{ $user->status ? 'checked' : '' }} {{ !$canToggleStatus ? 'disabled' : '' }}>
                                     
-                                    {{-- ២. រក្សាទុក style 'opacity-50' ដដែលដើម្បីអោយមើលទៅដឹងថាគ្មានសិទ្ធិ --}}
+                                    {{-- ✅ បើគ្មានសិទ្ធិ ធ្វើឱ្យពណ៌រាងស្រអាប់ (opacity-50) --}}
                                     <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] {{ !$canToggleStatus ? 'opacity-50' : '' }}"></div>
-                                
                                 </label>
                             </td>
                         @endif

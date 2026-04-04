@@ -222,6 +222,6 @@ class GenericLog extends Component
             'activities' => $activities,
             'title' => __($titleKey), 
             'backRoute' => $this->getBackRoute(),
-        ])->layout('layouts.app');
+        ])->layout('layouts.app')->title(__('messages.logs'));
     }
 }

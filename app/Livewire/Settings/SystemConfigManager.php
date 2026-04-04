@@ -213,6 +213,6 @@ class SystemConfigManager extends Component
         
         $configs = SystemConfig::where('group', $this->activeTab)->get();
 
-        return view('livewire.settings.system-config-manager', compact('groups', 'configs'));
+        return view('livewire.settings.system-config-manager', compact('groups', 'configs'))->title(__('messages.system_configs_title'));
     }
 }

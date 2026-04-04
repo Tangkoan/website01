@@ -304,6 +304,12 @@ return [
     'system_configs' => 'System Configs',
     'file_ready_to_save' => 'File Ready To Save',
 
+    'recycle_bin' => 'Recycle Bin',
+    'search_deleted' => 'Search deleted items...',
+
+    'no_permission_to_toggle' => 'No Permission or Restricted Level',
+    'toggle_status' => 'Toggle Status',
+
     
 
 

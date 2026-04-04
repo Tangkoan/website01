@@ -4,11 +4,15 @@
             <div class="w-full md:w-1/3 bg-[var(--color-background)] border-r border-[var(--color-border-color)] p-5 overflow-y-auto max-h-[35vh] md:max-h-full">
                 <h3 class="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-3">{{ __('messages.editing') ?? 'Editing' }} {{ count($selectedItemsQueue) }} {{ __('messages.items') ?? 'Items' }}</h3>
                 <div class="space-y-2">
-                    @foreach($selectedItemsQueue as $index => $item)
+                    @foreach($selectedItemsQueue as $index => $userId)
+                        @php
+                            // ✅ កែប្រែ៖ ទាញឈ្មោះ User មកបង្ហាញ ដោយសារឥឡូវ Queue យើងផ្ទុកតែ ID ប៉ុណ្ណោះ
+                            $userName = \App\Models\User::find($userId)?->name ?? 'Unknown';
+                        @endphp
                         <button wire:key="bulk-item-{{ $index }}" wire:click="jumpToBulkItem({{ $index }})" 
                             class="w-full text-left p-2.5 md:p-3 rounded-lg font-bold text-xs md:text-sm transition-all flex items-center justify-between
                             {{ $currentBulkIndex === $index ? 'bg-[var(--color-primary)] text-[var(--color-primary-text)] shadow-md' : 'bg-[var(--color-card-bg)] text-[var(--color-text-main)] border border-[var(--color-border-color)]' }}">
-                            <span class="truncate pr-2">{{ $item['name'] }}</span>
+                            <span class="truncate pr-2">{{ $userName }}</span>
                             @if($currentBulkIndex === $index) <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"></path></svg> @endif
                         </button>
                     @endforeach

@@ -204,7 +204,7 @@
             </div>
 
             <div x-data="{ 
-                    open: {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/action') ? 'true' : 'false' }}, 
+                    open: {{ request()->is('settings/shop*') || request()->is('settings/theme*') || request()->is('settings/configs*') || request()->is('settings/recycle') || request()->is('settings/action') ? 'true' : 'false'  }}, 
                     hovered: false,
                     timeout: null 
                  }" 
@@ -272,6 +272,15 @@
                             <div class="pl-14 pr-6 relative {{ !$canViewLogs ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
                                 <x-sidebar-sub-link href="/settings/action" :title="__('messages.activity_logs')" />
+                            </div>
+                        @endif
+
+                        {{-- Menu សម្រាប់ Recycle Bin --}}
+                        @php $canViewAnyTrash = auth()->user()->canany(['view-user-trash', 'view-role-trash', 'view-permission-trash']); @endphp
+                        @if($canViewAnyTrash || $sidebarMode === 'disable')
+                            <div class="pl-14 pr-6 relative {{ !$canViewAnyTrash ? '!opacity-40 !grayscale !pointer-events-none' : '' }}">
+                                <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                                <x-sidebar-sub-link href="/settings/recycle" :title="__('messages.recycle_bin') ?? 'Recycle Bin'" />
                             </div>
                         @endif
                     </div>
