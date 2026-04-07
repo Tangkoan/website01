@@ -133,3 +133,4 @@ Route::get('/cron/trash/empty/{token}', function ($token) {
 Route::fallback(function () {
     abort(404);
 });
+Route::get('/product/categories', \App\Livewire\Product\CategoryManagement::class)->name('product.categories.index');

@@ -1,0 +1,217 @@
+<?php
+
+namespace {{Namespace}};
+
+use Livewire\Component;
+use App\Services\{{ModelName}}Service;
+use Livewire\WithPagination;
+use App\Models\{{ModelName}};
+use Illuminate\Support\Facades\Gate;
+
+class {{ModelName}}Management extends Component
+{
+    use WithPagination;
+
+    public $itemId, $name, $status = true;
+    
+    public $isModalOpen = false, $searchTerm = '', $perPage = 10;
+    public $sortField = 'id', $sortDirection = 'desc';
+    
+    public $availableColumns = ['name' => 'Name', 'status' => 'Status', 'created_at' => 'Created Date'];
+    public $selectedColumns = ['name', 'status', 'created_at']; 
+    
+    public $selectedItems = [], $selectAll = false;
+    public $isDeleteModalOpen = false, $deleteId = null;
+
+    // ✅ អថេរសម្រាប់មុខងារ Bulk Edit
+    public $isBulkEditModalOpen = false;
+    public $selectedItemsQueue = []; 
+    public $currentBulkIndex = 0;
+    public $bulkItemId, $bulkItemName, $bulkItemStatus;
+
+    protected $queryString = ['searchTerm', 'perPage'];
+
+    protected function service()
+    {
+        return app({{ModelName}}Service::class);
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedItems = $this->service()->getItems($this->searchTerm, 'all', $this->sortField, $this->sortDirection)->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        } else {
+            $this->selectedItems = [];
+        }
+    }
+
+    public function sortBy($field) {
+        $this->sortDirection = ($this->sortField === $field && $this->sortDirection === 'asc') ? 'desc' : 'asc';
+        $this->sortField = $field;
+    }
+
+    // ==========================================
+    // មុខងារ Bulk Edit (ប្រើសិទ្ធិ edit ធម្មតា)
+    // ==========================================
+    public function bulkEdit()
+    {
+        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+
+        if (empty($this->selectedItems)) return;
+
+        $this->selectedItemsQueue = array_values($this->selectedItems);
+        $this->currentBulkIndex = 0;
+        
+        $this->loadBulkItemData($this->currentBulkIndex);
+        $this->isBulkEditModalOpen = true;
+    }
+
+    private function loadBulkItemData($index)
+    {
+        if (!isset($this->selectedItemsQueue[$index])) return;
+        
+        $itemId = $this->selectedItemsQueue[$index];
+        $item = {{ModelName}}::find($itemId);
+
+        if ($item) {
+            $this->bulkItemId = $item->id;
+            $this->bulkItemName = $item->name;
+            $this->bulkItemStatus = (bool) $item->status;
+        }
+    }
+
+    public function jumpToBulkItem($index)
+    {
+        $this->currentBulkIndex = $index;
+        $this->loadBulkItemData($index);
+        $this->resetErrorBag();
+    }
+
+    public function skipBulkItem()
+    {
+        $this->moveToNextBulkItem();
+    }
+
+    public function saveAndNextBulkItem()
+    {
+        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+
+        $this->validate([
+            'bulkItemName' => ['required', 'string', 'max:255'],
+        ]);
+
+        $this->service()->saveItem([
+            'name' => $this->bulkItemName,
+            'status' => $this->bulkItemStatus,
+        ], $this->bulkItemId);
+
+        $this->moveToNextBulkItem();
+    }
+
+    private function moveToNextBulkItem()
+    {
+        $this->resetErrorBag();
+        
+        if ($this->currentBulkIndex < count($this->selectedItemsQueue) - 1) {
+            $this->currentBulkIndex++;
+            $this->loadBulkItemData($this->currentBulkIndex);
+        } else {
+            $this->closeBulkEdit();
+            $this->dispatch('notify', type: 'success', message: __('messages.bulk_edit_completed') ?? 'Bulk edit completed successfully.');
+        }
+    }
+
+    public function closeBulkEdit()
+    {
+        $this->isBulkEditModalOpen = false;
+        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'bulkItemName', 'bulkItemStatus', 'selectedItems', 'selectAll']);
+        $this->resetErrorBag();
+    }
+
+    // ==========================================
+    // មុខងារទូទៅ (Single Add/Edit/Delete)
+    // ==========================================
+    public function openModal() {
+        abort_if(Gate::denies('create-{{modelNameLower}}'), 403);
+        
+        $this->reset(['itemId', 'name']);
+        $this->status = true;
+        $this->resetErrorBag();
+        $this->isModalOpen = true;
+    }
+
+    public function editItem($id) {
+        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+        
+        $this->resetErrorBag();
+        $item = {{ModelName}}::findOrFail($id);
+        
+        $this->itemId = $item->id;
+        $this->name = $item->name;
+        $this->status = (bool) $item->status;
+        
+        $this->isModalOpen = true;
+    }
+
+    public function toggleStatus($id) 
+    {
+        if (Gate::denies('edit-{{modelNameLower}}')) {
+            $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'You do not have permission.');
+            return; 
+        }
+
+        $item = {{ModelName}}::findOrFail($id);
+        $item->status = !$item->status;
+        $item->save();
+        $this->dispatch('notify', type: 'success', message: $item->status ? __('messages.activated_successfully') ?? 'Activated successfully' : __('messages.deactivated_successfully') ?? 'Deactivated successfully');
+    }
+
+    public function saveItem() {
+        if ($this->itemId) {
+            abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+        } else {
+            abort_if(Gate::denies('create-{{modelNameLower}}'), 403);
+        }
+
+        $this->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $this->service()->saveItem([
+            'name' => $this->name,
+            'status' => $this->status,
+        ], $this->itemId);
+
+        $this->isModalOpen = false;
+        $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
+    }
+
+    public function confirmDelete($id = null) {
+        abort_if(Gate::denies('delete-{{modelNameLower}}'), 403);
+        $this->deleteId = $id;
+        $this->isDeleteModalOpen = true;
+    }
+
+    public function executeDelete() {
+        // ✅ ប្រើសិទ្ធិ delete តែមួយសម្រាប់ទាំងលុបទោល និង Bulk Delete
+        abort_if(Gate::denies('delete-{{modelNameLower}}'), 403);
+
+        $ids = $this->deleteId ?: $this->selectedItems;
+        $this->service()->deleteItems($ids);
+        $this->reset(['selectedItems', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
+        $this->dispatch('notify', type: 'success', message: __('messages.deleted_successfully') ?? 'Deleted successfully.');
+    }
+
+    public function reloadData()
+    {
+        $this->reset(['searchTerm', 'selectedItems', 'selectAll']);
+        $this->resetPage(); 
+        $this->dispatch('notify', type: 'success', message: __('messages.data_reloaded') ?? 'Data reloaded.');
+    }
+
+    public function render() {
+        return view('livewire.{{ViewNamespace}}.{{modelNameLower}}-management', [
+            'items' => $this->service()->getItems($this->searchTerm, $this->perPage, $this->sortField, $this->sortDirection),
+        ])->title(__('messages.{{modelNameLower}}_management') ?? '{{ModelNamePlural}} Management');
+    }
+}

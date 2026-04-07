@@ -61,6 +61,16 @@ class GlobalTrashManager extends Component
                     'delete'  => 'force-delete-permission',
                 ]
             ],
+            'category' => [
+                'model' => \App\Models\Category::class,
+                'icon'  => '📦',
+                'label' => __('messages.category_management') ?? 'Categories',
+                'permissions' => [
+                    'view'    => 'view-category-trash',
+                    'restore' => 'restore-category',
+                    'delete'  => 'force-delete-category',
+                ]
+            ],
             
         ];
     }
