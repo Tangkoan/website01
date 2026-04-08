@@ -367,6 +367,38 @@
             </div>
         @endif
         {{-- [MENU_END_Product\Category] --}}
+        
+        {{-- [MENU_START_Product\Brand] --}}
+        @php $canViewBrand = auth()->user()->can('view-brand'); @endphp
+        @if($canViewBrand || $sidebarMode === 'disable')
+            <div x-show="!sidebarCollapsed" class="px-6 mb-2 mt-6" x-transition.opacity>
+                <p class="text-[11px] font-bold tracking-[0.15em] text-text-muted uppercase">PRODUCT</p>
+            </div>
+            <div x-data="{ open: {{ request()->is('product/*') ? 'true' : 'false' }}, hovered: false, timeout: null }" @mouseenter="hovered = true; clearTimeout(timeout)" @mouseleave="timeout = setTimeout(() => hovered = false, 200)" class="relative">
+                <button @click="sidebarCollapsed ? null : open = !open" class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200 {{ request()->is('product/*') ? 'text-primary bg-primary/10' : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
+                    @if(request()->is('product/*'))
+                        <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div>
+                    @endif
+                    <div class="flex items-center gap-4">
+                        <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 {{ request()->is('product/*') ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">📁</span>
+                        <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is('product/*') ? 'font-extrabold' : 'font-semibold' }}">{{ __('messages.product') ?? 'PRODUCT' }}</span>
+                    </div>
+                    <div x-show="!sidebarCollapsed" class="flex items-center justify-center transition-colors">
+                        <svg :class="open ? 'rotate-180 text-primary' : 'text-text-muted group-hover:text-text-main'" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                </button>
+                <div x-show="open && !sidebarCollapsed" x-cloak x-collapse class="relative bg-dropdown">
+                    <div class="absolute left-[34px] top-0 bottom-0 w-px bg-border-color"></div>
+                    <div class="py-2 space-y-0.5">
+                        <div class="pl-14 pr-6 relative">
+                            <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
+                            <x-sidebar-sub-link href="/product/brands" :title="__('messages.brand') ?? 'Brand'" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+        {{-- [MENU_END_Product\Brand] --}}
         {{-- [DYNAMIC_MENUS_HOOK] --}}
     </nav>
 </aside>

@@ -70,6 +70,16 @@ class GlobalTrashManager extends Component
                     'restore' => 'restore-category',
                     'delete'  => 'force-delete-category',
                 ]
+            ],
+            'brand' => [
+                'model' => \App\Models\Brand::class,
+                'icon'  => '📦',
+                'label' => __('messages.brand_management') ?? 'Brands',
+                'permissions' => [
+                    'view'    => 'view-brand-trash',
+                    'restore' => 'restore-brand',
+                    'delete'  => 'force-delete-brand',
+                ]
             ],
             
         ];

@@ -1,32 +1,42 @@
 <?php
 
-namespace {{Namespace}};
+namespace App\Livewire\Product;
 
 use Livewire\Component;
-use App\Services\{{ModelName}}Service;
+use App\Services\BrandService;
 use Livewire\WithPagination;
-{{FileUploadTrait}}
-use App\Models\{{ModelName}};
+use Livewire\WithFileUploads;
+
+use App\Models\Brand;
 use Illuminate\Support\Facades\Gate;
 
-class {{ModelName}}Management extends Component
+class BrandManagement extends Component
 {
     use WithPagination;
-    {{FileUploadTraitUse}}
+    use WithFileUploads;
+
 
     public $itemId;
     
     // Single Form Auto-generated fields
-    {{LivewireProperties}}
+    public $parent_id;
+    public $name;
+    public $status = true;
+    public $image;
+    public $images;
     
     // Bulk Form Auto-generated fields
-    {{LivewireBulkProperties}}
+    public $bulkItem_parent_id;
+    public $bulkItem_name;
+    public $bulkItem_status = true;
+    public $bulkItem_image;
+    public $bulkItem_images;
     
     public $isModalOpen = false, $searchTerm = '', $perPage = 10;
     public $sortField = 'id', $sortDirection = 'desc';
     
-    public $availableColumns = {{DynamicAvailableColumns}};
-    public $selectedColumns = {{DynamicSelectedColumns}}; 
+    public $availableColumns = ['parent_id' => 'Parent', 'name' => 'Name', 'status' => 'Status', 'image' => 'Image', 'images' => 'Images'];
+    public $selectedColumns = ['parent_id', 'name', 'status', 'image', 'images']; 
     
     public $selectedItems = [], $selectAll = false;
     public $isDeleteModalOpen = false, $deleteId = null;
@@ -38,7 +48,7 @@ class {{ModelName}}Management extends Component
 
     protected $queryString = ['searchTerm', 'perPage'];
 
-    protected function service() { return app({{ModelName}}Service::class); }
+    protected function service() { return app(BrandService::class); }
 
     public function updatedSelectAll($value) {
         if ($value) {
@@ -55,7 +65,7 @@ class {{ModelName}}Management extends Component
 
     // --- Bulk Edit ---
     public function bulkEdit() {
-        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('edit-brand'), 403);
         if (empty($this->selectedItems)) return;
         $this->selectedItemsQueue = array_values($this->selectedItems);
         $this->currentBulkIndex = 0;
@@ -65,10 +75,14 @@ class {{ModelName}}Management extends Component
 
     private function loadBulkItemData($index) {
         if (!isset($this->selectedItemsQueue[$index])) return;
-        $item = {{ModelName}}::find($this->selectedItemsQueue[$index]);
+        $item = Brand::find($this->selectedItemsQueue[$index]);
         if ($item) {
             $this->bulkItemId = $item->id;
-            {{LivewireBulkEditBindings}}
+            $this->bulkItem_parent_id = $item->parent_id;
+            $this->bulkItem_name = $item->name;
+            $this->bulkItem_status = (bool) $item->status;
+            $this->bulkItem_image = is_string($item->image) ? json_decode($item->image, true) ?? $item->image : $item->image;
+            $this->bulkItem_images = is_string($item->images) ? json_decode($item->images, true) ?? $item->images : $item->images;
         }
     }
 
@@ -81,12 +95,20 @@ class {{ModelName}}Management extends Component
     public function skipBulkItem() { $this->moveToNextBulkItem(); }
 
     public function saveAndNextBulkItem() {
-        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('edit-brand'), 403);
         $this->validate([
-            {{LivewireBulkRules}}
+            'bulkItem_parent_id' => 'nullable',
+            'bulkItem_name' => 'required|string|max:255',
+            'bulkItem_status' => 'required|boolean',
+            'bulkItem_image' => 'nullable',
+            'bulkItem_images' => 'nullable',
         ]);
         $this->service()->saveItem([
-            {{LivewireBulkSaveData}}
+            'parent_id' => $this->bulkItem_parent_id,
+            'name' => $this->bulkItem_name,
+            'status' => $this->bulkItem_status,
+            'image' => empty($this->bulkItem_image) ? null : (is_string($this->bulkItem_image) ? $this->bulkItem_image : $this->bulkItem_image->store('uploads/{{modelNameLower}}', 'public')),
+            'images' => empty($this->bulkItem_images) ? null : collect($this->bulkItem_images)->map(fn($f) => is_string($f) ? $f : $f->store('uploads/{{modelNameLower}}', 'public'))->toJson(),
         ], $this->bulkItemId);
         $this->moveToNextBulkItem();
     }
@@ -104,7 +126,7 @@ class {{ModelName}}Management extends Component
 
     public function closeBulkEdit() {
         $this->isBulkEditModalOpen = false;
-        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll'{{LivewireBulkResetData}}]);
+        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll', 'bulkItem_parent_id', 'bulkItem_name', 'bulkItem_status', 'bulkItem_image', 'bulkItem_images']);
         $this->resetErrorBag();
     }
 
@@ -119,11 +141,11 @@ class {{ModelName}}Management extends Component
 
     // --- Single Actions ---
     public function openModal() {
-        abort_if(Gate::denies('create-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('create-brand'), 403);
         $this->reset(['itemId']);
         
         $this->reset([
-            {{LivewireResetData}}
+            'parent_id', 'name', 'status', 'image', 'images'
         ]);
 
         $this->resetErrorBag();
@@ -131,38 +153,50 @@ class {{ModelName}}Management extends Component
     }
 
     public function editItem($id) {
-        abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('edit-brand'), 403);
         $this->resetErrorBag();
-        $item = {{ModelName}}::findOrFail($id);
+        $item = Brand::findOrFail($id);
         
         $this->itemId = $item->id;
         
-        {{LivewireEditBindings}}
+        $this->parent_id = $item->parent_id;
+        $this->name = $item->name;
+        $this->status = (bool) $item->status;
+        $this->image = is_string($item->image) ? json_decode($item->image, true) ?? $item->image : $item->image;
+        $this->images = is_string($item->images) ? json_decode($item->images, true) ?? $item->images : $item->images;
         
         $this->isModalOpen = true;
     }
 
     public function toggleStatus($id) {
-        if (Gate::denies('edit-{{modelNameLower}}')) {
+        if (Gate::denies('edit-brand')) {
             $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'No permission.');
             return; 
         }
-        $item = {{ModelName}}::findOrFail($id);
+        $item = Brand::findOrFail($id);
         $item->status = !$item->status;
         $item->save();
         $this->dispatch('notify', type: 'success', message: $item->status ? __('messages.activated') ?? 'Activated' : __('messages.deactivated') ?? 'Deactivated');
     }
 
     public function saveItem() {
-        if ($this->itemId) abort_if(Gate::denies('edit-{{modelNameLower}}'), 403);
-        else abort_if(Gate::denies('create-{{modelNameLower}}'), 403);
+        if ($this->itemId) abort_if(Gate::denies('edit-brand'), 403);
+        else abort_if(Gate::denies('create-brand'), 403);
 
         $this->validate([
-            {{LivewireRules}}
+            'parent_id' => 'nullable',
+            'name' => 'required|string|max:255',
+            'status' => 'required|boolean',
+            'image' => 'nullable',
+            'images' => 'nullable',
         ]);
 
         $this->service()->saveItem([
-            {{LivewireSaveData}}
+            'parent_id' => $this->parent_id,
+            'name' => $this->name,
+            'status' => $this->status,
+            'image' => empty($this->image) ? null : (is_string($this->image) ? $this->image : $this->image->store('uploads/{{modelNameLower}}', 'public')),
+            'images' => empty($this->images) ? null : collect($this->images)->map(fn($f) => is_string($f) ? $f : $f->store('uploads/{{modelNameLower}}', 'public'))->toJson(),
         ], $this->itemId);
 
         $this->isModalOpen = false;
@@ -170,13 +204,13 @@ class {{ModelName}}Management extends Component
     }
 
     public function confirmDelete($id = null) {
-        abort_if(Gate::denies('delete-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('delete-brand'), 403);
         $this->deleteId = $id;
         $this->isDeleteModalOpen = true;
     }
 
     public function executeDelete() {
-        abort_if(Gate::denies('delete-{{modelNameLower}}'), 403);
+        abort_if(Gate::denies('delete-brand'), 403);
         $ids = $this->deleteId ?: $this->selectedItems;
         $this->service()->deleteItems($ids);
         $this->reset(['selectedItems', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
@@ -190,8 +224,8 @@ class {{ModelName}}Management extends Component
     }
 
     public function render() {
-        return view('livewire.{{ViewNamespace}}.{{modelNameLower}}-management', [
+        return view('livewire.product.brand.brand-management', [
             'items' => $this->service()->getItems($this->searchTerm, $this->perPage, $this->sortField, $this->sortDirection),
-        ])->title(__('messages.{{modelNameLower}}_management') ?? '{{ModelNamePlural}} Management');
+        ])->title(__('messages.brand_management') ?? 'Brands Management');
     }
 }

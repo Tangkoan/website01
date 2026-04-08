@@ -6,20 +6,20 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class {{ModelName}}PermissionSeeder extends Seeder
+class BrandPermissionSeeder extends Seeder
 {
     public function run(): void
     {
         $permissions = [
-            'view-{{modelNameLower}}',
-            'create-{{modelNameLower}}',
-            'edit-{{modelNameLower}}',
-            'delete-{{modelNameLower}}',
-            'view-{{modelNameLower}}-logs',
-            'delete-{{modelNameLower}}-logs',
-            'view-{{modelNameLower}}-trash',
-            'restore-{{modelNameLower}}',
-            'force-delete-{{modelNameLower}}',
+            'view-brand',
+            'create-brand',
+            'edit-brand',
+            'delete-brand',
+            'view-brand-logs',
+            'delete-brand-logs',
+            'view-brand-trash',
+            'restore-brand',
+            'force-delete-brand',
         ];
 
         foreach ($permissions as $permission) {

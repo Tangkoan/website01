@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Product\BrandManagement;
+use App\Livewire\Product\CategoryManagement;use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
 // Livewire Components
@@ -133,4 +134,7 @@ Route::get('/cron/trash/empty/{token}', function ($token) {
 Route::fallback(function () {
     abort(404);
 });
-Route::get('/product/categories', \App\Livewire\Product\CategoryManagement::class)->name('product.categories.index');
+Route::prefix('product')->name('product.')->group(function () {
+    Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
+    Route::get('/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
+});

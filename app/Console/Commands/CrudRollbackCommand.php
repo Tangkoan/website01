@@ -16,7 +16,6 @@ class CrudRollbackCommand extends Command
         $inputModel = $this->argument('model');
         $modelName = class_basename($inputModel);
         
-        // ✅ ធានាថា Path ត្រូវបានបំលែងទៅជា StudlyCase ដូចពេល Generate
         $modelPathRaw = trim(str_replace($modelName, '', $inputModel), '/\\');
         $modelPathParts = array_map(fn($part) => Str::studly($part), explode('/', str_replace('\\', '/', $modelPathRaw)));
         $modelPath = implode('\\', array_filter($modelPathParts));
@@ -24,13 +23,13 @@ class CrudRollbackCommand extends Command
         $modelName = Str::studly($modelName); 
         $modelNameLower = Str::kebab($modelName);
 
-        // ឥឡូវនេះ $classPath នឹងមានទម្រង់ 'Product\Category' ជានិច្ច
         $classPath = empty($modelPath) ? $modelName : $modelPath . '\\' . $modelName;
         $viewPathBase = empty($modelPath) ? $modelNameLower : strtolower(str_replace('\\', '/', $modelPath)) . '/' . $modelNameLower;
 
         $this->info("🔍 Scanning for leftover files of [{$classPath}]...");
 
         $targets = [
+            'model' => app_path("Models/{$modelName}.php"), // ✅ ត្រូវលុប Model វិញ
             'service' => app_path("Services/{$modelName}Service.php"),
             'livewire' => empty($modelPath) ? app_path("Livewire/{$modelName}Management.php") : app_path("Livewire/" . str_replace('\\', '/', $classPath) . "Management.php"),
             'view_main' => resource_path("views/livewire/{$viewPathBase}"),
@@ -43,7 +42,7 @@ class CrudRollbackCommand extends Command
         $existing = [];
         foreach ($targets as $key => $path) {
             if ($key === 'route' || $key === 'injections') {
-                $existing[$key] = $path; // Always try to clean routes and injections
+                $existing[$key] = $path; 
             } elseif (File::exists($path)) {
                 $existing[$key] = $path;
             }
@@ -73,19 +72,28 @@ class CrudRollbackCommand extends Command
 
     protected function removeRoute($classPath) {
         $webPhpPath = base_path('routes/web.php');
-        $fullClass = "\\App\\Livewire\\" . str_replace('/', '\\', $classPath) . "Management::class";
+        if (!File::exists($webPhpPath)) return;
         
-        if (File::exists($webPhpPath)) {
-            $content = File::get($webPhpPath);
-            // ✅ Regex នេះនឹងលុប Route ទោះបីជាអក្សរតូច ឬធំក៏ដោយ (ប្រើ /i)
-            $escapedClass = preg_quote($fullClass, '/');
-            $pattern = "/\n?\s*Route::get\(.*{$escapedClass}.*\);/i";
-            
-            if (preg_match($pattern, $content)) {
-                File::put($webPhpPath, preg_replace($pattern, '', $content));
-                $this->line("🔗 Removed Route from web.php");
-            }
-        }
+        $content = File::get($webPhpPath);
+        
+        $modelName = class_basename($classPath);
+        $className = "{$modelName}Management";
+        $fullClassName = preg_quote("App\\Livewire\\" . str_replace('/', '\\', $classPath) . "Management", '/');
+        
+        // 1. លុប Use Statement នៅខាងលើ
+        $usePattern = "/\n?use\s+{$fullClassName};\n?/";
+        $content = preg_replace($usePattern, '', $content);
+        
+        // 2. លុប Route នៅខាងក្នុង
+        $routePattern = "/\n?\s*Route::get\(.*{$className}::class.*\);/i";
+        $content = preg_replace($routePattern, '', $content);
+        
+        // 3. ឆ្លាតវៃ៖ លុប Group ណាដែលទទេ (គ្មាន Route ខាងក្នុង) ចោលវិញ
+        $emptyGroupPattern = "/\n?Route::prefix\([^)]+\)->name\([^)]+\)->group\(\s*function\s*\(\)\s*\{\s*\}\);\n?/";
+        $content = preg_replace($emptyGroupPattern, "\n", $content);
+
+        File::put($webPhpPath, $content);
+        $this->line("🔗 Cleaned up Route and 'use' statements from web.php");
     }
 
     protected function removeInjections($modelName, $modelNameLower, $modelPath) {

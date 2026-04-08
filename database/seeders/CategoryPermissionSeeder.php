@@ -26,7 +26,6 @@ class CategoryPermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Add to Super Admin automatically
         $superAdmin = Role::where('name', 'Super Admin')->first();
         if ($superAdmin) {
             $superAdmin->givePermissionTo($permissions);

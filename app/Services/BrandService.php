@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Category;
+use App\Models\Brand;
 
-class CategoryService
+class BrandService
 {
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
-        $query = Category::query()
+        $query = Brand::query()
             ->when($searchTerm, function ($query, $searchTerm) {
                 return $query->where('name', 'like', '%' . $searchTerm . '%');
             })
@@ -19,12 +19,12 @@ class CategoryService
 
     public function saveItem(array $data, $id = null)
     {
-        return Category::updateOrCreate(['id' => $id], $data);
+        return Brand::updateOrCreate(['id' => $id], $data);
     }
 
     public function deleteItems($ids)
     {
         $ids = is_array($ids) ? $ids : [$ids];
-        return Category::whereIn('id', $ids)->get()->each->delete();
+        return Brand::whereIn('id', $ids)->get()->each->delete();
     }
 }
