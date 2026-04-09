@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 class CrudGeneratorCommand extends Command
 {
     protected $signature = 'vc:crud {model : The name of the model (e.g. Product or Settings/Category)}';
-    protected $description = 'Generate complete CRUD with Summernote File Upload Support';
+    protected $description = 'Generate complete CRUD with Smart Schema Analyzer, AJAX Summernote, and UI Fixes';
 
     public function handle()
     {
@@ -104,7 +104,7 @@ class CrudGeneratorCommand extends Command
         $this->generateFile('seeder-permission.stub', database_path("seeders/{$modelName}PermissionSeeder.php"), $replacements);
         $this->injectIntoGenericControllers($modelName, $modelNameLower, $modelPath);
 
-        $this->info("✅ CRUD Files generated successfully with AJAX Upload Feature!");
+        $this->info("✅ CRUD Files generated successfully with all Advanced UI & Logic fixes!");
     }
 
     protected function discoverTableName($baseName) {
@@ -145,16 +145,40 @@ class CrudGeneratorCommand extends Command
     }
 
     protected function injectIntoGenericControllers($modelName, $modelNameLower, $modelPath) {
-        $logPath = app_path('Livewire/Settings/GenericLog.php'); $trashPath = app_path('Livewire/Settings/GenericTrash.php'); $globalTrashPath = app_path('Livewire/Settings/GlobalTrashManager.php');
+        $logPath = app_path('Livewire/Settings/GenericLog.php');
+        $trashPath = app_path('Livewire/Settings/GenericTrash.php');
+        $globalTrashPath = app_path('Livewire/Settings/GlobalTrashManager.php');
+
         $mapEntry = "\n            '{$modelNameLower}' => \App\Models\\{$modelName}::class,";
+        
         $routePrefixName = empty($modelPath) ? '' : strtolower(str_replace('\\', '.', $modelPath)) . '.';
-        $pluralModelRoute = $routePrefixName . Str::plural($modelNameLower) . '.index'; $backRouteEntry = "\n            '{$modelNameLower}' => '{$pluralModelRoute}',";
+        $pluralModelRoute = $routePrefixName . Str::plural($modelNameLower) . '.index'; 
+        
+        $backRouteEntry = "\n            '{$modelNameLower}' => '{$pluralModelRoute}',";
+
         foreach ([$logPath, $trashPath] as $path) {
-            if (File::exists($path)) {
-                $content = File::get($path);
-                if (!str_contains($content, "'{$modelNameLower}' => \App\Models")) $content = preg_replace('/(protected function getModelMap\(\)\s*\{\s*return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$mapEntry$3", $content);
-                if (!str_contains($content, "'{$modelNameLower}' => '{$pluralModelRoute}'")) $content = preg_replace('/(public function getBackRoute\(\)\s*\{\s*\$routes\s*=\s*\[)(.*?)(\s*\];\s*return\s*\$routes\[\$this->type\])/s', "$1$2$backRouteEntry$3", $content);
-                File::put($path, $content);
+            if (\Illuminate\Support\Facades\File::exists($path)) {
+                $content = \Illuminate\Support\Facades\File::get($path);
+                
+                if (!str_contains($content, "'{$modelNameLower}' => \App\Models")) {
+                    $content = preg_replace('/(getModelMap\(\)\s*\{.*?return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$mapEntry$3", $content);
+                }
+                
+                // បញ្ចូលចូលក្នុង $backRouteMap នៃ Function render() 
+                if (!str_contains($content, "'{$modelNameLower}' => '{$pluralModelRoute}'")) {
+                    $content = preg_replace('/(\$backRouteMap\s*=\s*\[)(.*?)(\s*\];)/s', "$1$2$backRouteEntry$3", $content);
+                }
+                
+                \Illuminate\Support\Facades\File::put($path, $content);
+            }
+        }
+
+        if (\Illuminate\Support\Facades\File::exists($globalTrashPath)) {
+            $content = \Illuminate\Support\Facades\File::get($globalTrashPath);
+            if (!str_contains($content, "'{$modelNameLower}' => [")) {
+                $trashConfig = "\n            '{$modelNameLower}' => [\n                'model' => \App\Models\\{$modelName}::class,\n                'icon'  => '📦',\n                'label' => __('messages.{$modelNameLower}_management') ?? '" . Str::plural($modelName) . "',\n                'permissions' => [\n                    'view'    => 'view-{$modelNameLower}-trash',\n                    'restore' => 'restore-{$modelNameLower}',\n                    'delete'  => 'force-delete-{$modelNameLower}',\n                ]\n            ],";
+                $content = preg_replace('/(public function getTrashModulesProperty\(\)\s*\{\s*return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$trashConfig$3", $content);
+                \Illuminate\Support\Facades\File::put($globalTrashPath, $content);
             }
         }
     }
@@ -255,7 +279,6 @@ class CrudGeneratorCommand extends Command
 EOT;
     }
 
-    // ✅ ការបំពាក់ AJAX Upload ពិតប្រាកដទៅកាន់ /summernote-upload (កូដ PHP Escaped)
     private function getTextAreaHtmlTemplate($col, $label, $var) {
         return <<<EOT
                     <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
@@ -293,23 +316,13 @@ EOT;
                                                         let pid = 'img-' + Date.now();
                                                         editor.summernote('insertImage', e.target.result, function (\$img) { \$img.attr('id', pid); \$img.css('opacity', '0.5'); });
                                                         let data = new FormData(); data.append('image', file);
-                                                        
-                                                        // ✅ ការពារ Error ពេលអត់មាន CSRF Token
                                                         let metaTag = document.querySelector('meta[name=csrf-token]');
                                                         let csrfToken = metaTag ? metaTag.content : '';
-
                                                         \$.ajax({
                                                             url: '/summernote-upload', method: 'POST', data: data, processData: false, contentType: false,
                                                             headers: { 'X-CSRF-TOKEN': csrfToken },
-                                                            success: function(res) { 
-                                                                let \$i = \$('#' + pid); \$i.attr('src', res.url); \$i.css('opacity', '1'); self.value = editor.summernote('code'); 
-                                                            },
-                                                            error: function(jqXHR, textStatus, errorThrown) { 
-                                                                \$('#' + pid).remove(); 
-                                                                // ✅ បង្ហាញលេខកូដ Error ច្បាស់ៗ
-                                                                alert('Upload Failed! Error Code: ' + jqXHR.status + ' (' + errorThrown + '). សូមឆែកមើល Console (F12) សម្រាប់ព័ត៌មានលម្អិត។'); 
-                                                                console.error('Summernote Upload Error Details:', jqXHR.responseText);
-                                                            }
+                                                            success: function(res) { let \$i = \$('#' + pid); \$i.attr('src', res.url); \$i.css('opacity', '1'); self.value = editor.summernote('code'); },
+                                                            error: function(jqXHR, textStatus, errorThrown) { \$('#' + pid).remove(); alert('Upload Failed! Error Code: ' + jqXHR.status); }
                                                         });
                                                     };
                                                     reader.readAsDataURL(file);
@@ -381,11 +394,95 @@ EOT;
     private function getTextTableCell($col) {
         return "                        @if(in_array('{$col}', \$selectedColumns)) \n                        <td class=\"p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors\">\n                            @php \$pt = strip_tags(\$item->{$col}); \$hH = strlen(\$item->{$col}) > strlen(\$pt); @endphp\n                            @if(trim(\$pt) !== '') {{ Str::limit(\$pt, 40) }} @elseif(\$hH && str_contains(\$item->{$col}, '<img')) <span class=\"text-[var(--color-primary)] text-[10px]\">Image Content</span> @else <span class=\"text-[10px] text-[var(--color-text-muted)]\">---</span> @endif\n                        </td> \n                        @endif\n";
     }
+    
     private function getRelationTableCell($col, $rel) { return "                        @if(in_array('{$col}', \$selectedColumns)) <td class=\"p-4 text-sm font-bold text-[var(--color-text-main)]\">{{ \$item->{$rel}?->name ?? \$item->{$rel}?->title ?? \$item->{$col} ?? 'N/A' }}</td> @endif\n"; }
-    private function getStatusTableCell($col) { return "                        @if(in_array('{$col}', \$selectedColumns)) <td class=\"p-4 text-center\"><label class=\"relative inline-flex items-center cursor-pointer\"><input type=\"checkbox\" wire:change.stop=\"toggleStatus({{ \$item->id }})\" class=\"sr-only peer\" {{ \$item->status ? 'checked' : '' }}><div class=\"w-9 h-5 bg-[var(--color-border-color)] rounded-full peer peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all\"></div></label></td> @endif\n"; }
-    private function getImageTableCell($col) { return "                        @if(in_array('{$col}', \$selectedColumns)) <td class=\"p-4 text-sm font-bold text-[var(--color-text-main)]\">File Content</td> @endif\n"; }
+    
+    private function getStatusTableCell($col) {
+        return <<<EOT
+                        @if(in_array('{$col}', \$selectedColumns))
+                        <td class="p-4 text-center whitespace-nowrap w-[1%]">
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" wire:change.stop="toggleStatus({{ \$item->id }})" class="sr-only peer" {{ \$item->status ? 'checked' : '' }}>
+                                <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
+                            </label>
+                        </td>
+                        @endif\n
+EOT;
+    }
+
+    private function getImageTableCell($col) {
+        $isMultiple = str_ends_with($col, 's');
+        if ($isMultiple) {
+            return <<<EOT
+                        @if(in_array('{$col}', \$selectedColumns))
+                        <td class="p-4 w-[1%] whitespace-nowrap">
+                            @php \$files = is_string(\$item->{$col}) ? json_decode(\$item->{$col}, true) : \$item->{$col}; @endphp
+                            @if(\$files && is_array(\$files) && count(\$files) > 0)
+                                <div class="flex gap-1 items-center">
+                                    @foreach(array_slice(\$files, 0, 3) as \$file) 
+                                        <img src="{{ asset('storage/'.\$file) }}" class="h-8 w-8 rounded-md object-cover border border-[var(--color-border-color)] shadow-sm shrink-0"> 
+                                    @endforeach
+                                    @if(count(\$files) > 3) <span class="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-background)] px-1.5 py-0.5 rounded-md border border-[var(--color-border-color)]">+{{ count(\$files) - 3 }}</span> @endif
+                                </div>
+                            @else <span class="text-[10px] font-bold text-[var(--color-text-muted)]">N/A</span> @endif
+                        </td>
+                        @endif\n
+EOT;
+        } else {
+            return <<<EOT
+                        @if(in_array('{$col}', \$selectedColumns))
+                        <td class="p-4 w-[1%] whitespace-nowrap">
+                            @if(\$item->{$col}) <img src="{{ asset('storage/'.\$item->{$col}) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm shrink-0">
+                            @else <div class="h-10 w-10 rounded-lg bg-[var(--color-background)] border border-[var(--color-border-color)] flex items-center justify-center text-[10px] text-[var(--color-text-muted)] font-bold shrink-0">N/A</div> @endif
+                        </td>
+                        @endif\n
+EOT;
+        }
+    }
+
     private function getTextMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ strip_tags(\$item->{$col}) }}</span></div> @endif\n"; }
     private function getRelationMobileCell($col, $rel) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ \$item->{$rel}?->name ?? \$item->{$col} }}</span></div> @endif\n"; }
-    private function getStatusMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col shrink-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><label class=\"relative inline-flex items-center cursor-pointer mt-1\"><input type=\"checkbox\" wire:change.stop=\"toggleStatus({{ \$item->id }})\" class=\"sr-only peer\" {{ \$item->status ? 'checked' : '' }}><div class=\"w-9 h-5 bg-[var(--color-border-color)] rounded-full peer peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all\"></div></label></div> @endif\n"; }
-    private function getImageMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <span class=\"text-[9px] font-black\">File Content</span> @endif\n"; }
+    
+    private function getStatusMobileCell($col) {
+        return <<<EOT
+                    @if(in_array('{$col}', \$selectedColumns))
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.{$col}') }}</span>
+                        <label class="relative inline-flex items-center cursor-pointer mt-1 shrink-0">
+                            <input type="checkbox" wire:change.stop="toggleStatus({{ \$item->id }})" class="sr-only peer" {{ \$item->status ? 'checked' : '' }}>
+                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
+                        </label>
+                    </div>
+                    @endif\n
+EOT;
+    }
+
+    private function getImageMobileCell($col) {
+        $isMultiple = str_ends_with($col, 's');
+        if ($isMultiple) {
+            return <<<EOT
+                    @if(in_array('{$col}', \$selectedColumns))
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.{$col}') }}</span>
+                        @php \$files = is_string(\$item->{$col}) ? json_decode(\$item->{$col}, true) : \$item->{$col}; @endphp
+                        @if(\$files && is_array(\$files) && count(\$files) > 0)
+                            <div class="flex gap-1 items-center mt-1">
+                                @foreach(array_slice(\$files, 0, 3) as \$file) <img src="{{ asset('storage/'.\$file) }}" class="h-8 w-8 rounded object-cover border border-[var(--color-border-color)] shadow-sm shrink-0"> @endforeach
+                            </div>
+                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
+                    </div>
+                    @endif\n
+EOT;
+        } else {
+            return <<<EOT
+                    @if(in_array('{$col}', \$selectedColumns))
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.{$col}') }}</span>
+                        @if(\$item->{$col}) <img src="{{ asset('storage/'.\$item->{$col}) }}" class="h-8 w-8 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm mt-1 shrink-0"> 
+                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
+                    </div>
+                    @endif\n
+EOT;
+        }
+    }
 }

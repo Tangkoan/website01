@@ -32,7 +32,9 @@ class GenericTrash extends Component
             'role' => Role::class,
             'permission' => Permission::class,
             'brand' => \App\Models\Brand::class,
-            'category' => \App\Models\Category::class,
+            'category' => \App\Models\Category::class,
+
+
         ];
     }
 
@@ -149,6 +151,18 @@ class GenericTrash extends Component
         $this->isDeleteModalOpen = true;
     }
 
+    public function getBackRoute()
+    {
+        $routes = [
+            'user' => 'settings.users',
+            'role' => 'settings.roles',
+            'permission' => 'settings.permissions',
+
+        ];
+
+        return $routes[$this->type] ?? 'dashboard';
+    }
+
     
 
     public function render()
@@ -157,6 +171,8 @@ class GenericTrash extends Component
             'user' => 'settings.users',
             'role' => 'settings.roles',
             'permission' => 'settings.permissions',
+            'brand' => 'product.brands.index',
+            'category' => 'product.categories.index',
         ];
 
         // ហៅ BaseQuery មកប្រើ

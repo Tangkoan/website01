@@ -10,32 +10,34 @@
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                     <input type="checkbox" wire:model.live="selectedItems" value="{{ $item->id }}" class="row-checkbox w-4 h-4 mt-1 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] bg-transparent cursor-pointer flex-shrink-0 disabled:opacity-50">
                     <div class="min-w-0 flex-1 grid grid-cols-2 gap-2">
-                                            @if(in_array('parent_id', $selectedColumns)) <div class="flex flex-col"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.parent_id') }}</span><span class="text-xs font-bold text-[var(--color-text-main)] truncate">{{ $item->parent?->name ?? $item->parent?->title ?? $item->parent_id ?? 'N/A' }}</span></div> @endif
-                    @if(in_array('name', $selectedColumns)) 
-                    <div class="flex flex-col min-w-0">
-                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.name') }}</span>
-                        <span class="text-xs font-bold text-[var(--color-text-main)] truncate block" title="{{ strip_tags($item->name) }}">
-                            {{ strip_tags($item->name) }}
-                        </span>
-                    </div> 
-                    @endif
-                    @if(in_array('status', $selectedColumns)) 
+                                            @if(in_array('parent_id', $selectedColumns)) <div class="flex flex-col min-w-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.parent_id') }}</span><span class="text-xs font-bold text-[var(--color-text-main)] truncate block">{{ $item->parent?->name ?? $item->parent_id }}</span></div> @endif
+                    @if(in_array('name', $selectedColumns)) <div class="flex flex-col min-w-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.name') }}</span><span class="text-xs font-bold text-[var(--color-text-main)] truncate block">{{ strip_tags($item->name) }}</span></div> @endif
+                    @if(in_array('status', $selectedColumns))
                     <div class="flex flex-col shrink-0">
                         <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.status') }}</span>
-                        <label class="relative inline-flex items-center cursor-pointer mt-1">
+                        <label class="relative inline-flex items-center cursor-pointer mt-1 shrink-0">
                             <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
-                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                            <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
                         </label>
-                    </div> 
+                    </div>
                     @endif
                     @if(in_array('image', $selectedColumns))
-                        @if($item->image) <img src="{{ asset('storage/'.$item->image) }}" class="h-8 w-8 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm"> @endif
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.image') }}</span>
+                        @if($item->image) <img src="{{ asset('storage/'.$item->image) }}" class="h-8 w-8 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm mt-1 shrink-0"> 
+                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
+                    </div>
                     @endif
                     @if(in_array('images', $selectedColumns))
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.images') }}</span>
                         @php $files = is_string($item->images) ? json_decode($item->images, true) : $item->images; @endphp
                         @if($files && is_array($files) && count($files) > 0)
-                            <div class="flex gap-1 items-center">@foreach(array_slice($files, 0, 3) as $file) <img src="{{ asset('storage/'.$file) }}" class="h-6 w-6 rounded object-cover border border-[var(--color-border-color)] shadow-sm"> @endforeach</div>
-                        @endif
+                            <div class="flex gap-1 items-center mt-1">
+                                @foreach(array_slice($files, 0, 3) as $file) <img src="{{ asset('storage/'.$file) }}" class="h-8 w-8 rounded object-cover border border-[var(--color-border-color)] shadow-sm shrink-0"> @endforeach
+                            </div>
+                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
+                    </div>
                     @endif
 
                     </div>

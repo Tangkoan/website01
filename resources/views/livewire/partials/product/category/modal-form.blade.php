@@ -51,23 +51,13 @@
                                                         let pid = 'img-' + Date.now();
                                                         editor.summernote('insertImage', e.target.result, function ($img) { $img.attr('id', pid); $img.css('opacity', '0.5'); });
                                                         let data = new FormData(); data.append('image', file);
-                                                        
-                                                        // ✅ ការពារ Error ពេលអត់មាន CSRF Token
                                                         let metaTag = document.querySelector('meta[name=csrf-token]');
                                                         let csrfToken = metaTag ? metaTag.content : '';
-
                                                         $.ajax({
                                                             url: '/summernote-upload', method: 'POST', data: data, processData: false, contentType: false,
                                                             headers: { 'X-CSRF-TOKEN': csrfToken },
-                                                            success: function(res) { 
-                                                                let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); 
-                                                            },
-                                                            error: function(jqXHR, textStatus, errorThrown) { 
-                                                                $('#' + pid).remove(); 
-                                                                // ✅ បង្ហាញលេខកូដ Error ច្បាស់ៗ
-                                                                alert('Upload Failed! Error Code: ' + jqXHR.status + ' (' + errorThrown + '). សូមឆែកមើល Console (F12) សម្រាប់ព័ត៌មានលម្អិត។'); 
-                                                                console.error('Summernote Upload Error Details:', jqXHR.responseText);
-                                                            }
+                                                            success: function(res) { let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); },
+                                                            error: function(jqXHR, textStatus, errorThrown) { $('#' + pid).remove(); alert('Upload Failed! Error Code: ' + jqXHR.status); }
                                                         });
                                                     };
                                                     reader.readAsDataURL(file);
@@ -129,23 +119,13 @@
                                                         let pid = 'img-' + Date.now();
                                                         editor.summernote('insertImage', e.target.result, function ($img) { $img.attr('id', pid); $img.css('opacity', '0.5'); });
                                                         let data = new FormData(); data.append('image', file);
-                                                        
-                                                        // ✅ ការពារ Error ពេលអត់មាន CSRF Token
                                                         let metaTag = document.querySelector('meta[name=csrf-token]');
                                                         let csrfToken = metaTag ? metaTag.content : '';
-
                                                         $.ajax({
                                                             url: '/summernote-upload', method: 'POST', data: data, processData: false, contentType: false,
                                                             headers: { 'X-CSRF-TOKEN': csrfToken },
-                                                            success: function(res) { 
-                                                                let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); 
-                                                            },
-                                                            error: function(jqXHR, textStatus, errorThrown) { 
-                                                                $('#' + pid).remove(); 
-                                                                // ✅ បង្ហាញលេខកូដ Error ច្បាស់ៗ
-                                                                alert('Upload Failed! Error Code: ' + jqXHR.status + ' (' + errorThrown + '). សូមឆែកមើល Console (F12) សម្រាប់ព័ត៌មានលម្អិត។'); 
-                                                                console.error('Summernote Upload Error Details:', jqXHR.responseText);
-                                                            }
+                                                            success: function(res) { let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); },
+                                                            error: function(jqXHR, textStatus, errorThrown) { $('#' + pid).remove(); alert('Upload Failed! Error Code: ' + jqXHR.status); }
                                                         });
                                                     };
                                                     reader.readAsDataURL(file);

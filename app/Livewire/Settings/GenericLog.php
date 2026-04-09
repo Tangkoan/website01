@@ -37,7 +37,8 @@ class GenericLog extends Component
             'role' => Role::class,
             'permission' => Permission::class,
             'brand' => \App\Models\Brand::class,
-            'category' => \App\Models\Category::class,
+            'category' => \App\Models\Category::class,
+
         ];
     }
 
@@ -201,10 +202,8 @@ class GenericLog extends Component
         $routes = [
             'user' => 'settings.users',
             'role' => 'settings.roles',
-            'permission' => 'settings.permissions',
-            'category' => 'categories.index',
-            'brand' => 'product.brands.index',
-            'category' => 'product.categories.index',
+            'permission' => 'settings.permissions',
+
         ];
 
         return $routes[$this->type] ?? 'dashboard';

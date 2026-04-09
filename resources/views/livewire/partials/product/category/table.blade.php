@@ -32,7 +32,14 @@
                             @if(trim($pt) !== '') {{ Str::limit($pt, 40) }} @elseif($hH && str_contains($item->description, '<img')) <span class="text-[var(--color-primary)] text-[10px]">Image Content</span> @else <span class="text-[10px] text-[var(--color-text-muted)]">---</span> @endif
                         </td> 
                         @endif
-                        @if(in_array('status', $selectedColumns)) <td class="p-4 text-center"><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}><div class="w-9 h-5 bg-[var(--color-border-color)] rounded-full peer peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></td> @endif
+                        @if(in_array('status', $selectedColumns))
+                        <td class="p-4 text-center whitespace-nowrap w-[1%]">
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
+                                <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
+                            </label>
+                        </td>
+                        @endif
                         @if(in_array('des', $selectedColumns)) 
                         <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
                             @php $pt = strip_tags($item->des); $hH = strlen($item->des) > strlen($pt); @endphp

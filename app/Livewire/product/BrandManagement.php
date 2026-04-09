@@ -180,8 +180,8 @@ class BrandManagement extends Component
     }
 
     public function saveItem() {
-        if ($this->itemId) abort_if(Gate::denies('edit-brand'), 403);
-        else abort_if(Gate::denies('create-brand'), 403);
+        if ($this->itemId) abort_if(\Illuminate\Support\Facades\Gate::denies('edit-brand'), 403);
+        else abort_if(\Illuminate\Support\Facades\Gate::denies('create-brand'), 403);
 
         $this->validate([
             'parent_id' => 'nullable',
@@ -204,27 +204,23 @@ class BrandManagement extends Component
             $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
 
         } catch (\Illuminate\Database\QueryException $e) {
-            // ✅ ចាប់យកកំហុស "Data too long" (1406)
+            // ✅ ចាប់យកកំហុស "Data too long" (1406) - កូដត្រឹមត្រូវគ្មានសញ្ញា \ នៅពីមុខ $ ឡើយ
             if ($e->getCode() === '22001' || \Illuminate\Support\Str::contains($e->getMessage(), '1406')) {
                 
-                // 🔍 វេទមន្តទាញយកឈ្មោះ Column ចេញពី Error Message (ឧទាហរណ៍៖ ...column 'description' at row 1)
                 preg_match("/column '([^']+)'/", $e->getMessage(), $matches);
                 $columnName = $matches[1] ?? '';
 
-                // ប្តូរឈ្មោះ Column ទៅជា Label ដែលស្រួលមើល (ឧ. description -> Description)
                 $fieldLabel = __("messages.$columnName");
                 if ($fieldLabel == "messages.$columnName") {
                     $fieldLabel = \Illuminate\Support\Str::headline($columnName);
                 }
 
-                // បង្ហាញ Error ចំឈ្មោះ Field នោះតែម្តង
                 $this->dispatch('notify', 
                     type: 'error', 
                     message: __('messages.field_data_too_large', ['field' => $fieldLabel]) 
                              ?? "The data in field [$fieldLabel] is too large."
                 );
                 
-                // បន្ថែម Error ក្រហមនៅពីក្រោម Input នោះថែមទៀត
                 if ($columnName) {
                     $this->addError($columnName, __('messages.data_too_large'));
                 }
