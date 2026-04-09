@@ -20,17 +20,19 @@ class CategoryManagement extends Component
     public $name;
     public $description;
     public $status = true;
+    public $des;
     
     // Bulk Form Auto-generated fields
     public $bulkItem_name;
     public $bulkItem_description;
     public $bulkItem_status = true;
+    public $bulkItem_des;
     
     public $isModalOpen = false, $searchTerm = '', $perPage = 10;
     public $sortField = 'id', $sortDirection = 'desc';
     
-    public $availableColumns = ['name' => 'Name', 'description' => 'Description', 'status' => 'Status'];
-    public $selectedColumns = ['name', 'description', 'status']; 
+    public $availableColumns = ['name' => 'Name', 'description' => 'Description', 'status' => 'Status', 'des' => 'Des'];
+    public $selectedColumns = ['name', 'description', 'status', 'des']; 
     
     public $selectedItems = [], $selectAll = false;
     public $isDeleteModalOpen = false, $deleteId = null;
@@ -75,6 +77,7 @@ class CategoryManagement extends Component
             $this->bulkItem_name = $item->name;
             $this->bulkItem_description = $item->description;
             $this->bulkItem_status = (bool) $item->status;
+            $this->bulkItem_des = $item->des;
         }
     }
 
@@ -92,11 +95,13 @@ class CategoryManagement extends Component
             'bulkItem_name' => 'required|string|max:255',
             'bulkItem_description' => 'nullable|string',
             'bulkItem_status' => 'required|boolean',
+            'bulkItem_des' => 'nullable|string',
         ]);
         $this->service()->saveItem([
             'name' => $this->bulkItem_name,
             'description' => $this->bulkItem_description,
             'status' => $this->bulkItem_status,
+            'des' => $this->bulkItem_des,
         ], $this->bulkItemId);
         $this->moveToNextBulkItem();
     }
@@ -114,7 +119,7 @@ class CategoryManagement extends Component
 
     public function closeBulkEdit() {
         $this->isBulkEditModalOpen = false;
-        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll', 'bulkItem_name', 'bulkItem_description', 'bulkItem_status']);
+        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll', 'bulkItem_name', 'bulkItem_description', 'bulkItem_status', 'bulkItem_des']);
         $this->resetErrorBag();
     }
 
@@ -133,7 +138,7 @@ class CategoryManagement extends Component
         $this->reset(['itemId']);
         
         $this->reset([
-            'name', 'description', 'status'
+            'name', 'description', 'status', 'des'
         ]);
 
         $this->resetErrorBag();
@@ -150,6 +155,7 @@ class CategoryManagement extends Component
         $this->name = $item->name;
         $this->description = $item->description;
         $this->status = (bool) $item->status;
+        $this->des = $item->des;
         
         $this->isModalOpen = true;
     }
@@ -166,23 +172,54 @@ class CategoryManagement extends Component
     }
 
     public function saveItem() {
-        if ($this->itemId) abort_if(Gate::denies('edit-category'), 403);
-        else abort_if(Gate::denies('create-category'), 403);
+        if ($this->itemId) abort_if(\Illuminate\Support\Facades\Gate::denies('edit-category'), 403);
+        else abort_if(\Illuminate\Support\Facades\Gate::denies('create-category'), 403);
 
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|boolean',
+            'des' => 'nullable|string',
         ]);
 
-        $this->service()->saveItem([
-            'name' => $this->name,
+        try {
+            $this->service()->saveItem([
+                'name' => $this->name,
             'description' => $this->description,
             'status' => $this->status,
-        ], $this->itemId);
+            'des' => $this->des,
+            ], $this->itemId);
 
-        $this->isModalOpen = false;
-        $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
+            $this->isModalOpen = false;
+            $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // ✅ ចាប់យកកំហុស "Data too long" (1406) - កូដត្រឹមត្រូវគ្មានសញ្ញា \ នៅពីមុខ $ ឡើយ
+            if ($e->getCode() === '22001' || \Illuminate\Support\Str::contains($e->getMessage(), '1406')) {
+                
+                preg_match("/column '([^']+)'/", $e->getMessage(), $matches);
+                $columnName = $matches[1] ?? '';
+
+                $fieldLabel = __("messages.$columnName");
+                if ($fieldLabel == "messages.$columnName") {
+                    $fieldLabel = \Illuminate\Support\Str::headline($columnName);
+                }
+
+                $this->dispatch('notify', 
+                    type: 'error', 
+                    message: __('messages.field_data_too_large', ['field' => $fieldLabel]) 
+                             ?? "The data in field [$fieldLabel] is too large."
+                );
+                
+                if ($columnName) {
+                    $this->addError($columnName, __('messages.data_too_large'));
+                }
+                
+                return;
+            }
+
+            throw $e;
+        }
     }
 
     public function confirmDelete($id = null) {

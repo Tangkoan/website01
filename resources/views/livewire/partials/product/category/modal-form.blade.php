@@ -19,7 +19,68 @@
                     <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
                         <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider md:pt-3">{{ __('messages.description') ?? 'Description' }}</label>
                         <div class="w-full md:w-3/4" wire:ignore>
-                            <textarea wire:model="description" rows="6" class="w-full bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg p-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors resize-y" placeholder="Enter Description..."></textarea>
+                            <style> .note-modal-backdrop { z-index: 109990 !important; } .note-modal { z-index: 109991 !important; } .note-editable { background: white !important; color: black !important; min-height: 250px; } </style>
+                            <div x-data="{
+                                value: @entangle('description'),
+                                init() {
+                                    let self = this;
+                                    let loadDeps = function() {
+                                        if (typeof jQuery === 'undefined') {
+                                            let jq = document.createElement('script'); jq.src = 'https://code.jquery.com/jquery-3.6.0.min.js'; document.head.appendChild(jq); jq.onload = loadSN;
+                                        } else { loadSN(); }
+                                    };
+                                    let loadSN = function() {
+                                        if (typeof $.fn.summernote === 'undefined') {
+                                            let css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css'; document.head.appendChild(css);
+                                            let sn = document.createElement('script'); sn.src = 'https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js'; document.head.appendChild(sn); sn.onload = self.initSN.bind(self);
+                                        } else { self.initSN(); }
+                                    };
+                                    loadDeps();
+                                },
+                                initSN() {
+                                    let self = this; let editor = $(this.$refs.editor);
+                                    editor.summernote({
+                                        height: 300, dialogsInBody: true, placeholder: 'Enter Description...',
+                                        toolbar: [ ['style', ['style']], ['font', ['bold', 'italic', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link', 'picture', 'video']], ['view', ['fullscreen', 'codeview']] ],
+                                        callbacks: {
+                                            onChange: function(contents) { self.value = contents; },
+                                            onImageUpload: function(files) {
+                                                Array.from(files).forEach(function(file) {
+                                                    let reader = new FileReader();
+                                                    reader.onload = function(e) {
+                                                        let pid = 'img-' + Date.now();
+                                                        editor.summernote('insertImage', e.target.result, function ($img) { $img.attr('id', pid); $img.css('opacity', '0.5'); });
+                                                        let data = new FormData(); data.append('image', file);
+                                                        
+                                                        // ✅ ការពារ Error ពេលអត់មាន CSRF Token
+                                                        let metaTag = document.querySelector('meta[name=csrf-token]');
+                                                        let csrfToken = metaTag ? metaTag.content : '';
+
+                                                        $.ajax({
+                                                            url: '/summernote-upload', method: 'POST', data: data, processData: false, contentType: false,
+                                                            headers: { 'X-CSRF-TOKEN': csrfToken },
+                                                            success: function(res) { 
+                                                                let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); 
+                                                            },
+                                                            error: function(jqXHR, textStatus, errorThrown) { 
+                                                                $('#' + pid).remove(); 
+                                                                // ✅ បង្ហាញលេខកូដ Error ច្បាស់ៗ
+                                                                alert('Upload Failed! Error Code: ' + jqXHR.status + ' (' + errorThrown + '). សូមឆែកមើល Console (F12) សម្រាប់ព័ត៌មានលម្អិត។'); 
+                                                                console.error('Summernote Upload Error Details:', jqXHR.responseText);
+                                                            }
+                                                        });
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                });
+                                            }
+                                        }
+                                    });
+                                    if(this.value) { editor.summernote('code', this.value); }
+                                    this.$watch('value', function(nv) { if (nv !== editor.summernote('code')) editor.summernote('code', nv || ''); });
+                                }
+                            }">
+                                <textarea x-ref="editor" class="hidden"></textarea>
+                            </div>
                             @error('description') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -28,9 +89,77 @@
                         <div class="w-full md:w-3/4 flex items-center gap-3">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" wire:model="status" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
+                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
                             </label>
-                            <span class="text-sm font-bold text-[var(--color-text-main)] uppercase">{{ $status ? __('messages.active') ?? 'Active' : __('messages.inactive') ?? 'Inactive' }}</span>
+                            <span class="text-sm font-bold text-[var(--color-text-main)] uppercase">{{ $status ? __('messages.active') : __('messages.inactive') }}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider md:pt-3">{{ __('messages.des') ?? 'Des' }}</label>
+                        <div class="w-full md:w-3/4" wire:ignore>
+                            <style> .note-modal-backdrop { z-index: 109990 !important; } .note-modal { z-index: 109991 !important; } .note-editable { background: white !important; color: black !important; min-height: 250px; } </style>
+                            <div x-data="{
+                                value: @entangle('des'),
+                                init() {
+                                    let self = this;
+                                    let loadDeps = function() {
+                                        if (typeof jQuery === 'undefined') {
+                                            let jq = document.createElement('script'); jq.src = 'https://code.jquery.com/jquery-3.6.0.min.js'; document.head.appendChild(jq); jq.onload = loadSN;
+                                        } else { loadSN(); }
+                                    };
+                                    let loadSN = function() {
+                                        if (typeof $.fn.summernote === 'undefined') {
+                                            let css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css'; document.head.appendChild(css);
+                                            let sn = document.createElement('script'); sn.src = 'https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js'; document.head.appendChild(sn); sn.onload = self.initSN.bind(self);
+                                        } else { self.initSN(); }
+                                    };
+                                    loadDeps();
+                                },
+                                initSN() {
+                                    let self = this; let editor = $(this.$refs.editor);
+                                    editor.summernote({
+                                        height: 300, dialogsInBody: true, placeholder: 'Enter Des...',
+                                        toolbar: [ ['style', ['style']], ['font', ['bold', 'italic', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link', 'picture', 'video']], ['view', ['fullscreen', 'codeview']] ],
+                                        callbacks: {
+                                            onChange: function(contents) { self.value = contents; },
+                                            onImageUpload: function(files) {
+                                                Array.from(files).forEach(function(file) {
+                                                    let reader = new FileReader();
+                                                    reader.onload = function(e) {
+                                                        let pid = 'img-' + Date.now();
+                                                        editor.summernote('insertImage', e.target.result, function ($img) { $img.attr('id', pid); $img.css('opacity', '0.5'); });
+                                                        let data = new FormData(); data.append('image', file);
+                                                        
+                                                        // ✅ ការពារ Error ពេលអត់មាន CSRF Token
+                                                        let metaTag = document.querySelector('meta[name=csrf-token]');
+                                                        let csrfToken = metaTag ? metaTag.content : '';
+
+                                                        $.ajax({
+                                                            url: '/summernote-upload', method: 'POST', data: data, processData: false, contentType: false,
+                                                            headers: { 'X-CSRF-TOKEN': csrfToken },
+                                                            success: function(res) { 
+                                                                let $i = $('#' + pid); $i.attr('src', res.url); $i.css('opacity', '1'); self.value = editor.summernote('code'); 
+                                                            },
+                                                            error: function(jqXHR, textStatus, errorThrown) { 
+                                                                $('#' + pid).remove(); 
+                                                                // ✅ បង្ហាញលេខកូដ Error ច្បាស់ៗ
+                                                                alert('Upload Failed! Error Code: ' + jqXHR.status + ' (' + errorThrown + '). សូមឆែកមើល Console (F12) សម្រាប់ព័ត៌មានលម្អិត។'); 
+                                                                console.error('Summernote Upload Error Details:', jqXHR.responseText);
+                                                            }
+                                                        });
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                });
+                                            }
+                                        }
+                                    });
+                                    if(this.value) { editor.summernote('code', this.value); }
+                                    this.$watch('value', function(nv) { if (nv !== editor.summernote('code')) editor.summernote('code', nv || ''); });
+                                }
+                            }">
+                                <textarea x-ref="editor" class="hidden"></textarea>
+                            </div>
+                            @error('des') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 

@@ -22,8 +22,29 @@
                     <tr wire:key="brand-desktop-{{ $item->id }}" @mousedown="if(!$event.target.closest('button') && !$event.target.closest('a') && !$event.target.closest('label') && $event.target.tagName !== 'INPUT' && $event.target.tagName !== 'SVG' && $event.target.tagName !== 'PATH') { let cb = $el.querySelector('.row-checkbox'); if(cb && !cb.disabled) { checkStatus = !cb.checked; cb.checked = checkStatus; cb.dispatchEvent(new Event('change')); } }" @mouseenter="if(isMouseDown && !$event.target.closest('button') && !$event.target.closest('a') && !$event.target.closest('label') && $event.target.tagName !== 'INPUT' && $event.target.tagName !== 'SVG' && $event.target.tagName !== 'PATH') { let cb = $el.querySelector('.row-checkbox'); if(cb && !cb.disabled && cb.checked !== checkStatus) { cb.checked = checkStatus; cb.dispatchEvent(new Event('change')); } }" class="hover:bg-[var(--color-background)]/50 transition-all group cursor-pointer select-none">
                         <td class="p-4 text-center"><input type="checkbox" wire:model.live="selectedItems" value="{{ $item->id }}" class="row-checkbox w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"></td>
                         @if(in_array('parent_id', $selectedColumns)) <td class="p-4 text-sm font-bold text-[var(--color-text-main)]">{{ $item->parent?->name ?? $item->parent?->title ?? $item->parent_id ?? 'N/A' }}</td> @endif
-                        @if(in_array('name', $selectedColumns)) <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">{{ Str::limit(strip_tags($item->name), 30) }}</td> @endif
-                        @if(in_array('status', $selectedColumns)) <td class="p-4 text-center"><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}><div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)]"></div></label></td> @endif
+                        @if(in_array('name', $selectedColumns)) 
+                        <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
+                            @php 
+                                $plainText = strip_tags($item->name); 
+                                $hasHtml = strlen($item->name) > strlen($plainText);
+                            @endphp
+
+                            @if(trim($plainText) !== '')
+                                {{ Str::limit($plainText, 40) }}
+                            @elseif($hasHtml && str_contains($item->name, '<img'))
+                                <span class="flex items-center gap-1.5 text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-1 rounded-md text-[10px] w-fit">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    {{ __('messages.contains_image') ?? 'Image Content' }}
+                                </span>
+                            @elseif($hasHtml)
+                                <span class="text-[10px] text-[var(--color-text-muted)] italic">
+                                    {{ __('messages.html_content') ?? 'HTML Content' }}
+                                </span>
+                            @else
+                                <span class="text-[10px] text-[var(--color-text-muted)] italic">---</span>
+                            @endif
+                        </td> 
+                        @endif                        @if(in_array('status', $selectedColumns)) <td class="p-4 text-center"><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}><div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)]"></div></label></td> @endif
                         @if(in_array('image', $selectedColumns))
                         <td class="p-4">
                             @if($item->image) <img src="{{ asset('storage/'.$item->image) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm">

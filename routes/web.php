@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\Product\BrandManagement;
-use App\Livewire\Product\CategoryManagement;use Illuminate\Support\Facades\Route;
+use App\Livewire\Product\CategoryManagement;
+use App\Livewire\Product\BrandManagement;use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
 // Livewire Components
@@ -38,6 +38,7 @@ Route::get('/', function () {
     return view('welcome');
 })->middleware('guest')->name('login');
 
+Route::post('/summernote-upload', [App\Http\Controllers\UploadController::class, 'summernoteUpload'])->name('summernote.upload');
 
 // ក្រុម Route សម្រាប់អ្នកដែលបាន Login រួច (Auth)
 Route::middleware(['auth'])->group(function () {
@@ -135,6 +136,6 @@ Route::fallback(function () {
     abort(404);
 });
 Route::prefix('product')->name('product.')->group(function () {
-    Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
     Route::get('/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
+    Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
 });

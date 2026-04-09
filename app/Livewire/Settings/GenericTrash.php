@@ -31,8 +31,8 @@ class GenericTrash extends Component
             'user' => User::class,
             'role' => Role::class,
             'permission' => Permission::class,
-            'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
+            'category' => \App\Models\Category::class,
         ];
     }
 

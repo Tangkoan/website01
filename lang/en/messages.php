@@ -311,6 +311,12 @@ return [
     'toggle_status' => 'Toggle Status',
 
     
+    'data_too_large' => 'The data is too large to be saved.',
+    'field_data_too_large' => 'The data in ":field" field is too large to be saved! Please reduce images.',
+    'contains_image' => 'Image Content',
+    'html_content' => 'HTML Content',
+    'description'=> 'Descritpion',
+    'des'=> 'des'
 
 
     
