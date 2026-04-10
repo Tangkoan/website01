@@ -8,13 +8,17 @@ class {{ModelName}}Service
 {
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
-        $query = {{ModelName}}::query()
-            ->when($searchTerm, function ($query, $searchTerm) {
+        $query = $this->model()::query(){{EagerLoads}}
+            ->when($searchTerm, function ($q) use ($searchTerm) {
                 return $query->where('name', 'like', '%' . $searchTerm . '%');
             })
             ->orderBy($sortField, $sortDirection);
 
-        return $perPage === 'all' ? $query->paginate($query->count()) : $query->paginate((int)$perPage);
+        if (strtolower($perPage) === 'all') {
+            return $query->get();
+        }
+
+        return $query->paginate((int) $perPage);
     }
 
     public function saveItem(array $data, $id = null)

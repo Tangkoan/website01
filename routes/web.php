@@ -43,6 +43,12 @@ Route::post('/summernote-upload', [App\Http\Controllers\UploadController::class,
 // ក្រុម Route សម្រាប់អ្នកដែលបាន Login រួច (Auth)
 Route::middleware(['auth'])->group(function () {
 
+    Route::prefix('product')->name('product.')->group(function () {
+        Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
+        Route::get('/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
+    });
+
+
     // បង្កើត Route ទៅកាន់ទំព័រ Config
     Route::get('/settings/configs', SystemConfigManager::class)->name('settings.configs')->can('manage_system_configs');
     Route::get('/settings/action', ActivityLogManager::class)->name('settings.action')->can('view-activity-logs');
@@ -135,7 +141,4 @@ Route::get('/cron/trash/empty/{token}', function ($token) {
 Route::fallback(function () {
     abort(404);
 });
-Route::prefix('product')->name('product.')->group(function () {
-    Route::get('/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
-    Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
-});
+

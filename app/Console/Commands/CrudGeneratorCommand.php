@@ -54,7 +54,11 @@ class CrudGeneratorCommand extends Command
             '{{ModelCasts}}' => $dynamicData['modelCasts'] ?? ''
         ]);
         
-        $this->generateFile('service.stub', app_path("Services/{$modelName}Service.php"), ['{{ModelName}}' => $modelName]);
+        // បោះ EagerLoads ទៅឱ្យ Service
+        $this->generateFile('service.stub', app_path("Services/{$modelName}Service.php"), [
+            '{{ModelName}}' => $modelName,
+            '{{EagerLoads}}' => $dynamicData['eagerLoadsStr'] ?? ''
+        ]);
 
         $livewireClassDest = empty($modelPath) ? app_path("Livewire/{$modelName}Management.php") : app_path("Livewire/" . str_replace('\\', '/', $classPath) . "Management.php");
         $namespace = empty($modelPath) ? 'App\Livewire' : 'App\Livewire\\' . $modelPath;
@@ -128,18 +132,51 @@ class CrudGeneratorCommand extends Command
         $className = "{$modelName}Management";
         $fullClassName = "App\\Livewire\\" . ($modelPath ? str_replace('/', '\\', $modelPath) . '\\' : '') . $className;
         $useStatement = "use {$fullClassName};";
-        if (!str_contains($content, $useStatement)) $content = preg_replace('/<\?php\s+/', "<?php\n\n{$useStatement}\n", $content, 1);
-        $modelNameLower = Str::kebab($modelName); $routeSlug = Str::plural($modelNameLower); $permission = "view-{$modelNameLower}";
+        
+        if (!str_contains($content, $useStatement)) {
+            $content = preg_replace('/<\?php\s+/', "<?php\n\n{$useStatement}\n", $content, 1);
+        }
+
+        $modelNameLower = Str::kebab($modelName); 
+        $routeSlug = Str::plural($modelNameLower); 
+        $permission = "view-{$modelNameLower}";
+        
+        // ✅ ភ្នែកទិព្វ (Regex) សម្រាប់រាវរកទីតាំង Route::middleware(['auth'])->group(...)
+        $authPattern = "/(Route::middleware\(\s*\[?\s*['\"]auth['\"]\s*\]?\s*\)->group\(\s*function\s*\(\)\s*\{)/is";
+
         if (empty($modelPath)) {
-            $routeCode = "\nRoute::get('/{$routeSlug}', {$className}::class)->name('{$routeSlug}.index')->can('{$permission}');";
-            if (!str_contains($content, "{$className}::class")) $content .= $routeCode;
+            $routeCode = "    Route::get('/{$routeSlug}', {$className}::class)->name('{$routeSlug}.index')->can('{$permission}');";
+            if (!str_contains($content, "{$className}::class")) {
+                if (preg_match($authPattern, $content)) {
+                    // បើរកឃើញ Auth, ញាត់ Route ចូលពីក្រោមវាភ្លាមៗ
+                    $content = preg_replace($authPattern, "$1\n{$routeCode}", $content, 1);
+                } else {
+                    $content .= "\n{$routeCode}"; // Fallback បើអត់មាន Auth
+                }
+            }
         } else {
-            $prefix = strtolower(str_replace('\\', '/', $modelPath)); $prefixName = str_replace('/', '.', $prefix); 
-            $innerRoute = "    Route::get('/{$routeSlug}', {$className}::class)->name('{$routeSlug}.index')->can('{$permission}');";
+            $prefix = strtolower(str_replace('\\', '/', $modelPath)); 
+            $prefixName = str_replace('/', '.', $prefix); 
+            $innerRoute = "        Route::get('/{$routeSlug}', {$className}::class)->name('{$routeSlug}.index')->can('{$permission}');";
+            
             $groupPattern = "/(Route::prefix\(['\"]{$prefix}['\"]\).*?->group\(\s*function\s*\(\)\s*\{)/is";
-            if (preg_match($groupPattern, $content)) { if (!str_contains($content, "{$className}::class")) $content = preg_replace($groupPattern, "$1\n{$innerRoute}", $content, 1);
-            } else { $groupCode = "\nRoute::prefix('{$prefix}')->name('{$prefixName}.')->group(function () {\n{$innerRoute}\n});\n";
-                if (!str_contains($content, "{$className}::class")) $content .= $groupCode; }
+            
+            if (preg_match($groupPattern, $content)) { 
+                // បើមាន Group Prefix រួចហើយ (ឧ. product) គ្រាន់តែថែម Route ខាងក្នុង
+                if (!str_contains($content, "{$className}::class")) {
+                    $content = preg_replace($groupPattern, "$1\n{$innerRoute}", $content, 1);
+                }
+            } else { 
+                // បើមិនទាន់មាន Group Prefix ទេ គឺបង្កើត Group ថ្មី រួចញាត់ចូលក្នុង Auth
+                $groupCode = "    Route::prefix('{$prefix}')->name('{$prefixName}.')->group(function () {\n{$innerRoute}\n    });\n";
+                if (!str_contains($content, "{$className}::class")) {
+                    if (preg_match($authPattern, $content)) {
+                        $content = preg_replace($authPattern, "$1\n\n{$groupCode}", $content, 1);
+                    } else {
+                        $content .= "\n{$groupCode}";
+                    }
+                }
+            }
         }
         File::put($webPhpPath, $content);
     }
@@ -150,25 +187,19 @@ class CrudGeneratorCommand extends Command
         $globalTrashPath = app_path('Livewire/Settings/GlobalTrashManager.php');
 
         $mapEntry = "\n            '{$modelNameLower}' => \App\Models\\{$modelName}::class,";
-        
         $routePrefixName = empty($modelPath) ? '' : strtolower(str_replace('\\', '.', $modelPath)) . '.';
         $pluralModelRoute = $routePrefixName . Str::plural($modelNameLower) . '.index'; 
-        
         $backRouteEntry = "\n            '{$modelNameLower}' => '{$pluralModelRoute}',";
 
         foreach ([$logPath, $trashPath] as $path) {
             if (\Illuminate\Support\Facades\File::exists($path)) {
                 $content = \Illuminate\Support\Facades\File::get($path);
-                
                 if (!str_contains($content, "'{$modelNameLower}' => \App\Models")) {
                     $content = preg_replace('/(getModelMap\(\)\s*\{.*?return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$mapEntry$3", $content);
                 }
-                
-                // បញ្ចូលចូលក្នុង $backRouteMap នៃ Function render() 
                 if (!str_contains($content, "'{$modelNameLower}' => '{$pluralModelRoute}'")) {
                     $content = preg_replace('/(\$backRouteMap\s*=\s*\[)(.*?)(\s*\];)/s', "$1$2$backRouteEntry$3", $content);
                 }
-                
                 \Illuminate\Support\Facades\File::put($path, $content);
             }
         }
@@ -193,6 +224,8 @@ class CrudGeneratorCommand extends Command
         $props = $edit = $rules = $save = $reset = []; $bulkProps = $bulkEdit = $bulkRules = $bulkSave = $bulkReset = [];
         $availableCols = $selectedCols = $casts = []; $hasFile = false;
         
+        $eagerLoads = []; 
+        
         $cleanTableName = preg_replace('/^[a-z]+_/', '', $tableName);
         $currentModel = Str::studly(Str::singular($cleanTableName));
 
@@ -205,6 +238,8 @@ class CrudGeneratorCommand extends Command
             if ($col === 'status') { $tableHeaders .= "                    @if(in_array('{$col}', \$selectedColumns)) <th class=\"p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center\">{{ __('messages.{$col}') ?? '{$label}' }}</th> @endif\n";
             } else { $tableHeaders .= "                    @if(in_array('{$col}', \$selectedColumns)) <th wire:click=\"sortBy('{$col}')\" class=\"p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors\"><div class=\"flex items-center gap-2\">{{ __('messages.{$col}') ?? '{$label}' }} @if(\$sortField === '{$col}') <svg class=\"w-3.5 h-3.5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"{{ \$sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}\"></path></svg> @endif</div></th> @endif\n"; }
 
+
+            // ✅ បានបំពេញកូដទាំងអស់ត្រឡប់មកវិញ ឈប់ប្រើពាក្យ //...កូដចាស់
             if ($col === 'status' || $type === 'tinyint' || $type === 'boolean') {
                 $props[] = "public \${$var} = true;"; $bulkProps[] = "public \${$bulkVar} = true;";
                 $edit[] = "\$this->{$var} = (bool) \$item->{$col};"; $bulkEdit[] = "\$this->{$bulkVar} = (bool) \$item->{$col};";
@@ -225,9 +260,11 @@ class CrudGeneratorCommand extends Command
                 $reset[] = "'{$var}'"; $bulkReset[] = "'{$bulkVar}'";
                 $formHtml .= $this->getFileHtmlTemplate($col, $label, $var); $bulkHtml .= $this->getFileHtmlTemplate($col, $label, $bulkVar);
                 $tableCells .= $this->getImageTableCell($col); $mobileCells .= $this->getImageMobileCell($col);
-
+                
             } elseif (str_ends_with($col, '_id')) {
                 $relation = str_replace('_id', '', $col);
+                $eagerLoads[] = "'{$relation}'"; 
+                
                 $props[] = "public \${$var};"; $bulkProps[] = "public \${$bulkVar};";
                 $edit[] = "\$this->{$var} = \$item->{$col};"; $bulkEdit[] = "\$this->{$bulkVar} = \$item->{$col};";
                 $rules[] = "'{$var}' => '{$baseRule}',"; $bulkRules[] = "'{$bulkVar}' => '{$baseRule}',";
@@ -244,6 +281,7 @@ class CrudGeneratorCommand extends Command
                 $reset[] = "'{$var}'"; $bulkReset[] = "'{$bulkVar}'";
                 $formHtml .= $this->getTextAreaHtmlTemplate($col, $label, $var); $bulkHtml .= $this->getTextAreaHtmlTemplate($col, $label, $bulkVar);
                 $tableCells .= $this->getTextTableCell($col); $mobileCells .= $this->getTextMobileCell($col);
+                
             } else {
                 $props[] = "public \${$var};"; $bulkProps[] = "public \${$bulkVar};";
                 $edit[] = "\$this->{$var} = \$item->{$col};"; $bulkEdit[] = "\$this->{$bulkVar} = \$item->{$col};";
@@ -257,6 +295,8 @@ class CrudGeneratorCommand extends Command
 
         $modelCastsStr = empty($casts) ? "" : "protected \$casts = [\n        " . implode(",\n        ", $casts) . "\n    ];";
         $bulkResetStr = empty($bulkReset) ? "" : ", " . implode(", ", $bulkReset);
+        
+        $eagerLoadsStr = empty($eagerLoads) ? "" : "->with([" . implode(", ", $eagerLoads) . "])";
 
         return ['hasFile' => $hasFile, 'formHtml' => $formHtml, 'bulkHtml' => $bulkHtml, 'tableHeaders' => $tableHeaders, 'tableCells' => $tableCells, 'mobileCells' => $mobileCells,
             'availableColsStr' => "[" . implode(", ", $availableCols) . "]", 'selectedColsStr' => "[" . implode(", ", $selectedCols) . "]",
@@ -264,7 +304,9 @@ class CrudGeneratorCommand extends Command
             'livewireRules' => implode("\n            ", $rules), 'livewireSave' => implode("\n            ", $save), 'livewireReset' => implode(", ", $reset),
             'livewireBulkProps' => implode("\n    ", $bulkProps), 'livewireBulkEdit' => implode("\n            ", $bulkEdit),
             'livewireBulkRules' => implode("\n            ", $bulkRules), 'livewireBulkSave' => implode("\n            ", $bulkSave), 'livewireBulkReset' => $bulkResetStr,
-            'modelCasts' => $modelCastsStr ];
+            'modelCasts' => $modelCastsStr, 
+            'eagerLoadsStr' => $eagerLoadsStr 
+        ];
     }
 
     private function getTextHtmlTemplate($col, $label, $var) {
@@ -344,14 +386,22 @@ EOT;
 
     private function getSelectHtmlTemplate($col, $label, $currentModel, $var) {
         $rel = ($col === 'parent_id') ? $currentModel : Str::studly(str_replace('_id', '', $col));
+        
         return <<<EOT
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
                         <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.{$col}') ?? '{$label}' }}</label>
                         <div class="w-full md:w-3/4">
                             <select wire:model="{$var}" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors cursor-pointer">
                                 <option value="">Select {$label}...</option>
-                                @php \$opts = class_exists('\App\Models\\{$rel}') ? \App\Models\\{$rel}::all() : collect(); @endphp
-                                @foreach(\$opts as \$opt) <option value="{{ \$opt->id }}">{{ \$opt->name ?? \$opt->title ?? 'ID: ' . \$opt->id }}</option> @endforeach
+                                {{-- ✅ កែប្រែ៖ ប្រើ limit(100) ដើម្បីការពារគាំង Server ហើយដក select('name') ចេញដើម្បីការពារ Error Column not found --}}
+                                @php 
+                                    \$opts = class_exists('\App\Models\\{$rel}') 
+                                        ? \App\Models\\{$rel}::limit(100)->get() 
+                                        : collect(); 
+                                @endphp
+                                @foreach(\$opts as \$opt) 
+                                    <option value="{{ \$opt->id }}">{{ \$opt->name ?? \$opt->title ?? 'ID: ' . \$opt->id }}</option> 
+                                @endforeach
                             </select>
                             @error('{$var}') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ \$message }}</span> @enderror
                         </div>

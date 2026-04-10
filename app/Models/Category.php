@@ -23,6 +23,7 @@ class Category extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     
     
 }
