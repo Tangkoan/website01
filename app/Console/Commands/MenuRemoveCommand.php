@@ -3,48 +3,55 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Models\Sidebar;
+use Illuminate\Support\Facades\Cache;
 
 class MenuRemoveCommand extends Command
 {
-    protected $signature = 'vc:menu-remove {model : The name of the model (e.g. Product or Settings/Category)}';
-    protected $description = 'Remove a specific Menu item from the Sidebar';
+    protected $signature = 'vc:menu-remove {model : The name of the model (e.g. Test/Demo)}';
+    protected $description = 'Remove a Menu item from the Database (Dynamic Sidebar)';
 
     public function handle()
     {
         $inputModel = $this->argument('model');
-        $modelName = class_basename($inputModel);
+        $modelName = Str::studly(class_basename($inputModel)); 
+        $modelNameLower = Str::kebab($modelName);
         
-        // ធានាថា Path ត្រូវបានបំលែងទៅជា StudlyCase ដូចពេល Generate
-        $modelPathRaw = trim(str_replace($modelName, '', $inputModel), '/\\');
+        $modelPathRaw = trim(str_replace(class_basename($inputModel), '', $inputModel), '/\\');
         $modelPathParts = array_map(fn($part) => Str::studly($part), explode('/', str_replace('\\', '/', $modelPathRaw)));
-        $modelPath = implode('\\', array_filter($modelPathParts));
-        
-        $modelName = Str::studly($modelName); 
-        $classPath = empty($modelPath) ? $modelName : $modelPath . '\\' . $modelName;
+        $modelPath = implode('/', array_filter($modelPathParts));
 
-        $sidebarPath = resource_path('views/components/sidebar.blade.php');
+        $routePrefixUrl = empty($modelPath) ? '' : strtolower(str_replace('\\', '/', $modelPath)) . '/';
+        $routePath = $routePrefixUrl . Str::plural($modelNameLower);
         
-        if (!File::exists($sidebarPath)) {
-            $this->error("❌ Error: 'sidebar.blade.php' not found!");
-            return;
-        }
+        $this->info("🗑️ Searching Database for Menu: [{$routePath}]...");
 
-        $content = File::get($sidebarPath);
-        $escapedClassPath = preg_quote($classPath, '/');
-        
-        // ប្រើ Regex ស្វែងរក Hook ពី START ដល់ END
-        $pattern = "/\s*\{\{-- \[MENU_START_{$escapedClassPath}\] --\}\}.*?\{\{-- \[MENU_END_{$escapedClassPath}\] --\}\}\s*/s";
-        
-        if (preg_match($pattern, $content)) {
-            // លុបកូដ Menu ចេញ ហើយជំនួសដោយ Newline
-            $newContent = preg_replace($pattern, "\n        ", $content);
-            File::put($sidebarPath, $newContent);
-            $this->info("✅ Successfully removed Menu for [{$classPath}] from the Sidebar!");
+        // ស្វែងរក Menu កូននៅក្នុង Database
+        $menu = Sidebar::where('url', $routePath)->first();
+
+        if ($menu) {
+            $parentId = $menu->parent_id;
+            
+            // លុប Menu កូនចោល (ប្រើ forceDelete ដើម្បីផ្តាច់ឫស)
+            $menu->forceDelete(); 
+            $this->info("✅ Menu [{$routePath}] deleted successfully!");
+
+            // ឆែកមើលមេ (Parent): បើមេលែងមានកូនផ្សេងទៀតទេ គឺលុបមេចោលដែរ!
+            if ($parentId) {
+                $parent = Sidebar::find($parentId);
+                if ($parent && $parent->children()->count() === 0) {
+                    $parent->forceDelete();
+                    $this->info("🧹 Parent Menu [{$parent->title}] was empty and has been deleted too.");
+                }
+            }
+
+            // Clear Cache ឱ្យវា Update លើ UI ភ្លាមៗ
+            Cache::forget('sidebar_dynamic_menus');
+            $this->info("🔄 Sidebar cache cleared.");
+            
         } else {
-            // ✅ បើរកមិនឃើញ (ប្រហែលជាលុបហើយ ឬអត់ទាន់ Generate)
-            $this->warn("ℹ️  Nothing to remove: Menu for [{$classPath}] was not found in the sidebar.");
+            $this->warn("⚠️ Menu [{$routePath}] not found in the Database!");
         }
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\Product\CategoryManagement;
-use App\Livewire\Product\BrandManagement;use Illuminate\Support\Facades\Route;
+use App\Livewire\Settings\SidebarManagement;use App\Livewire\Product\BrandManagement;
+use App\Livewire\Product\CategoryManagement;use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
 // Livewire Components
@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
     // Settings Group
     // ==========================================
     Route::prefix('settings')->group(function () {
+        Route::get('/sidebars', SidebarManagement::class)->name('settings.sidebars.index')->can('view-sidebar');
 
        Route::get('/role-ui', RoleSetting::class)->name('settings.role-ui')->can('manage_role_ui');
         

@@ -6,6 +6,12 @@ use App\Models\{{ModelName}};
 
 class {{ModelName}}Service
 {
+
+    protected function model()
+    {
+        return \App\Models\{{ModelName}}::class;
+    }
+
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
         $query = $this->model()::query(){{EagerLoads}}

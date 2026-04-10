@@ -72,7 +72,9 @@
       x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))"
       class="h-screen bg-gray-50 flex overflow-hidden font-sans antialiased dark:bg-gray-900">
 
-    <livewire:sidebar />
+    {{-- <livewire:sidebar /> --}}
+    <livewire:settings.sidebar-provider />
+    
 
     <div class="flex-1 flex flex-col h-full overflow-hidden w-full transition-all duration-300">
         <livewire:header />

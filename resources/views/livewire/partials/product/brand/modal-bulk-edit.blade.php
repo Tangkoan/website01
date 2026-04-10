@@ -35,8 +35,15 @@
                         <div class="w-full md:w-3/4">
                             <select wire:model="bulkItem_parent_id" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors cursor-pointer">
                                 <option value="">Select Parent...</option>
-                                @php $opts = class_exists('\App\Models\Brand') ? \App\Models\Brand::all() : collect(); @endphp
-                                @foreach($opts as $opt) <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> @endforeach
+                                {{-- ✅ កែប្រែ៖ ប្រើ limit(100) ដើម្បីការពារគាំង Server ហើយដក select('name') ចេញដើម្បីការពារ Error Column not found --}}
+                                @php 
+                                    $opts = class_exists('\App\Models\Brand') 
+                                        ? \App\Models\Brand::limit(100)->get() 
+                                        : collect(); 
+                                @endphp
+                                @foreach($opts as $opt) 
+                                    <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> 
+                                @endforeach
                             </select>
                             @error('bulkItem_parent_id') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>

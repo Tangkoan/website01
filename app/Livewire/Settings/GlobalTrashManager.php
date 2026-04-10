@@ -61,16 +61,6 @@ class GlobalTrashManager extends Component
                     'delete'  => 'force-delete-permission',
                 ]
             ],
-            'brand' => [
-                'model' => \App\Models\Brand::class,
-                'icon'  => '📦',
-                'label' => __('messages.brand_management') ?? 'Brands',
-                'permissions' => [
-                    'view'    => 'view-brand-trash',
-                    'restore' => 'restore-brand',
-                    'delete'  => 'force-delete-brand',
-                ]
-            ],
             'category' => [
                 'model' => \App\Models\Category::class,
                 'icon'  => '📦',
@@ -79,6 +69,16 @@ class GlobalTrashManager extends Component
                     'view'    => 'view-category-trash',
                     'restore' => 'restore-category',
                     'delete'  => 'force-delete-category',
+                ]
+            ],
+            'brand' => [
+                'model' => \App\Models\Brand::class,
+                'icon'  => '📦',
+                'label' => __('messages.brand_management') ?? 'Brands',
+                'permissions' => [
+                    'view'    => 'view-brand-trash',
+                    'restore' => 'restore-brand',
+                    'delete'  => 'force-delete-brand',
                 ]
             ],
             

@@ -31,8 +31,9 @@ class GenericTrash extends Component
             'user' => User::class,
             'role' => Role::class,
             'permission' => Permission::class,
+            'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
-            'category' => \App\Models\Category::class,
+            'sidebar' => \App\Models\Sidebar::class,
 
 
         ];
@@ -171,8 +172,9 @@ class GenericTrash extends Component
             'user' => 'settings.users',
             'role' => 'settings.roles',
             'permission' => 'settings.permissions',
-            'brand' => 'product.brands.index',
             'category' => 'product.categories.index',
+            'brand' => 'product.brands.index',
+            'sidebar' => 'settings.sidebars.index',
         ];
 
         // ហៅ BaseQuery មកប្រើ
