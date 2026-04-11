@@ -6,15 +6,25 @@ use App\Models\Category;
 
 class CategoryService
 {
+
+    protected function model()
+    {
+        return \App\Models\Category::class;
+    }
+
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
-        $query = Category::query()
-            ->when($searchTerm, function ($query, $searchTerm) {
+        $query = $this->model()::query()
+            ->when($searchTerm, function ($q) use ($searchTerm) {
                 return $query->where('name', 'like', '%' . $searchTerm . '%');
             })
             ->orderBy($sortField, $sortDirection);
 
-        return $perPage === 'all' ? $query->paginate($query->count()) : $query->paginate((int)$perPage);
+        if (strtolower($perPage) === 'all') {
+            return $query->get();
+        }
+
+        return $query->paginate((int) $perPage);
     }
 
     public function saveItem(array $data, $id = null)

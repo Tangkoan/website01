@@ -12,6 +12,8 @@ class CrudGeneratorCommand extends Command
     protected $signature = 'vc:crud {model : The name of the model (e.g. Product or Settings/Category)}';
     protected $description = 'Generate Smart CRUD with Dynamic Field Support';
 
+    protected $overwriteMode = 'all';
+
     public function handle()
     {
         $inputModel = $this->argument('model');
@@ -28,6 +30,39 @@ class CrudGeneratorCommand extends Command
         $viewPathBase = empty($modelPath) ? $modelNameLower : strtolower(str_replace('\\', '/', $modelPath)) . '/' . $modelNameLower;
         $viewNamespace = str_replace('/', '.', $viewPathBase);
 
+        $modelDest = app_path("Models/{$classPath}.php");
+        $livewireClassDest = empty($modelPath) ? app_path("Livewire/{$modelName}Management.php") : app_path("Livewire/" . str_replace('\\', '/', $classPath) . "Management.php");
+        $viewDir = resource_path("views/livewire/{$viewPathBase}");
+        $mainViewDest = "{$viewDir}/{$modelNameLower}-management.blade.php";
+
+        // 🌟 មុខងារ UX ថ្មី៖ បង្ហាញ Menu ជម្រើសទាំង ៣
+        if (File::exists($modelDest) || File::exists($livewireClassDest) || File::exists($mainViewDest)) {
+            $this->warn("\n⚠️  WARNING: CRUD files for [{$classPath}] already exist!");
+            
+            $choice = $this->choice(
+                'Please Select your option!',
+                [
+                    'Overwrite All',
+                    'Cancel',
+                    'Ask File by File'
+                ],
+                1 // Default គឺយកលេខ 2 (Cancel) ដើម្បីសុវត្ថិភាព
+            );
+
+            if (str_starts_with($choice, '2')) {
+                $this->info("🛑 Operation canceled. Your files are safe.");
+                return;
+            } elseif (str_starts_with($choice, '1')) {
+                $this->overwriteMode = 'all';
+                $this->info("♻️  Proceeding to overwrite ALL files...");
+            } else {
+                $this->overwriteMode = 'ask';
+                $this->info("🧐 We will ask you before overwriting each existing file.");
+            }
+        } else {
+            $this->overwriteMode = 'all';
+        }
+
         $this->info("🚀 Starting Smart CRUD Generation for [{$classPath}]...");
 
         $tableName = $this->discoverTableName($baseTableName);
@@ -36,8 +71,10 @@ class CrudGeneratorCommand extends Command
         $dynamicData = $this->generateDynamicFields($tableName);
 
         // 1. Generate Model
-        $this->generateFile('model.stub', app_path("Models/{$modelName}.php"), [
-            '{{ModelName}}' => $modelName, '{{TableName}}' => $tableName, '{{ModelCasts}}' => $dynamicData['modelCasts']
+        $this->generateFile('model.stub', $modelDest, [
+            '{{ModelName}}' => $modelName, 
+            '{{TableName}}' => $baseTableName, 
+            '{{ModelCasts}}' => $dynamicData['modelCasts']
         ]);
         
         // 2. Generate Service
@@ -46,7 +83,6 @@ class CrudGeneratorCommand extends Command
         ]);
 
         // 3. Generate Livewire
-        $livewireClassDest = empty($modelPath) ? app_path("Livewire/{$modelName}Management.php") : app_path("Livewire/" . str_replace('\\', '/', $classPath) . "Management.php");
         $namespace = empty($modelPath) ? 'App\Livewire' : 'App\Livewire\\' . $modelPath;
 
         $this->generateFile('livewire.stub', $livewireClassDest, [
@@ -68,7 +104,6 @@ class CrudGeneratorCommand extends Command
         ]);
 
         // 4. Generate Views
-        $viewDir = resource_path("views/livewire/{$viewPathBase}");
         $partialsDir = resource_path("views/livewire/partials/{$viewPathBase}");
         File::ensureDirectoryExists($viewDir, 0755, true);
         File::ensureDirectoryExists($partialsDir, 0755, true);
@@ -83,7 +118,7 @@ class CrudGeneratorCommand extends Command
             '{{DynamicMobileCells}}' => $dynamicData['mobileCells']
         ];
 
-        $this->generateFile('view-main.stub', "{$viewDir}/{$modelNameLower}-management.blade.php", $replacements);
+        $this->generateFile('view-main.stub', $mainViewDest, $replacements);
         $this->generateFile('view-header.stub', "{$partialsDir}/header.blade.php", $replacements);
         $this->generateFile('view-filters.stub', "{$partialsDir}/filters.blade.php", $replacements);
         $this->generateFile('view-table.stub', "{$partialsDir}/table.blade.php", $replacements);
@@ -328,10 +363,25 @@ EOT;
     }
 
     protected function generateFile($stubName, $destinationPath, $replacements) {
+        $fileName = basename($destinationPath);
+
+        // 🌟 ឆែកមើលបើ File ហ្នឹងមានរួចហើយ និងអ្នកប្រើប្រាស់រើសជម្រើសទី ៣ (Ask)
+        if (File::exists($destinationPath)) {
+            if ($this->overwriteMode === 'ask') {
+                if (!$this->confirm("File [{$fileName}] already exists. Overwrite?", false)) {
+                    $this->line("  ⏭️  Skipped: {$fileName}");
+                    return; // រំលង File នេះ មិនបញ្ចេញកូដថ្មីទេ
+                }
+            }
+        }
+
         $stubPath = base_path("stubs/{$stubName}");
         $content = str_replace(array_keys($replacements), array_values($replacements), File::get($stubPath));
         File::ensureDirectoryExists(dirname($destinationPath), 0755, true);
         File::put($destinationPath, $content);
+        
+        // លោតសារប្រាប់ថាបានបង្កើត File អ្វីខ្លះ
+        $this->line("  ✨ Generated: {$fileName}"); 
     }
 
     protected function appendRoute($modelName, $modelPath, $classPath) {
@@ -386,9 +436,11 @@ EOT;
         $logPath = app_path('Livewire/Settings/GenericLog.php');
         $trashPath = app_path('Livewire/Settings/GenericTrash.php');
 
-        $mapEntry = "\n            '{$modelNameLower}' => \App\Models\\{$modelName}::class,";
+        // 🌟 ១. កំណត់ Full Model Path ឱ្យត្រូវ ទោះបីជាមាន Folder ក៏ដោយ (ឧ. Product/Category)
+        $fullModelPath = empty($modelPath) ? "\App\Models\\{$modelName}::class" : "\App\Models\\" . str_replace('/', '\\', $modelPath) . "\\{$modelName}::class";
+        $mapEntry = "\n            '{$modelNameLower}' => {$fullModelPath},";
         
-        // ✅ បង្កើតឈ្មោះ Route ឱ្យដូចគ្នាជាមួយ appendRoute បេះដាក់
+        // 🌟 ២. បង្កើតឈ្មោះ Route ឱ្យត្រូវតាមស្តង់ដារ (រក្សា Logic ចាស់ដដែល)
         $routePrefixName = empty($modelPath) ? '' : strtolower(str_replace(['\\', '/'], '.', $modelPath)) . '.';
         $pluralModelRoute = $routePrefixName . Str::plural($modelNameLower) . '.index'; 
         
@@ -397,14 +449,35 @@ EOT;
         foreach ([$logPath, $trashPath] as $path) {
             if (File::exists($path)) {
                 $content = File::get($path);
-                if (!str_contains($content, "'{$modelNameLower}' => \App\Models")) {
-                    $content = preg_replace('/(getModelMap\(\)\s*\{.*?return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$mapEntry$3", $content);
+                $isModified = false; // បង្កើតអថេរសម្រាប់ឆែកមើលថាតើកូដមានការផ្លាស់ប្តូរឬអត់
+
+                // 🌟 ៣. ឆែក Model Map ឱ្យច្បាស់លាស់ និងប្រើ Regex ដែលមានសុវត្ថិភាព
+                if (!str_contains($content, "'{$modelNameLower}' => {$fullModelPath}")) {
+                    $newContent = preg_replace('/(getModelMap\(\)\s*\{.*?return\s*\[)(.*?)(\s*\];\s*\})/s', "$1$2$mapEntry$3", $content);
+                    // ការពារកុំឱ្យវា Replace ចេញ null បើសិនជា Regex Error
+                    if ($newContent !== null && $newContent !== $content) {
+                        $content = $newContent;
+                        $isModified = true;
+                    }
                 }
-                // បញ្ចូលក្នុង $backRouteMap (លុបអាដដែលៗចេញសិន បើមាន)
+                
+                // 🌟 ៤. ឆែក Route Map ឱ្យច្បាស់លាស់ និងប្រើ Regex ដែលមានសុវត្ថិភាព
                 if (!str_contains($content, "'{$modelNameLower}' => '{$pluralModelRoute}'")) {
-                    $content = preg_replace('/(\$backRouteMap\s*=\s*\[)(.*?)(\s*\];)/s', "$1$2$backRouteEntry$3", $content);
+                    $newContent = preg_replace('/(\$backRouteMap\s*=\s*\[)(.*?)(\s*\];)/s', "$1$2$backRouteEntry$3", $content);
+                    if ($newContent !== null && $newContent !== $content) {
+                        $content = $newContent;
+                        $isModified = true;
+                    }
                 }
-                File::put($path, $content);
+                
+                // 🌟 ៥. Save ចូល File វិញតែពេលមានការផ្លាស់ប្តូរប៉ុណ្ណោះ (ចំណេញ Performance)
+                if ($isModified) {
+                    File::put($path, $content);
+                    // បញ្ចេញសារប្រាប់ក្នុង Terminal បើសិនជា Command ដើរ
+                    if (method_exists($this, 'info')) {
+                        $this->info("    🔗 Injected [{$modelName}] routes successfully into " . basename($path));
+                    }
+                }
             }
         }
     }

@@ -23,8 +23,11 @@ class Brand extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    public function parent()
+    {
+        return $this->belongsTo(Brand::class, 'parent_id');
+    }
     
-    protected $casts = [
-        'images' => 'array'
-    ];
+    protected $casts = ['images' => 'array'];
 }

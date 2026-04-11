@@ -33,26 +33,18 @@
                                             <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
                         <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.parent_id') ?? 'Parent' }}</label>
                         <div class="w-full md:w-3/4">
-                            <select wire:model="bulkItem_parent_id" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors cursor-pointer">
+                            <select wire:model="bulkItem_parent_id" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none cursor-pointer">
                                 <option value="">Select Parent...</option>
-                                {{-- ✅ កែប្រែ៖ ប្រើ limit(100) ដើម្បីការពារគាំង Server ហើយដក select('name') ចេញដើម្បីការពារ Error Column not found --}}
-                                @php 
-                                    $opts = class_exists('\App\Models\Brand') 
-                                        ? \App\Models\Brand::limit(100)->get() 
-                                        : collect(); 
-                                @endphp
-                                @foreach($opts as $opt) 
-                                    <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> 
-                                @endforeach
+                                @php $opts = class_exists('\App\Models\Brand') ? \App\Models\Brand::limit(100)->get() : collect(); @endphp
+                                @foreach($opts as $opt) <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> @endforeach
                             </select>
-                            @error('bulkItem_parent_id') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
                         <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.name') ?? 'Name' }}</label>
                         <div class="w-full md:w-3/4">
                             <input type="text" wire:model="bulkItem_name" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Name...">
-                            @error('bulkItem_name') <span class="text-red-500 dark:text-red-400 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            @error('bulkItem_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-4 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)] mb-4 last:mb-0">
@@ -66,23 +58,19 @@
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 p-4 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)] border-dashed mb-4 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider md:pt-2">{{ __('messages.image') ?? 'Image' }}</label>
+                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.image') ?? 'Image' }}</label>
                         <div class="w-full md:w-3/4">
-                            <div class="flex items-center gap-3">
-                                <input type="file" wire:model="bulkItem_image" id="f-bulkItem_image"  accept="image/*" class="hidden">
-                                <label for="f-bulkItem_image" class="px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white text-xs font-bold rounded-lg cursor-pointer transition-colors flex items-center gap-2 shadow-sm">Upload Image</label>
-                            </div>
-                            @if ($bulkItem_image) <div class="mt-3 flex flex-wrap gap-3"> @if(is_array($bulkItem_image) || is_iterable($bulkItem_image)) @foreach($bulkItem_image as $i => $f) <div class="relative inline-block"><img src="{{ is_string($f) ? asset('storage/'.$f) : $f->temporaryUrl() }}" class="h-20 w-24 rounded-lg border border-[var(--color-border-color)] object-cover"><button type="button" wire:click.stop="removeFile('bulkItem_image', {{ $i }})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div> @endforeach @else <div class="relative inline-block"><img src="{{ is_string($bulkItem_image) ? asset('storage/'.$bulkItem_image) : $bulkItem_image->temporaryUrl() }}" class="h-24 w-32 rounded-lg border border-[var(--color-border-color)] object-cover"><button type="button" wire:click.stop="$set('bulkItem_image', null)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div> @endif </div> @endif
+                            <input type="file" wire:model="bulkItem_image" id="f-bulkItem_image"  accept="image/*" class="hidden">
+                            <label for="f-bulkItem_image" class="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg cursor-pointer inline-block">Upload Image</label>
+                            @if ($bulkItem_image) <div class="mt-3 flex flex-wrap gap-2"> @if(is_array($bulkItem_image) || is_iterable($bulkItem_image)) @foreach($bulkItem_image as $i => $f) <img src="{{ is_string($f) ? asset('storage/'.$f) : $f->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endforeach @else <img src="{{ is_string($bulkItem_image) ? asset('storage/'.$bulkItem_image) : $bulkItem_image->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endif </div> @endif
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 p-4 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)] border-dashed mb-4 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider md:pt-2">{{ __('messages.images') ?? 'Images' }}</label>
+                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.images') ?? 'Images' }}</label>
                         <div class="w-full md:w-3/4">
-                            <div class="flex items-center gap-3">
-                                <input type="file" wire:model="bulkItem_images" id="f-bulkItem_images" multiple accept="image/*" class="hidden">
-                                <label for="f-bulkItem_images" class="px-4 py-2 bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white text-xs font-bold rounded-lg cursor-pointer transition-colors flex items-center gap-2 shadow-sm">Upload Images</label>
-                            </div>
-                            @if ($bulkItem_images) <div class="mt-3 flex flex-wrap gap-3"> @if(is_array($bulkItem_images) || is_iterable($bulkItem_images)) @foreach($bulkItem_images as $i => $f) <div class="relative inline-block"><img src="{{ is_string($f) ? asset('storage/'.$f) : $f->temporaryUrl() }}" class="h-20 w-24 rounded-lg border border-[var(--color-border-color)] object-cover"><button type="button" wire:click.stop="removeFile('bulkItem_images', {{ $i }})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div> @endforeach @else <div class="relative inline-block"><img src="{{ is_string($bulkItem_images) ? asset('storage/'.$bulkItem_images) : $bulkItem_images->temporaryUrl() }}" class="h-24 w-32 rounded-lg border border-[var(--color-border-color)] object-cover"><button type="button" wire:click.stop="$set('bulkItem_images', null)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div> @endif </div> @endif
+                            <input type="file" wire:model="bulkItem_images" id="f-bulkItem_images" multiple accept="image/*" class="hidden">
+                            <label for="f-bulkItem_images" class="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg cursor-pointer inline-block">Upload Images</label>
+                            @if ($bulkItem_images) <div class="mt-3 flex flex-wrap gap-2"> @if(is_array($bulkItem_images) || is_iterable($bulkItem_images)) @foreach($bulkItem_images as $i => $f) <img src="{{ is_string($f) ? asset('storage/'.$f) : $f->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endforeach @else <img src="{{ is_string($bulkItem_images) ? asset('storage/'.$bulkItem_images) : $bulkItem_images->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endif </div> @endif
                         </div>
                     </div>
 

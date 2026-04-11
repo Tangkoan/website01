@@ -94,7 +94,7 @@ class CategoryManagement extends Component
         $this->validate([
             'bulkItem_name' => 'required|string|max:255',
             'bulkItem_description' => 'nullable|string',
-            'bulkItem_status' => 'required|boolean',
+            'bulkItem_status' => 'nullable|boolean',
             'bulkItem_des' => 'nullable|string',
         ]);
         $this->service()->saveItem([
@@ -160,15 +160,25 @@ class CategoryManagement extends Component
         $this->isModalOpen = true;
     }
 
-    public function toggleStatus($id) {
+    /**
+     * ✅ កែប្រែទៅជា toggleField ដើម្បីឱ្យ Smart ជាងមុន
+     * អាចបិទបើកបានគ្រប់ Field ដែលជាប្រភេទ Boolean
+     */
+    public function toggleField($id, $field) {
         if (Gate::denies('edit-category')) {
             $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'No permission.');
             return; 
         }
         $item = Category::findOrFail($id);
-        $item->status = !$item->status;
+        
+        // ប្តូរតម្លៃ (Toggle logic)
+        $item->$field = !$item->$field;
         $item->save();
-        $this->dispatch('notify', type: 'success', message: $item->status ? __('messages.activated') ?? 'Activated' : __('messages.deactivated') ?? 'Deactivated');
+        
+        $this->dispatch('notify', 
+            type: 'success', 
+            message: $item->$field ? (__('messages.activated') ?? 'Activated') : (__('messages.deactivated') ?? 'Deactivated')
+        );
     }
 
     public function saveItem() {
@@ -178,7 +188,7 @@ class CategoryManagement extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status' => 'required|boolean',
+            'status' => 'nullable|boolean',
             'des' => 'nullable|string',
         ]);
 
@@ -194,7 +204,6 @@ class CategoryManagement extends Component
             $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
 
         } catch (\Illuminate\Database\QueryException $e) {
-            // ✅ ចាប់យកកំហុស "Data too long" (1406) - កូដត្រឹមត្រូវគ្មានសញ្ញា \ នៅពីមុខ $ ឡើយ
             if ($e->getCode() === '22001' || \Illuminate\Support\Str::contains($e->getMessage(), '1406')) {
                 
                 preg_match("/column '([^']+)'/", $e->getMessage(), $matches);

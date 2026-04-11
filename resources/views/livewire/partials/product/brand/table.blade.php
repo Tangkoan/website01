@@ -10,7 +10,7 @@
                     <th class="p-4 w-16 text-center"><input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] cursor-pointer checked:bg-[var(--color-primary)]"></th>
                     @if(in_array('parent_id', $selectedColumns)) <th wire:click="sortBy('parent_id')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.parent_id') ?? 'Parent' }} @if($sortField === 'parent_id') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
                     @if(in_array('name', $selectedColumns)) <th wire:click="sortBy('name')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.name') ?? 'Name' }} @if($sortField === 'name') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
-                    @if(in_array('status', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center">{{ __('messages.status') ?? 'Status' }}</th> @endif
+                    @if(in_array('status', $selectedColumns)) <th wire:click="sortBy('status')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.status') ?? 'Status' }} @if($sortField === 'status') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
                     @if(in_array('image', $selectedColumns)) <th wire:click="sortBy('image')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.image') ?? 'Image' }} @if($sortField === 'image') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
                     @if(in_array('images', $selectedColumns)) <th wire:click="sortBy('images')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.images') ?? 'Images' }} @if($sortField === 'images') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
 
@@ -24,35 +24,30 @@
                         @if(in_array('parent_id', $selectedColumns)) <td class="p-4 text-sm font-bold text-[var(--color-text-main)]">{{ $item->parent?->name ?? $item->parent?->title ?? $item->parent_id ?? 'N/A' }}</td> @endif
                         @if(in_array('name', $selectedColumns)) 
                         <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
-                            @php $pt = strip_tags($item->name); $hH = strlen($item->name) > strlen($pt); @endphp
-                            @if(trim($pt) !== '') {{ Str::limit($pt, 40) }} @elseif($hH && str_contains($item->name, '<img')) <span class="text-[var(--color-primary)] text-[10px]">Image Content</span> @else <span class="text-[10px] text-[var(--color-text-muted)]">---</span> @endif
+                            @php $pt = strip_tags($item->name); @endphp
+                            {{ Str::limit($pt, 40) ?: '---' }}
                         </td> 
                         @endif
                         @if(in_array('status', $selectedColumns))
                         <td class="p-4 text-center whitespace-nowrap w-[1%]">
                             <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
+                                <input type="checkbox" wire:change.stop="toggleField({{ $item->id }}, 'status')" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
                                 <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
                             </label>
                         </td>
                         @endif
                         @if(in_array('image', $selectedColumns))
                         <td class="p-4 w-[1%] whitespace-nowrap">
-                            @if($item->image) <img src="{{ asset('storage/'.$item->image) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm shrink-0">
-                            @else <div class="h-10 w-10 rounded-lg bg-[var(--color-background)] border border-[var(--color-border-color)] flex items-center justify-center text-[10px] text-[var(--color-text-muted)] font-bold shrink-0">N/A</div> @endif
+                            @php $f = is_string($item->image) ? json_decode($item->image, true) : $item->image; @endphp
+                            @if($f) <img src="{{ asset('storage/'.(is_array($f) ? $f[0] : $f)) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                            @else <span class="text-[10px] text-[var(--color-text-muted)]">N/A</span> @endif
                         </td>
                         @endif
                         @if(in_array('images', $selectedColumns))
                         <td class="p-4 w-[1%] whitespace-nowrap">
-                            @php $files = is_string($item->images) ? json_decode($item->images, true) : $item->images; @endphp
-                            @if($files && is_array($files) && count($files) > 0)
-                                <div class="flex gap-1 items-center">
-                                    @foreach(array_slice($files, 0, 3) as $file) 
-                                        <img src="{{ asset('storage/'.$file) }}" class="h-8 w-8 rounded-md object-cover border border-[var(--color-border-color)] shadow-sm shrink-0"> 
-                                    @endforeach
-                                    @if(count($files) > 3) <span class="text-[10px] font-bold text-[var(--color-text-muted)] bg-[var(--color-background)] px-1.5 py-0.5 rounded-md border border-[var(--color-border-color)]">+{{ count($files) - 3 }}</span> @endif
-                                </div>
-                            @else <span class="text-[10px] font-bold text-[var(--color-text-muted)]">N/A</span> @endif
+                            @php $f = is_string($item->images) ? json_decode($item->images, true) : $item->images; @endphp
+                            @if($f) <img src="{{ asset('storage/'.(is_array($f) ? $f[0] : $f)) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                            @else <span class="text-[10px] text-[var(--color-text-muted)]">N/A</span> @endif
                         </td>
                         @endif
 

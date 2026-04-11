@@ -29,62 +29,141 @@
                 {{-- តួ Form --}}
                 <form wire:submit.prevent="saveAndNextBulkItem" class="flex-1 overflow-y-auto p-5 md:p-6 flex flex-col">
                     <div class="space-y-4 flex-1">
-                        {{-- ✅ បញ្ចូលទម្រង់ Field ដែល Generate ស្វ័យប្រវត្តិតាម Database --}}
-                                            <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.parent_id') ?? 'Parent' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <select wire:model="bulkItem_parent_id" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none cursor-pointer">
-                                <option value="">Select Parent...</option>
-                                @php $opts = class_exists('\App\Models\Sidebar') ? \App\Models\Sidebar::limit(100)->get() : collect(); @endphp
-                                @foreach($opts as $opt) <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> @endforeach
-                            </select>
+                        {{-- Parent Selector --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.parent_id') ?? 'Parent' }}</label>
+                            <div class="w-full md:w-3/4">
+                                <select wire:model="bulkItem_parent_id" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none cursor-pointer">
+                                    <option value="">Select Parent...</option>
+                                    @php $opts = class_exists('\App\Models\Sidebar') ? \App\Models\Sidebar::limit(100)->get() : collect(); @endphp
+                                    @foreach($opts as $opt) <option value="{{ $opt->id }}">{{ $opt->name ?? $opt->title ?? 'ID: ' . $opt->id }}</option> @endforeach
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.name') ?? 'Name' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <input type="text" wire:model="bulkItem_name" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Name...">
-                            @error('bulkItem_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                        {{-- Name --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.name') ?? 'Name' }}</label>
+                            <div class="w-full md:w-3/4">
+                                <input type="text" wire:model="bulkItem_name" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Name...">
+                                @error('bulkItem_name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.url') ?? 'Url' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <input type="text" wire:model="bulkItem_url" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Url...">
-                            @error('bulkItem_url') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                        {{-- URL --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.url') ?? 'Url' }}</label>
+                            <div class="w-full md:w-3/4">
+                                <input type="text" wire:model="bulkItem_url" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Url...">
+                                @error('bulkItem_url') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.icon') ?? 'Icon' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <input type="text" wire:model="bulkItem_icon" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Icon...">
-                            @error('bulkItem_icon') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                        {{-- 🌟 Icon Picker (Smart Tool បម្លែងមកពី Modal Form ធម្មតា) --}}
+                        <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0" 
+                             x-data="{ 
+                                showPicker: false, 
+                                search: '', 
+                                icons: [], 
+                                loading: false,
+                                iconValue: @entangle('bulkItem_icon').live, // ✅ ដូរមកប្រើ bulkItem_icon
+                                
+                                searchIcons() {
+                                    if (this.search.length < 2) return;
+                                    this.loading = true;
+                                    fetch(`https://api.iconify.design/search?query=${this.search}&limit=40`)
+                                        .then(res => res.json())
+                                        .then(data => { this.icons = data.icons; this.loading = false; });
+                                },
+                                
+                                selectIcon(name) {
+                                    this.iconValue = name;
+                                    $wire.set('bulkItem_icon', name); // ✅ បង្ខំ Livewire ឱ្យ Update
+                                    this.showPicker = false;
+                                }
+                             }">
+                            
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider md:pt-3">{{ __('messages.icon') ?? 'Icon' }}</label>
+                            
+                            <div class="w-full md:w-3/4 relative">
+                                <div class="flex gap-2">
+                                    {{-- Preview Button --}}
+                                    <button type="button" @click="showPicker = !showPicker" 
+                                            class="w-11 h-11 flex items-center justify-center bg-[var(--color-background)] border border-[var(--color-border-color)] rounded-lg text-2xl hover:border-[var(--color-primary)] transition-all shrink-0 text-[var(--color-text-main)]">
+                                        
+                                        <template x-if="iconValue && iconValue.includes('<svg')">
+                                            <span x-html="iconValue" class="flex items-center justify-center"></span>
+                                        </template>
+                                        
+                                        <template x-if="iconValue && !iconValue.includes('<svg')">
+                                            <iconify-icon :icon="iconValue"></iconify-icon>
+                                        </template>
+                                        
+                                        <template x-if="!iconValue">
+                                            <span class="text-[10px] font-bold text-[var(--color-text-muted)]">ICON</span>
+                                        </template>
+                                    </button>
+                                    
+                                    <input type="text" x-model="iconValue" class="flex-1 h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="e.g. lucide:settings">
+                                </div>
+                                @error('bulkItem_icon') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                                {{-- Dropdown Search Picker --}}
+                                <div x-show="showPicker" @click.away="showPicker = false" x-cloak
+                                     class="absolute left-0 top-12 z-[110] w-full bg-[var(--color-card-bg)] border border-[var(--color-border-color)] shadow-2xl rounded-xl p-4 animate-in zoom-in-95 duration-200">
+                                    
+                                    <div class="relative mb-3">
+                                        <input type="text" x-model="search" @input.debounce.400ms="searchIcons()" 
+                                               class="w-full h-10 bg-[var(--color-bg-sub)] border border-[var(--color-border-color)] rounded-lg px-10 text-xs text-[var(--color-text-main)] outline-none focus:border-[var(--color-primary)]" 
+                                               placeholder="Search 200,000+ icons (e.g. home, user, cart)...">
+                                        <svg class="absolute left-3 top-3 w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                        <span x-show="loading" class="absolute right-3 top-3"><svg class="animate-spin h-4 w-4 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>
+                                    </div>
+
+                                    <div class="grid grid-cols-8 gap-2 overflow-y-auto max-h-52 no-scrollbar p-1">
+                                        <template x-for="iconName in icons" :key="iconName">
+                                            <button type="button" @click="selectIcon(iconName)" 
+                                                    class="p-2 flex items-center justify-center hover:bg-[var(--color-primary)] hover:text-white rounded-lg border border-[var(--color-border-color)] transition-all text-[var(--color-text-main)]">
+                                                <iconify-icon :icon="iconName" class="text-xl"></iconify-icon>
+                                            </button>
+                                        </template>
+                                        <div x-show="icons.length === 0 && !loading" class="col-span-8 text-center py-4 text-[var(--color-text-muted)] text-[10px] font-black uppercase tracking-widest">
+                                            Type to search icons...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.permission') ?? 'Permission' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <input type="text" wire:model="bulkItem_permission" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Permission...">
-                            @error('bulkItem_permission') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                        {{-- Permission --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.permission') ?? 'Permission' }}</label>
+                            <div class="w-full md:w-3/4">
+                                <input type="text" wire:model="bulkItem_permission" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Permission...">
+                                @error('bulkItem_permission') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.order') ?? 'Order' }}</label>
-                        <div class="w-full md:w-3/4">
-                            <input type="text" wire:model="bulkItem_order" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Order...">
-                            @error('bulkItem_order') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+
+                        {{-- Order --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-b border-[var(--color-border-color)] pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.order') ?? 'Order' }}</label>
+                            <div class="w-full md:w-3/4">
+                                <input type="text" wire:model="bulkItem_order" class="w-full h-11 bg-[var(--color-background)] border border-[var(--color-border-color)] text-[var(--color-text-main)] rounded-lg px-4 text-sm focus:ring-2 focus:ring-[var(--color-primary)] outline-none shadow-sm transition-colors" placeholder="Enter Order...">
+                                @error('bulkItem_order') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-4 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)] mb-4 last:mb-0">
-                        <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.is_active') ?? 'Is Active' }}</label>
-                        <div class="w-full md:w-3/4 flex items-center gap-3">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model="bulkItem_is_active" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                            </label>
-                            <span class="text-sm font-bold text-[var(--color-text-main)] uppercase">{{ $bulkItem_is_active ? __('messages.active') : __('messages.inactive') }}</span>
+
+                        {{-- Is Active --}}
+                        <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-4 bg-[var(--color-background)]/30 rounded-xl border border-[var(--color-border-color)] mb-4 last:mb-0">
+                            <label class="w-full md:w-1/4 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{{ __('messages.is_active') ?? 'Is Active' }}</label>
+                            <div class="w-full md:w-3/4 flex items-center gap-3">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" wire:model="bulkItem_is_active" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[var(--color-primary)] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                </label>
+                                <span class="text-sm font-bold text-[var(--color-text-main)] uppercase">{{ $bulkItem_is_active ? __('messages.active') : __('messages.inactive') }}</span>
+                            </div>
                         </div>
-                    </div>
 
                     </div>
 

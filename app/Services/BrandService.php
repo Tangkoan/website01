@@ -6,6 +6,12 @@ use App\Models\Brand;
 
 class BrandService
 {
+
+    protected function model()
+    {
+        return \App\Models\Brand::class;
+    }
+
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
         $query = $this->model()::query()->with(['parent'])

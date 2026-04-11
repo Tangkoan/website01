@@ -10,7 +10,7 @@
                     <th class="p-4 w-16 text-center"><input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] cursor-pointer checked:bg-[var(--color-primary)]"></th>
                     @if(in_array('name', $selectedColumns)) <th wire:click="sortBy('name')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.name') ?? 'Name' }} @if($sortField === 'name') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
                     @if(in_array('description', $selectedColumns)) <th wire:click="sortBy('description')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.description') ?? 'Description' }} @if($sortField === 'description') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
-                    @if(in_array('status', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center">{{ __('messages.status') ?? 'Status' }}</th> @endif
+                    @if(in_array('status', $selectedColumns)) <th wire:click="sortBy('status')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.status') ?? 'Status' }} @if($sortField === 'status') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
                     @if(in_array('des', $selectedColumns)) <th wire:click="sortBy('des')" class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest cursor-pointer hover:text-[var(--color-primary)] transition-colors"><div class="flex items-center gap-2">{{ __('messages.des') ?? 'Des' }} @if($sortField === 'des') <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"></path></svg> @endif</div></th> @endif
 
                     <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest text-center">{{ __('messages.actions') ?? 'Actions' }}</th>
@@ -22,28 +22,28 @@
                         <td class="p-4 text-center"><input type="checkbox" wire:model.live="selectedItems" value="{{ $item->id }}" class="row-checkbox w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"></td>
                         @if(in_array('name', $selectedColumns)) 
                         <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
-                            @php $pt = strip_tags($item->name); $hH = strlen($item->name) > strlen($pt); @endphp
-                            @if(trim($pt) !== '') {{ Str::limit($pt, 40) }} @elseif($hH && str_contains($item->name, '<img')) <span class="text-[var(--color-primary)] text-[10px]">Image Content</span> @else <span class="text-[10px] text-[var(--color-text-muted)]">---</span> @endif
+                            @php $pt = strip_tags($item->name); @endphp
+                            {{ Str::limit($pt, 40) ?: '---' }}
                         </td> 
                         @endif
                         @if(in_array('description', $selectedColumns)) 
                         <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
-                            @php $pt = strip_tags($item->description); $hH = strlen($item->description) > strlen($pt); @endphp
-                            @if(trim($pt) !== '') {{ Str::limit($pt, 40) }} @elseif($hH && str_contains($item->description, '<img')) <span class="text-[var(--color-primary)] text-[10px]">Image Content</span> @else <span class="text-[10px] text-[var(--color-text-muted)]">---</span> @endif
+                            @php $pt = strip_tags($item->description); @endphp
+                            {{ Str::limit($pt, 40) ?: '---' }}
                         </td> 
                         @endif
                         @if(in_array('status', $selectedColumns))
                         <td class="p-4 text-center whitespace-nowrap w-[1%]">
                             <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
+                                <input type="checkbox" wire:change.stop="toggleField({{ $item->id }}, 'status')" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
                                 <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
                             </label>
                         </td>
                         @endif
                         @if(in_array('des', $selectedColumns)) 
                         <td class="p-4 text-sm font-bold text-[var(--color-text-main)] transition-colors">
-                            @php $pt = strip_tags($item->des); $hH = strlen($item->des) > strlen($pt); @endphp
-                            @if(trim($pt) !== '') {{ Str::limit($pt, 40) }} @elseif($hH && str_contains($item->des, '<img')) <span class="text-[var(--color-primary)] text-[10px]">Image Content</span> @else <span class="text-[10px] text-[var(--color-text-muted)]">---</span> @endif
+                            @php $pt = strip_tags($item->des); @endphp
+                            {{ Str::limit($pt, 40) ?: '---' }}
                         </td> 
                         @endif
 

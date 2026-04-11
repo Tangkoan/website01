@@ -16,7 +16,7 @@
                     <div class="flex flex-col shrink-0">
                         <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.status') }}</span>
                         <label class="relative inline-flex items-center cursor-pointer mt-1 shrink-0">
-                            <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
+                            <input type="checkbox" wire:change.stop="toggleField({{ $item->id }}, 'status')" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
                             <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
                         </label>
                     </div>

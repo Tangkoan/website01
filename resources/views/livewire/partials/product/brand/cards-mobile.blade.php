@@ -16,29 +16,13 @@
                     <div class="flex flex-col shrink-0">
                         <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.status') }}</span>
                         <label class="relative inline-flex items-center cursor-pointer mt-1 shrink-0">
-                            <input type="checkbox" wire:change.stop="toggleStatus({{ $item->id }})" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
+                            <input type="checkbox" wire:change.stop="toggleField({{ $item->id }}, 'status')" class="sr-only peer" {{ $item->status ? 'checked' : '' }}>
                             <div class="w-9 h-5 bg-[var(--color-border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--color-border-color)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary)] shrink-0"></div>
                         </label>
                     </div>
                     @endif
-                    @if(in_array('image', $selectedColumns))
-                    <div class="flex flex-col shrink-0">
-                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.image') }}</span>
-                        @if($item->image) <img src="{{ asset('storage/'.$item->image) }}" class="h-8 w-8 rounded-lg object-cover border border-[var(--color-border-color)] shadow-sm mt-1 shrink-0"> 
-                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
-                    </div>
-                    @endif
-                    @if(in_array('images', $selectedColumns))
-                    <div class="flex flex-col shrink-0">
-                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.images') }}</span>
-                        @php $files = is_string($item->images) ? json_decode($item->images, true) : $item->images; @endphp
-                        @if($files && is_array($files) && count($files) > 0)
-                            <div class="flex gap-1 items-center mt-1">
-                                @foreach(array_slice($files, 0, 3) as $file) <img src="{{ asset('storage/'.$file) }}" class="h-8 w-8 rounded object-cover border border-[var(--color-border-color)] shadow-sm shrink-0"> @endforeach
-                            </div>
-                        @else <span class="text-xs font-bold text-[var(--color-text-muted)] mt-1">N/A</span> @endif
-                    </div>
-                    @endif
+                    @if(in_array('image', $selectedColumns)) <div class="flex flex-col shrink-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.image') }}</span><img src="{{ $item->image ? asset('storage/'.(is_array(json_decode($item->image,true))?json_decode($item->image,true)[0]:$item->image)) : '' }}" class="h-8 w-8 rounded-lg mt-1 shrink-0"></div> @endif
+                    @if(in_array('images', $selectedColumns)) <div class="flex flex-col shrink-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.images') }}</span><img src="{{ $item->images ? asset('storage/'.(is_array(json_decode($item->images,true))?json_decode($item->images,true)[0]:$item->images)) : '' }}" class="h-8 w-8 rounded-lg mt-1 shrink-0"></div> @endif
 
                     </div>
                 </div>

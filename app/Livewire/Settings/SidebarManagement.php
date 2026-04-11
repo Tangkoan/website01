@@ -35,7 +35,7 @@ class SidebarManagement extends Component
     public $bulkItem_is_active = true;
     
     public $isModalOpen = false, $searchTerm = '', $perPage = 10;
-    public $sortField = 'id', $sortDirection = 'desc';
+    public $sortField = 'order', $sortDirection = 'asc';
     
     public $availableColumns = ['parent_id' => 'Parent', 'name' => 'Name', 'url' => 'Url', 'icon' => 'Icon', 'permission' => 'Permission', 'order' => 'Order', 'is_active' => 'Is Active'];
     public $selectedColumns = ['parent_id', 'name', 'url', 'icon', 'permission', 'order', 'is_active']; 
@@ -49,6 +49,15 @@ class SidebarManagement extends Component
     public $bulkItemId;
 
     protected $queryString = ['searchTerm', 'perPage'];
+    public $expandedItems = []; // 🌟 បន្ថែមបន្ទាត់នេះ ដើម្បីទុកចំណាំថា Parent មួយណាបើក
+
+    public function toggleExpanded($id) {
+        if (in_array($id, $this->expandedItems)) {
+            $this->expandedItems = array_diff($this->expandedItems, [$id]);
+        } else {
+            $this->expandedItems[] = $id;
+        }
+    }
 
     protected function service() { return app(SidebarService::class); }
 
@@ -103,10 +112,10 @@ class SidebarManagement extends Component
         $this->validate([
             'bulkItem_parent_id' => 'required',
             'bulkItem_name' => 'required|string|max:255',
-            'bulkItem_url' => 'required|string|max:255',
-            'bulkItem_icon' => 'required|string|max:255',
-            'bulkItem_permission' => 'required|string|max:255',
-            'bulkItem_order' => 'required|string|max:255',
+            'bulkItem_url' => 'nullable|string|max:255',
+            'bulkItem_icon' => 'nullable|string|max:255',
+            'bulkItem_permission' => 'nullable|string|max:255',
+            'bulkItem_order' => 'required|integer',
             'bulkItem_is_active' => 'nullable|boolean',
         ]);
         $this->service()->saveItem([
@@ -192,11 +201,10 @@ class SidebarManagement extends Component
         // ប្តូរតម្លៃ (Toggle logic)
         $item->$field = !$item->$field;
         $item->save();
-
+        
+        // 🌟 ត្រូវ Clear Cache និង Refresh Sidebar ដើម្បីឱ្យវាស៊ីសង្វាក់គ្នាភ្លាមៗ!
         \Illuminate\Support\Facades\Cache::forget('sidebar_dynamic_menus');
-
-        // ២. ✅ បាញ់ Event ទៅកាន់ SidebarProvider ឱ្យវា Re-render ភ្លាមៗ
-        $this->dispatch('refreshSidebar')->to(SidebarProvider::class);
+        $this->dispatch('refreshSidebar')->to(\App\Livewire\Settings\SidebarProvider::class); // ត្រូវប្រាកដថា Provider ឈ្មោះត្រូវ
         
         $this->dispatch('notify', 
             type: 'success', 
@@ -209,14 +217,31 @@ class SidebarManagement extends Component
         else abort_if(\Illuminate\Support\Facades\Gate::denies('create-sidebar'), 403);
 
         $this->validate([
-            'parent_id' => 'required',
-            'name' => 'required|string|max:255',
-            'url' => 'required|string|max:255',
-            'icon' => 'required|string|max:255',
-            'permission' => 'required|string|max:255',
-            'order' => 'required|string|max:255',
-            'is_active' => 'nullable|boolean',
+            'parent_id'  => 'nullable', // ត្រូវតែដាក់ nullable កុំដាក់ required ឱ្យសោះ
+            'name'       => 'required|string|max:255',
+            'url'        => 'nullable|string|max:255', // url ក៏គួរ nullable ដែរ បើវាជាមេ (Parent)
+            'icon'       => 'nullable|string|max:255',
+            'permission' => 'nullable|string|max:255',
+            'order'      => 'nullable|numeric',
+            'is_active'  => 'nullable|boolean',
         ]);
+
+
+        $this->service()->saveItem([
+            'parent_id'  => $this->parent_id === "" ? null : $this->parent_id,
+            'name'       => $this->name,
+            'url'        => $this->url,
+            'icon'       => $this->icon,
+            'permission' => $this->permission,
+            'order'      => $this->order ?? 0,
+            'is_active'  => $this->is_active,
+        ], $this->itemId);
+
+        // 🌟 ១. លុប Cache របស់ Sidebar ចោលដោយស្វ័យប្រវត្តិ (ដូចបងវាយ Command ចឹង)
+            \Illuminate\Support\Facades\Cache::forget('sidebar_dynamic_menus');
+
+            // 🌟 ២. បាញ់ Event ទៅប្រាប់ SidebarProvider ឱ្យវា Refresh ទាញ Icon ថ្មីមកបង្ហាញភ្លាមៗ
+            $this->dispatch('refreshSidebar')->to(SidebarProvider::class);
 
         try {
             $this->service()->saveItem([
@@ -271,7 +296,6 @@ class SidebarManagement extends Component
         $ids = $this->deleteId ?: $this->selectedItems;
         $this->service()->deleteItems($ids);
         $this->reset(['selectedItems', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
-        \Illuminate\Support\Facades\Cache::forget('sidebar_dynamic_menus');
         $this->dispatch('notify', type: 'success', message: __('messages.deleted_successfully') ?? 'Deleted successfully.');
     }
 
@@ -279,6 +303,23 @@ class SidebarManagement extends Component
         $this->reset(['searchTerm', 'selectedItems', 'selectAll']);
         $this->resetPage(); 
         $this->dispatch('notify', type: 'success', message: __('messages.data_reloaded') ?? 'Data reloaded.');
+    }
+
+    public function updateItemOrder($orderedItems)
+    {
+        foreach ($orderedItems as $item) {
+            \App\Models\Sidebar::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
+
+        \Illuminate\Support\Facades\Cache::forget('sidebar_dynamic_menus');
+        
+        // 🌟 ត្រូវប្រាកដថាបងបាន Import SidebarProvider ត្រឹមត្រូវខាងលើ
+        $this->dispatch('refreshSidebar')->to(\App\Livewire\Settings\SidebarProvider::class); 
+        
+        $this->dispatch('notify', type: 'success', message: 'Order updated automatically!');
+        
+        // 🌟 បង្ខំឱ្យ Component នេះ (Table) Render ឡើងវិញដើម្បី Update ទីតាំង DOM ពិតប្រាកដ
+        $this->dispatch('$refresh');
     }
 
     public function render() {

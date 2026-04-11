@@ -10,18 +10,12 @@ use Spatie\Activitylog\LogOptions;
 
 class Sidebar extends Model
 {
-    // ✅ បំពាក់អាវក្រោះទាំង ៣៖ Factory, Trash (SoftDeletes), និង Activity Log
     use HasFactory, SoftDeletes, LogsActivity;
 
     protected $table = 'sidebars';
     
-    // ✅ អនុញ្ញាតឱ្យ Insert ទិន្នន័យបានគ្រប់ Field
-    protected $guarded = [];
+    protected $guarded = []; // ✅ Guarded ត្រឹមត្រូវ
 
-    /**
-     * កំណត់រចនាសម្ព័ន្ធសម្រាប់ Activity Log 
-     * (កត់ត្រាតែអ្វីដែលផ្លាស់ប្តូរ និងមិនកត់ត្រា Log ទទេ)
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -29,20 +23,18 @@ class Sidebar extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
-    
-    /**
-     * ទាញយក Menu មេ (Parent)
-     */
+
     public function parent()
     {
         return $this->belongsTo(Sidebar::class, 'parent_id');
     }
 
-    /**
-     * ទាញយក Menu កូនៗ (Children) ព្រមទាំងតម្រៀបតាមលេខរៀង (order)
-     */
+
+    // ✅ ១. Relationship សម្រាប់ទាញយកកូនៗ (Sub-menus)
     public function children()
     {
         return $this->hasMany(Sidebar::class, 'parent_id')->orderBy('order', 'asc');
     }
+    
+    
 }

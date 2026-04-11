@@ -38,7 +38,9 @@ class GenericLog extends Component
             'permission' => Permission::class,
             'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
-            'sidebar' => \App\Models\Sidebar::class,
+            'sidebar' => \App\Models\Sidebar::class,
+            'category' => \App\Models\Product\Category::class,
+
 
         ];
     }
@@ -200,14 +202,14 @@ class GenericLog extends Component
 
     public function getBackRoute()
     {
-        $routes = [
+        $backRouteMap = [
             'user' => 'settings.users',
             'role' => 'settings.roles',
-            'permission' => 'settings.permissions',
-
+            'permission' => 'settings.permissions',
+            'category' => 'product.categories.index',
         ];
 
-        return $routes[$this->type] ?? 'dashboard';
+        return $backRouteMap[$this->type] ?? 'dashboard';
     }
 
     public function render()

@@ -12,9 +12,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@100;300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+{{-- Icon --}}
+{{-- <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script> --}}
+{{-- <script src="{{ asset('assets/js/iconify.min.js') }}"></script>
+<script src="{{ asset('assets/js/twemoji.min.js') }}"></script> --}}
+<script src="{{ asset('assets/js/iconify-icon.min.js') }}"></script>
+
+
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+{{-- <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script> --}}
 
     <script>
         function applyTheme() {

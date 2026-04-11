@@ -14,17 +14,24 @@ class SidebarService
 
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
     {
-        $query = $this->model()::query()->with(['parent'])
-            ->when($searchTerm, function ($q) use ($searchTerm) {
-                return $q->where('name', 'like', '%' . $searchTerm . '%');
-            })
-            ->orderBy($sortField, $sortDirection);
+        $query = Sidebar::query();
+        $query->whereNull('parent_id');
 
-        if (strtolower($perPage) === 'all') {
-            return $query->get();
+        if ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('url', 'like', '%' . $searchTerm . '%');
+            });
         }
 
-        return $query->paginate((int) $perPage);
+        // 🌟 ដំណោះស្រាយថ្មី៖ ទោះយក ALL ក៏នៅតែប្រើ paginate() ដើម្បីកុំឱ្យបាត់ UI
+        if ($perPage === 'all') {
+            $total = $query->count();
+            // បើ total = 0 យក 1 ដើម្បីកុំឱ្យ Error ពេលអត់មានទិន្នន័យ
+            return $query->orderBy($sortField, $sortDirection)->paginate($total > 0 ? $total : 1); 
+        }
+        
+        return $query->orderBy($sortField, $sortDirection)->paginate($perPage);
     }
 
     public function saveItem(array $data, $id = null)

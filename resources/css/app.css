@@ -100,3 +100,7 @@
     --font-khmer: 'Battambang', sans-serif;
     --font-english: 'Inter', sans-serif;
 }
+
+.emoji-font {
+    font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}

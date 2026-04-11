@@ -97,9 +97,9 @@ class BrandManagement extends Component
     public function saveAndNextBulkItem() {
         abort_if(Gate::denies('edit-brand'), 403);
         $this->validate([
-            'bulkItem_parent_id' => 'nullable',
+            'bulkItem_parent_id' => 'required',
             'bulkItem_name' => 'required|string|max:255',
-            'bulkItem_status' => 'required|boolean',
+            'bulkItem_status' => 'nullable|boolean',
             'bulkItem_image' => 'nullable',
             'bulkItem_images' => 'nullable',
         ]);
@@ -168,15 +168,25 @@ class BrandManagement extends Component
         $this->isModalOpen = true;
     }
 
-    public function toggleStatus($id) {
+    /**
+     * ✅ កែប្រែទៅជា toggleField ដើម្បីឱ្យ Smart ជាងមុន
+     * អាចបិទបើកបានគ្រប់ Field ដែលជាប្រភេទ Boolean
+     */
+    public function toggleField($id, $field) {
         if (Gate::denies('edit-brand')) {
             $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'No permission.');
             return; 
         }
         $item = Brand::findOrFail($id);
-        $item->status = !$item->status;
+        
+        // ប្តូរតម្លៃ (Toggle logic)
+        $item->$field = !$item->$field;
         $item->save();
-        $this->dispatch('notify', type: 'success', message: $item->status ? __('messages.activated') ?? 'Activated' : __('messages.deactivated') ?? 'Deactivated');
+        
+        $this->dispatch('notify', 
+            type: 'success', 
+            message: $item->$field ? (__('messages.activated') ?? 'Activated') : (__('messages.deactivated') ?? 'Deactivated')
+        );
     }
 
     public function saveItem() {
@@ -184,9 +194,9 @@ class BrandManagement extends Component
         else abort_if(\Illuminate\Support\Facades\Gate::denies('create-brand'), 403);
 
         $this->validate([
-            'parent_id' => 'nullable',
+            'parent_id' => 'required',
             'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
+            'status' => 'nullable|boolean',
             'image' => 'nullable',
             'images' => 'nullable',
         ]);
@@ -204,7 +214,6 @@ class BrandManagement extends Component
             $this->dispatch('notify', type: 'success', message: __('messages.saved_successfully') ?? 'Data saved successfully.');
 
         } catch (\Illuminate\Database\QueryException $e) {
-            // ✅ ចាប់យកកំហុស "Data too long" (1406) - កូដត្រឹមត្រូវគ្មានសញ្ញា \ នៅពីមុខ $ ឡើយ
             if ($e->getCode() === '22001' || \Illuminate\Support\Str::contains($e->getMessage(), '1406')) {
                 
                 preg_match("/column '([^']+)'/", $e->getMessage(), $matches);
