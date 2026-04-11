@@ -317,4 +317,12 @@ return [
     'contains_image' => 'មានរូបភាព',
     'html_content' => 'មានខ្លឹមសារ HTML',
     'description'=> 'លម្អិត',
+
+    'product' => 'ផលិតផល',
+    'category' => 'ប្រភេទផលិតផល',
+    'brand' => 'ម៉ាក',
+    'sidebar' => 'បញ្ជីចំហៀង',
+    'recycle_bin' => 'ធុងសំរាម',
+
+    
 ];

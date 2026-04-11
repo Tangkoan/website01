@@ -34,7 +34,8 @@ class GenericTrash extends Component
             'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
             'sidebar' => \App\Models\Sidebar::class,
-            'category' => \App\Models\Product\Category::class,
+            'category' => \App\Models\Product\Category::class,
+            'brand' => \App\Models\Product\Brand::class,
 
 
         ];

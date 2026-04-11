@@ -39,22 +39,23 @@ class CrudGeneratorCommand extends Command
         if (File::exists($modelDest) || File::exists($livewireClassDest) || File::exists($mainViewDest)) {
             $this->warn("\n⚠️  WARNING: CRUD files for [{$classPath}] already exist!");
             
-            $choice = $this->choice(
-                'Please Select your option!',
-                [
-                    'Overwrite All',
-                    'Cancel',
-                    'Ask File by File'
-                ],
-                1 // Default គឺយកលេខ 2 (Cancel) ដើម្បីសុវត្ថិភាព
-            );
+            $options = [
+                'Overwrite All', // Index 0
+                'Cancel',        // Index 1
+                'Ask File by File' // Index 2
+            ];
 
-            if (str_starts_with($choice, '2')) {
+            $choice = $this->choice('Please Select your option!', $options, 1);
+
+            // 🌟 កែសម្រួលការឆែកលក្ខខណ្ឌឱ្យដាច់ស្រឡះ
+            if ($choice === 'Cancel') {
                 $this->info("🛑 Operation canceled. Your files are safe.");
                 return;
-            } elseif (str_starts_with($choice, '1')) {
+            } 
+            
+            if ($choice === 'Overwrite All') {
                 $this->overwriteMode = 'all';
-                $this->info("♻️  Proceeding to overwrite ALL files...");
+                $this->info("♻️  Proceeding to overwrite ALL files automatically...");
             } else {
                 $this->overwriteMode = 'ask';
                 $this->info("🧐 We will ask you before overwriting each existing file.");
@@ -290,13 +291,32 @@ EOT;
     private function getRelationTableCell($col, $rel) { return "                        @if(in_array('{$col}', \$selectedColumns)) <td class=\"p-4 text-sm font-bold text-[var(--color-text-main)]\">{{ \$item->{$rel}?->name ?? \$item->{$rel}?->title ?? \$item->{$col} ?? 'N/A' }}</td> @endif\n"; }
 
     private function getImageTableCell($col) {
-        $isM = str_ends_with($col, 's');
         return <<<EOT
                         @if(in_array('{$col}', \$selectedColumns))
                         <td class="p-4 w-[1%] whitespace-nowrap">
-                            @php \$f = is_string(\$item->{$col}) ? json_decode(\$item->{$col}, true) : \$item->{$col}; @endphp
-                            @if(\$f) <img src="{{ asset('storage/'.(is_array(\$f) ? \$f[0] : \$f)) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
-                            @else <span class="text-[10px] text-[var(--color-text-muted)]">N/A</span> @endif
+                            @php 
+                                \$f = \$item->{$col};
+                                // 🌟 ឆែកមើលបើវាជា JSON String ត្រូវ Decode វាសិន
+                                if(is_string(\$f) && (str_starts_with(\$f, '[') || str_starts_with(\$f, '{'))) {
+                                    \$f = json_decode(\$f, true);
+                                }
+                            @endphp
+                            
+                            @if(\$f) 
+                                <div class="flex flex-wrap gap-2">
+                                    @if(is_array(\$f))
+                                        {{-- 🌟 បើវាជា Array បង្ហាញរូបទាំងអស់ (Loop) --}}
+                                        @foreach(\$f as \$img)
+                                            <img src="{{ asset('storage/'.\$img) }}" class="h-10 w-10 rounded-lg object-cover border-2 border-[var(--color-card-bg)] shadow-sm shrink-0">
+                                        @endforeach
+                                    @else
+                                        {{-- 🌟 បើវាជារូបទោល --}}
+                                        <img src="{{ asset('storage/'.\$f) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                                    @endif
+                                </div>
+                            @else 
+                                <span class="text-[10px] text-[var(--color-text-muted)] italic">N/A</span> 
+                            @endif
                         </td>
                         @endif\n
 EOT;
@@ -304,7 +324,30 @@ EOT;
 
     private function getTextMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ strip_tags(\$item->{$col}) }}</span></div> @endif\n"; }
     private function getRelationMobileCell($col, $rel) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ \$item->{$rel}?->name ?? \$item->{$col} }}</span></div> @endif\n"; }
-    private function getImageMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col shrink-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><img src=\"{{ \$item->{$col} ? asset('storage/'.(is_array(json_decode(\$item->{$col},true))?json_decode(\$item->{$col},true)[0]:\$item->{$col})) : '' }}\" class=\"h-8 w-8 rounded-lg mt-1 shrink-0\"></div> @endif\n"; }
+    private function getImageMobileCell($col) { 
+        return <<<EOT
+                    @if(in_array('{$col}', \$selectedColumns)) 
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.{$col}') }}</span>
+                        @php 
+                            \$f = \$item->{$col};
+                            if(is_string(\$f) && (str_starts_with(\$f, '[') || str_starts_with(\$f, '{'))) {
+                                \$f = json_decode(\$f, true);
+                            }
+                        @endphp
+                        <div class="flex flex-wrap mt-1 gap-1.5">
+                            @if(is_array(\$f))
+                                @foreach(\$f as \$img)
+                                    <img src="{{ asset('storage/'.\$img) }}" class="h-8 w-8 rounded-lg border-2 border-[var(--color-card-bg)] object-cover shrink-0">
+                                @endforeach
+                            @elseif(\$f)
+                                <img src="{{ asset('storage/'.\$f) }}" class="h-8 w-8 rounded-lg object-cover shrink-0">
+                            @endif
+                        </div>
+                    </div> 
+                    @endif\n
+EOT;
+    }
 
     private function getTextHtmlTemplate($col, $label, $var) {
         return <<<EOT

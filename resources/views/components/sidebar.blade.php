@@ -13,6 +13,12 @@
             ->orderBy('order', 'asc')
             ->get();
     });
+
+    // 🌟 Helper ដ៏ឆ្លាតវៃសម្រាប់បកប្រែ (ដោះស្រាយបញ្ហាអក្សរធំតូច និងពាក្យ messages. ជាន់គ្នា)
+    $getLabel = function($name) {
+        $key = strtolower(trim(str_replace('messages.', '', $name)));
+        return trans()->has("messages.{$key}") ? __("messages.{$key}") : \Illuminate\Support\Str::headline($key);
+    };
 @endphp
 
 <div>
@@ -26,7 +32,7 @@
             <div class="flex items-center gap-3 min-w-max">
                 <span class="text-2xl drop-shadow-sm transition-transform hover:scale-110">⚡</span>
                 <h1 x-show="!sidebarCollapsed" x-transition.opacity class="text-lg font-bold tracking-wide text-text-main uppercase">
-                    <span class="font-black">Nealika </span><span class="text-primary font-black">Backend</span>
+                    <span class="font-black">VC </span><span class="text-primary font-black">Backend</span>
                 </h1>
             </div>
         </div>
@@ -46,8 +52,8 @@
                         if(!$hasVisibleChild) $canViewMenu = false;
                     }
 
-                    $translated = __('messages.' . $menu->name);
-                    $menuLabel = ($translated === 'messages.' . $menu->name) ? \Illuminate\Support\Str::headline($menu->name) : $translated;
+                    // 🌟 ប្រើ Helper ដើម្បីបកប្រែឈ្មោះមេ (Parent)
+                    $menuLabel = $getLabel($menu->name);
                 @endphp
 
                 @if($canViewMenu || $sidebarMode === 'disable')
@@ -67,8 +73,6 @@
                             <button @click="sidebarCollapsed ? null : open = !open" class="w-full group relative flex items-center justify-between px-6 py-3.5 transition-all duration-200 {{ $isActiveGroup ? 'text-primary bg-primary/10' : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                                 @if($isActiveGroup) <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div> @endif
                                 <div class="flex items-center gap-4">
-                                    
-                                    {{-- 🌟 Icon សម្រាប់ Group Menu --}}
                                     <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 flex items-center justify-center {{ $isActiveGroup ? 'drop-shadow-sm' : 'opacity-70 group-hover:opacity-100' }}">
                                         @if(!empty($menu->icon) && Str::contains($menu->icon, '<svg')) 
                                             {!! $menu->icon !!} 
@@ -78,7 +82,6 @@
                                             <iconify-icon icon="healthicons:alert-circle2x-outline"></iconify-icon> 
                                         @endif
                                     </span>
-                                    
                                     <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ $isActiveGroup ? 'font-extrabold' : 'font-semibold' }} text-text-main">{{ $menuLabel }}</span>
                                 </div>
                                 <div x-show="!sidebarCollapsed" class="flex items-center justify-center transition-colors">
@@ -92,13 +95,12 @@
                                     @foreach($menu->children as $child)
                                         @php 
                                             $canViewChild = empty($child->permission) || auth()->user()->can($child->permission); 
-                                            $childTrans = __('messages.' . $child->name);
-                                            $childLabel = ($childTrans === 'messages.' . $child->name) ? \Illuminate\Support\Str::headline($child->name) : $childTrans;
+                                            // 🌟 ប្រើ Helper ដើម្បីបកប្រែឈ្មោះកូន (Child)
+                                            $childLabel = $getLabel($child->name);
                                         @endphp
                                         @if($canViewChild || $sidebarMode === 'disable')
                                             <div class="pl-14 pr-6 relative">
                                                 <div class="absolute left-[34px] top-1/2 -translate-y-1/2 w-3 h-px bg-border-color"></div>
-                                                {{-- ✅ បញ្ជូន Icon ទៅ Component កូន --}}
                                                 <x-sidebar-sub-link href="/{{ $child->url }}" :title="$childLabel" :icon="$child->icon" />
                                             </div>
                                         @endif
@@ -112,8 +114,6 @@
                         </div>
                         <a wire:navigate href="/{{ $menu->url }}" class="group relative flex items-center gap-4 px-6 py-3.5 transition-all duration-200 {{ request()->is($menu->url . '*') ? 'text-primary bg-primary/10' : 'text-text-muted hover:bg-primary/5 hover:text-text-main' }}">
                             @if(request()->is($menu->url . '*')) <div class="absolute left-0 top-0 bottom-0 w-[5px] bg-primary rounded-r-md shadow-[2px_0_8px_var(--color-primary)] opacity-50"></div> @endif
-                            
-                            {{-- 🌟 Icon សម្រាប់ Single Menu --}}
                             <span class="text-[22px] transition-transform duration-300 group-hover:scale-110 flex items-center justify-center {{ request()->is($menu->url . '*') ? 'drop-shadow-sm scale-110' : 'opacity-70 group-hover:opacity-100' }}">
                                 @if(!empty($menu->icon) && Str::contains($menu->icon, '<svg')) 
                                     {!! $menu->icon !!} 
@@ -123,7 +123,6 @@
                                     <iconify-icon icon="healthicons:alert-circle2x-outline"></iconify-icon> 
                                 @endif
                             </span>
-                            
                             <span x-show="!sidebarCollapsed" class="tracking-wide whitespace-nowrap {{ request()->is($menu->url . '*') ? 'font-extrabold' : 'font-semibold' }} text-text-main">{{ $menuLabel }}</span>
                         </a>
                     @endif

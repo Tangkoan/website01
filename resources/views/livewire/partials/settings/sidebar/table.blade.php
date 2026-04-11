@@ -56,7 +56,7 @@
             <thead>
                 <tr class="bg-[var(--color-background)]/50 border-b border-[var(--color-border-color)]">
                     <th class="p-4 w-16 text-center"><input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 rounded border-2 border-[var(--color-text-main)] text-[var(--color-primary)] cursor-pointer checked:bg-[var(--color-primary)]"></th>
-                    @if(in_array('name', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.name') ?? 'Name' }}</th> @endif
+                    @if(in_array('name', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.name')}}</th> @endif
                     @if(in_array('url', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.url') ?? 'Url' }}</th> @endif
                     @if(in_array('icon', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.icon') ?? 'Icon' }}</th> @endif
                     @if(in_array('permission', $selectedColumns)) <th class="p-4 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.permission') ?? 'Permission' }}</th> @endif

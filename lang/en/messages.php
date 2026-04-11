@@ -316,7 +316,9 @@ return [
     'contains_image' => 'Image Content',
     'html_content' => 'HTML Content',
     'description'=> 'Descritpion',
-    'des'=> 'des'
+    'des'=> 'des',
+
+    'category_management'=>"Category Management",
 
 
     

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
-use App\Models\Sidebar; // ✅ ហៅ Model មកប្រើប្រាស់
+use App\Models\Sidebar; 
 use Illuminate\Support\Facades\Cache;
 
 class MenuGeneratorCommand extends Command
@@ -18,60 +18,66 @@ class MenuGeneratorCommand extends Command
         $modelName = Str::studly(class_basename($inputModel)); 
         $modelNameLower = Str::kebab($modelName);
         
-        $modelPathRaw = trim(str_replace(class_basename($inputModel), '', $inputModel), '/\\');
-        $modelPathParts = array_map(fn($part) => Str::studly($part), explode('/', str_replace('\\', '/', $modelPathRaw)));
-        $modelPath = implode('/', array_filter($modelPathParts)); // ឧ. ប្រែក្លាយ Product\Category ទៅជា Product
+        // 🌟 កាត់យកឈ្មោះ Folder ឱ្យបានត្រឹមត្រូវ ទោះឈ្មោះ Folder និង Model ដូចគ្នាក៏ដោយ
+        $cleanInput = str_replace('\\', '/', $inputModel);
+        $modelPathRaw = dirname($cleanInput);
+        $modelPathRaw = $modelPathRaw === '.' ? '' : $modelPathRaw;
+        
+        $modelPathParts = array_map(fn($part) => Str::studly($part), explode('/', $modelPathRaw));
+        $modelPath = implode('/', array_filter($modelPathParts)); 
 
         $routePrefixUrl = empty($modelPath) ? '' : strtolower(str_replace('\\', '/', $modelPath)) . '/';
-        $routePath = $routePrefixUrl . Str::plural($modelNameLower); // ឧទាហរណ៍៖ product/categories
+        $routePath = $routePrefixUrl . Str::plural($modelNameLower); 
         $permission = "view-{$modelNameLower}";
         
         $this->info("🚀 Generating Database Menu for [{$inputModel}]...");
 
         // ❖ បើជា Menu ទោល (អត់មាន Group/Folder ពីមុខ)
         if (empty($modelPath)) {
-            $menu = Sidebar::firstOrCreate(
-                ['url' => $routePath], // ផ្ទៀងផ្ទាត់កុំឱ្យបង្កើតជាន់គ្នា
+            Sidebar::firstOrCreate(
+                ['url' => $routePath], 
                 [
                     'parent_id' => null,
-                    'name' => $modelNameLower, // ឈ្មោះ Key សម្រាប់បកប្រែ
+                    'name' => $modelNameLower, // 👈 រក្សាទុកត្រឹមពាក្យ 'product'
                     'icon' => '📦',
                     'permission' => $permission,
                     'is_active' => true,
+                    'order' => 99,
                 ]
             );
-            $this->info("✅ Single Menu [{$modelName}] added to Database!");
+            $this->info("✅ Single Menu [{$modelNameLower}] added to Database!");
         } 
-        // ❖ បើជា Menu មាន Group (ឧ. Product/Category)
+        // ❖ បើជា Menu មាន Group (ឧ. Product/Product)
         else {
-            $groupTitleKey = strtolower(str_replace('/', '_', $modelPath));
+            $groupNameKey = strtolower(str_replace('/', '_', $modelPath));
 
-            // ១. ស្វែងរក ឬបង្កើត Main Menu (មេ) ជាមុនសិន
+            // ១. ស្វែងរក ឬបង្កើត Main Menu (មេ) 
             $parent = Sidebar::firstOrCreate(
-                ['name' => $groupTitleKey, 'parent_id' => null], 
+                ['name' => $groupNameKey, 'parent_id' => null], // 👈 ស្វែងរកមេឈ្មោះ 'product'
                 [
                     'icon' => '📁',
-                    'url' => null, // មេគ្រាន់តែជា Dropdown អត់មាន Link ទេ
-                    'permission' => null, // សិទ្ធិយើងឆែកតាមកូនៗរបស់វា
+                    'url' => null, 
+                    'permission' => null, 
                     'is_active' => true,
+                    'order' => 99,
                 ]
             );
 
-            // ២. បង្កើត Sub-Menu (កូន) ដោយចងភ្ជាប់ parent_id ទៅកាន់មេ
-            $child = Sidebar::firstOrCreate(
+            // ២. បង្កើត Sub-Menu (កូន) ដោយចងភ្ជាប់ទៅមេ
+            Sidebar::firstOrCreate(
                 ['url' => $routePath, 'parent_id' => $parent->id],
                 [
-                    'name' => $modelNameLower,
-                    'icon' => null, // កូនអត់ដាក់ Icon ទេ ដាក់តែចំណុចៗ
+                    'name' => $modelNameLower, // 👈 រក្សាទុកត្រឹមពាក្យ 'product'
+                    'icon' => null, 
                     'permission' => $permission,
                     'is_active' => true,
+                    'order' => 99,
                 ]
             );
 
-            $this->info("✅ Group Menu [{$modelPath}] -> [{$modelName}] added to Database!");
+            $this->info("✅ Group Menu [{$groupNameKey}] -> [{$modelNameLower}] added to Database!");
         }
 
-        // 🧹 លុប Cache របស់ Sidebar ចោល ដើម្បីឱ្យវាទាញទិន្នន័យថ្មីពី DB ភ្លាមៗ
         Cache::forget('sidebar_dynamic_menus');
         $this->info("🧹 Sidebar cache cleared. Menu will appear immediately!");
     }

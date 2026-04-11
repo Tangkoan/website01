@@ -1,7 +1,22 @@
+@php
+    // 🌟 រត់ទៅទាញយក Icon ពី Table Sidebar តាមរយៈឈ្មោះ (ឧ. product, category)
+    $sidebarMenu = \App\Models\Sidebar::where('name', 'category')->first();
+    $moduleIcon = $sidebarMenu && $sidebarMenu->icon ? $sidebarMenu->icon : '📦'; // បើអត់មាន យក 📦 ជា Default
+@endphp
+
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div>
         <h2 class="text-2xl md:text-3xl font-black text-[var(--color-text-main)] tracking-tight flex items-center gap-3">
-            <span class="p-2 bg-[var(--color-primary)]/10 rounded-lg md:rounded-xl text-[var(--color-primary)] text-xl md:text-2xl">📦</span>
+            <span class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--color-primary)]/10 rounded-lg md:rounded-xl text-[var(--color-primary)] text-xl md:text-2xl shrink-0">
+                {{-- 🌟 បង្ហាញ Icon ឆ្លាតវៃ (គាំទ្រទាំង SVG និង Iconify) --}}
+                @if(!empty($moduleIcon) && \Illuminate\Support\Str::contains($moduleIcon, '<svg'))
+                    {!! $moduleIcon !!}
+                @elseif(!empty($moduleIcon) && $moduleIcon !== '📦')
+                    <iconify-icon icon="{{ $moduleIcon }}"></iconify-icon>
+                @else
+                    {{ $moduleIcon }}
+                @endif
+            </span>
             {{ __('messages.category_management') ?? 'Categories Management' }}
         </h2>
     </div>

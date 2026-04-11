@@ -21,8 +21,46 @@
                         </label>
                     </div>
                     @endif
-                    @if(in_array('image', $selectedColumns)) <div class="flex flex-col shrink-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.image') }}</span><img src="{{ $item->image ? asset('storage/'.(is_array(json_decode($item->image,true))?json_decode($item->image,true)[0]:$item->image)) : '' }}" class="h-8 w-8 rounded-lg mt-1 shrink-0"></div> @endif
-                    @if(in_array('images', $selectedColumns)) <div class="flex flex-col shrink-0"><span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.images') }}</span><img src="{{ $item->images ? asset('storage/'.(is_array(json_decode($item->images,true))?json_decode($item->images,true)[0]:$item->images)) : '' }}" class="h-8 w-8 rounded-lg mt-1 shrink-0"></div> @endif
+                    @if(in_array('image', $selectedColumns)) 
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.image') }}</span>
+                        @php 
+                            $f = $item->image;
+                            if(is_string($f) && (str_starts_with($f, '[') || str_starts_with($f, '{'))) {
+                                $f = json_decode($f, true);
+                            }
+                        @endphp
+                        <div class="flex flex-wrap mt-1 gap-1.5">
+                            @if(is_array($f))
+                                @foreach($f as $img)
+                                    <img src="{{ asset('storage/'.$img) }}" class="h-8 w-8 rounded-lg border-2 border-[var(--color-card-bg)] object-cover shrink-0">
+                                @endforeach
+                            @elseif($f)
+                                <img src="{{ asset('storage/'.$f) }}" class="h-8 w-8 rounded-lg object-cover shrink-0">
+                            @endif
+                        </div>
+                    </div> 
+                    @endif
+                    @if(in_array('images', $selectedColumns)) 
+                    <div class="flex flex-col shrink-0">
+                        <span class="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{{ __('messages.images') }}</span>
+                        @php 
+                            $f = $item->images;
+                            if(is_string($f) && (str_starts_with($f, '[') || str_starts_with($f, '{'))) {
+                                $f = json_decode($f, true);
+                            }
+                        @endphp
+                        <div class="flex flex-wrap mt-1 gap-1.5">
+                            @if(is_array($f))
+                                @foreach($f as $img)
+                                    <img src="{{ asset('storage/'.$img) }}" class="h-8 w-8 rounded-lg border-2 border-[var(--color-card-bg)] object-cover shrink-0">
+                                @endforeach
+                            @elseif($f)
+                                <img src="{{ asset('storage/'.$f) }}" class="h-8 w-8 rounded-lg object-cover shrink-0">
+                            @endif
+                        </div>
+                    </div> 
+                    @endif
 
                     </div>
                 </div>

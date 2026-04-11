@@ -38,16 +38,56 @@
                         @endif
                         @if(in_array('image', $selectedColumns))
                         <td class="p-4 w-[1%] whitespace-nowrap">
-                            @php $f = is_string($item->image) ? json_decode($item->image, true) : $item->image; @endphp
-                            @if($f) <img src="{{ asset('storage/'.(is_array($f) ? $f[0] : $f)) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
-                            @else <span class="text-[10px] text-[var(--color-text-muted)]">N/A</span> @endif
+                            @php 
+                                $f = $item->image;
+                                // 🌟 ឆែកមើលបើវាជា JSON String ត្រូវ Decode វាសិន
+                                if(is_string($f) && (str_starts_with($f, '[') || str_starts_with($f, '{'))) {
+                                    $f = json_decode($f, true);
+                                }
+                            @endphp
+                            
+                            @if($f) 
+                                <div class="flex flex-wrap gap-2">
+                                    @if(is_array($f))
+                                        {{-- 🌟 បើវាជា Array បង្ហាញរូបទាំងអស់ (Loop) --}}
+                                        @foreach($f as $img)
+                                            <img src="{{ asset('storage/'.$img) }}" class="h-10 w-10 rounded-lg object-cover border-2 border-[var(--color-card-bg)] shadow-sm shrink-0">
+                                        @endforeach
+                                    @else
+                                        {{-- 🌟 បើវាជារូបទោល --}}
+                                        <img src="{{ asset('storage/'.$f) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                                    @endif
+                                </div>
+                            @else 
+                                <span class="text-[10px] text-[var(--color-text-muted)] italic">N/A</span> 
+                            @endif
                         </td>
                         @endif
                         @if(in_array('images', $selectedColumns))
                         <td class="p-4 w-[1%] whitespace-nowrap">
-                            @php $f = is_string($item->images) ? json_decode($item->images, true) : $item->images; @endphp
-                            @if($f) <img src="{{ asset('storage/'.(is_array($f) ? $f[0] : $f)) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
-                            @else <span class="text-[10px] text-[var(--color-text-muted)]">N/A</span> @endif
+                            @php 
+                                $f = $item->images;
+                                // 🌟 ឆែកមើលបើវាជា JSON String ត្រូវ Decode វាសិន
+                                if(is_string($f) && (str_starts_with($f, '[') || str_starts_with($f, '{'))) {
+                                    $f = json_decode($f, true);
+                                }
+                            @endphp
+                            
+                            @if($f) 
+                                <div class="flex flex-wrap gap-2">
+                                    @if(is_array($f))
+                                        {{-- 🌟 បើវាជា Array បង្ហាញរូបទាំងអស់ (Loop) --}}
+                                        @foreach($f as $img)
+                                            <img src="{{ asset('storage/'.$img) }}" class="h-10 w-10 rounded-lg object-cover border-2 border-[var(--color-card-bg)] shadow-sm shrink-0">
+                                        @endforeach
+                                    @else
+                                        {{-- 🌟 បើវាជារូបទោល --}}
+                                        <img src="{{ asset('storage/'.$f) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                                    @endif
+                                </div>
+                            @else 
+                                <span class="text-[10px] text-[var(--color-text-muted)] italic">N/A</span> 
+                            @endif
                         </td>
                         @endif
 

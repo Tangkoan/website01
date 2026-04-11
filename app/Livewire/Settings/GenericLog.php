@@ -40,6 +40,7 @@ class GenericLog extends Component
             'brand' => \App\Models\Brand::class,
             'sidebar' => \App\Models\Sidebar::class,
             'category' => \App\Models\Product\Category::class,
+            'brand' => \App\Models\Product\Brand::class,
 
 
         ];
@@ -207,6 +208,7 @@ class GenericLog extends Component
             'role' => 'settings.roles',
             'permission' => 'settings.permissions',
             'category' => 'product.categories.index',
+            'brand' => 'product.brands.index',
         ];
 
         return $backRouteMap[$this->type] ?? 'dashboard';
