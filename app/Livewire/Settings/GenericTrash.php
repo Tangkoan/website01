@@ -31,11 +31,11 @@ class GenericTrash extends Component
             'user' => User::class,
             'role' => Role::class,
             'permission' => Permission::class,
-            'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
             'sidebar' => \App\Models\Sidebar::class,
             'category' => \App\Models\Product\Category::class,
-            'brand' => \App\Models\Product\Brand::class,
+            'brand' => \App\Models\Product\Brand::class,
+
 
 
         ];
@@ -159,7 +159,9 @@ class GenericTrash extends Component
         $routes = [
             'user' => 'settings.users',
             'role' => 'settings.roles',
-            'permission' => 'settings.permissions',
+            'permission' => 'settings.permissions',
+
+
 
         ];
 
