@@ -320,9 +320,9 @@ return [
 
     'category_management'=>"Category Management",
 
-
-    
-    
-
+    'url'=>'URL',
+    'icon'=>'Icon',
+    'is_active'=>'Is Active',
+    'information' => 'Information',
     
 ];

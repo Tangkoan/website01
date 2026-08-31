@@ -324,5 +324,10 @@ return [
     'sidebar' => 'បញ្ជីចំហៀង',
     'recycle_bin' => 'ធុងសំរាម',
 
+    'url'=>'URL',
+    'icon'=>'Icon',
+    'is_active'=>'បើក/បិទ',
+    'Information' => 'ព័ត៌មានលម្អិត',
+
     
 ];
