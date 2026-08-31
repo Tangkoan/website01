@@ -23,6 +23,12 @@ class Category extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    // ទំនាក់ទំនង 1 Category មានសាច់រឿងច្រើន (One-to-Many)
+    public function stories()
+    {
+        return $this->hasMany(Story::class);
+    }
     
     
 }
