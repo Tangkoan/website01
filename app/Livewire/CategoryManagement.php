@@ -1,42 +1,36 @@
 <?php
 
-namespace App\Livewire\Product;
+namespace App\Livewire;
 
 use Livewire\Component;
-use App\Services\BrandService;
+use App\Services\CategoryService;
 use Livewire\WithPagination;
-use Livewire\WithFileUploads;
 
-use App\Models\Brand;
+use App\Models\Category;
 use Illuminate\Support\Facades\Gate;
 
-class BrandManagement extends Component
+class CategoryManagement extends Component
 {
     use WithPagination;
-    use WithFileUploads;
-
+    
 
     public $itemId;
     
     // Single Form Auto-generated fields
-    public $parent_id;
     public $name;
-    public $status = true;
-    public $image;
-    public $images;
+    public $slug;
+    public $is_active = true;
     
     // Bulk Form Auto-generated fields
-    public $bulkItem_parent_id;
     public $bulkItem_name;
-    public $bulkItem_status = true;
-    public $bulkItem_image;
-    public $bulkItem_images;
+    public $bulkItem_slug;
+    public $bulkItem_is_active = true;
     
     public $isModalOpen = false, $searchTerm = '', $perPage = 10;
     public $sortField = 'id', $sortDirection = 'desc';
     
-    public $availableColumns = ['parent_id' => 'Parent', 'name' => 'Name', 'status' => 'Status', 'image' => 'Image', 'images' => 'Images'];
-    public $selectedColumns = ['parent_id', 'name', 'status', 'image', 'images']; 
+    public $availableColumns = ['name' => 'Name', 'slug' => 'Slug', 'is_active' => 'Is Active'];
+    public $selectedColumns = ['name', 'slug', 'is_active']; 
     
     public $selectedItems = [], $selectAll = false;
     public $isDeleteModalOpen = false, $deleteId = null;
@@ -48,7 +42,7 @@ class BrandManagement extends Component
 
     protected $queryString = ['searchTerm', 'perPage'];
 
-    protected function service() { return app(BrandService::class); }
+    protected function service() { return app(CategoryService::class); }
 
     public function updatedSelectAll($value) {
         if ($value) {
@@ -65,7 +59,7 @@ class BrandManagement extends Component
 
     // --- Bulk Edit ---
     public function bulkEdit() {
-        abort_if(Gate::denies('edit-brand'), 403);
+        abort_if(Gate::denies('edit-category'), 403);
         if (empty($this->selectedItems)) return;
         $this->selectedItemsQueue = array_values($this->selectedItems);
         $this->currentBulkIndex = 0;
@@ -75,14 +69,12 @@ class BrandManagement extends Component
 
     private function loadBulkItemData($index) {
         if (!isset($this->selectedItemsQueue[$index])) return;
-        $item = Brand::find($this->selectedItemsQueue[$index]);
+        $item = Category::find($this->selectedItemsQueue[$index]);
         if ($item) {
             $this->bulkItemId = $item->id;
-            $this->bulkItem_parent_id = $item->parent_id;
             $this->bulkItem_name = $item->name;
-            $this->bulkItem_status = (bool) $item->status;
-            $this->bulkItem_image = is_string($item->image) ? json_decode($item->image, true) ?? $item->image : $item->image;
-            $this->bulkItem_images = is_string($item->images) ? json_decode($item->images, true) ?? $item->images : $item->images;
+            $this->bulkItem_slug = $item->slug;
+            $this->bulkItem_is_active = (bool) $item->is_active;
         }
     }
 
@@ -95,20 +87,16 @@ class BrandManagement extends Component
     public function skipBulkItem() { $this->moveToNextBulkItem(); }
 
     public function saveAndNextBulkItem() {
-        abort_if(Gate::denies('edit-brand'), 403);
+        abort_if(Gate::denies('edit-category'), 403);
         $this->validate([
-            'bulkItem_parent_id' => 'required',
             'bulkItem_name' => 'required|string|max:255',
-            'bulkItem_status' => 'nullable|boolean',
-            'bulkItem_image' => 'nullable',
-            'bulkItem_images' => 'nullable',
+            'bulkItem_slug' => 'required|string|max:255',
+            'bulkItem_is_active' => 'nullable|boolean',
         ]);
         $this->service()->saveItem([
-            'parent_id' => $this->bulkItem_parent_id,
             'name' => $this->bulkItem_name,
-            'status' => $this->bulkItem_status,
-            'image' => empty($this->bulkItem_image) ? null : (is_string($this->bulkItem_image) ? $this->bulkItem_image : $this->bulkItem_image->store('uploads/{{modelNameLower}}', 'public')),
-            'images' => empty($this->bulkItem_images) ? null : collect($this->bulkItem_images)->map(fn($f) => is_string($f) ? $f : $f->store('uploads/{{modelNameLower}}', 'public'))->toJson(),
+            'slug' => $this->bulkItem_slug,
+            'is_active' => $this->bulkItem_is_active,
         ], $this->bulkItemId);
         $this->moveToNextBulkItem();
     }
@@ -126,7 +114,7 @@ class BrandManagement extends Component
 
     public function closeBulkEdit() {
         $this->isBulkEditModalOpen = false;
-        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll', 'bulkItem_parent_id', 'bulkItem_name', 'bulkItem_status', 'bulkItem_image', 'bulkItem_images']);
+        $this->reset(['selectedItemsQueue', 'currentBulkIndex', 'bulkItemId', 'selectedItems', 'selectAll', 'bulkItem_name', 'bulkItem_slug', 'bulkItem_is_active']);
         $this->resetErrorBag();
     }
 
@@ -141,11 +129,11 @@ class BrandManagement extends Component
 
     // --- Single Actions ---
     public function openModal() {
-        abort_if(Gate::denies('create-brand'), 403);
+        abort_if(Gate::denies('create-category'), 403);
         $this->reset(['itemId']);
         
         $this->reset([
-            'parent_id', 'name', 'status', 'image', 'images'
+            'name', 'slug', 'is_active'
         ]);
 
         $this->resetErrorBag();
@@ -153,17 +141,15 @@ class BrandManagement extends Component
     }
 
     public function editItem($id) {
-        abort_if(Gate::denies('edit-brand'), 403);
+        abort_if(Gate::denies('edit-category'), 403);
         $this->resetErrorBag();
-        $item = Brand::findOrFail($id);
+        $item = Category::findOrFail($id);
         
         $this->itemId = $item->id;
         
-        $this->parent_id = $item->parent_id;
         $this->name = $item->name;
-        $this->status = (bool) $item->status;
-        $this->image = is_string($item->image) ? json_decode($item->image, true) ?? $item->image : $item->image;
-        $this->images = is_string($item->images) ? json_decode($item->images, true) ?? $item->images : $item->images;
+        $this->slug = $item->slug;
+        $this->is_active = (bool) $item->is_active;
         
         $this->isModalOpen = true;
     }
@@ -173,11 +159,11 @@ class BrandManagement extends Component
      * អាចបិទបើកបានគ្រប់ Field ដែលជាប្រភេទ Boolean
      */
     public function toggleField($id, $field) {
-        if (Gate::denies('edit-brand')) {
+        if (Gate::denies('edit-category')) {
             $this->dispatch('notify', type: 'error', message: __('messages.no_permission') ?? 'No permission.');
             return; 
         }
-        $item = Brand::findOrFail($id);
+        $item = Category::findOrFail($id);
         
         // ប្តូរតម្លៃ (Toggle logic)
         $item->$field = !$item->$field;
@@ -190,24 +176,20 @@ class BrandManagement extends Component
     }
 
     public function saveItem() {
-        if ($this->itemId) abort_if(\Illuminate\Support\Facades\Gate::denies('edit-brand'), 403);
-        else abort_if(\Illuminate\Support\Facades\Gate::denies('create-brand'), 403);
+        if ($this->itemId) abort_if(\Illuminate\Support\Facades\Gate::denies('edit-category'), 403);
+        else abort_if(\Illuminate\Support\Facades\Gate::denies('create-category'), 403);
 
         $this->validate([
-            'parent_id' => 'required',
             'name' => 'required|string|max:255',
-            'status' => 'nullable|boolean',
-            'image' => 'nullable',
-            'images' => 'nullable',
+            'slug' => 'required|string|max:255',
+            'is_active' => 'nullable|boolean',
         ]);
 
         try {
             $this->service()->saveItem([
-                'parent_id' => $this->parent_id,
-            'name' => $this->name,
-            'status' => $this->status,
-            'image' => empty($this->image) ? null : (is_string($this->image) ? $this->image : $this->image->store('uploads/{{modelNameLower}}', 'public')),
-            'images' => empty($this->images) ? null : collect($this->images)->map(fn($f) => is_string($f) ? $f : $f->store('uploads/{{modelNameLower}}', 'public'))->toJson(),
+                'name' => $this->name,
+            'slug' => $this->slug,
+            'is_active' => $this->is_active,
             ], $this->itemId);
 
             $this->isModalOpen = false;
@@ -242,13 +224,13 @@ class BrandManagement extends Component
     }
 
     public function confirmDelete($id = null) {
-        abort_if(Gate::denies('delete-brand'), 403);
+        abort_if(Gate::denies('delete-category'), 403);
         $this->deleteId = $id;
         $this->isDeleteModalOpen = true;
     }
 
     public function executeDelete() {
-        abort_if(Gate::denies('delete-brand'), 403);
+        abort_if(Gate::denies('delete-category'), 403);
         $ids = $this->deleteId ?: $this->selectedItems;
         $this->service()->deleteItems($ids);
         $this->reset(['selectedItems', 'selectAll', 'deleteId', 'isDeleteModalOpen']);
@@ -262,8 +244,8 @@ class BrandManagement extends Component
     }
 
     public function render() {
-        return view('livewire.product.brand.brand-management', [
+        return view('livewire.category.category-management', [
             'items' => $this->service()->getItems($this->searchTerm, $this->perPage, $this->sortField, $this->sortDirection),
-        ])->title(__('messages.brand_management') ?? 'Brands Management');
+        ])->title(__('messages.category_management') ?? 'Categories Management');
     }
 }

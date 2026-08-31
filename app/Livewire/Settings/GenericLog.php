@@ -36,11 +36,13 @@ class GenericLog extends Component
             'user' => User::class,
             'role' => Role::class,
             'permission' => Permission::class,
-            'category' => \App\Models\Category::class,
             'brand' => \App\Models\Brand::class,
             'sidebar' => \App\Models\Sidebar::class,
             'category' => \App\Models\Product\Category::class,
             'brand' => \App\Models\Product\Brand::class,
+            'categories' => \App\Models\Story\Categories::class,
+            'category' => \App\Models\Story\Category::class,
+            'category' => \App\Models\Category::class,
 
 
         ];
@@ -209,6 +211,7 @@ class GenericLog extends Component
             'permission' => 'settings.permissions',
             'category' => 'product.categories.index',
             'brand' => 'product.brands.index',
+            'category' => 'categories.index',
         ];
 
         return $backRouteMap[$this->type] ?? 'dashboard';

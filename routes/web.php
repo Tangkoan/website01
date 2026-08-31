@@ -1,7 +1,10 @@
 <?php
 
-use App\Livewire\Settings\SidebarManagement;use App\Livewire\Product\BrandManagement;
-use App\Livewire\Product\CategoryManagement;use Illuminate\Support\Facades\Route;
+use App\Livewire\CategoryManagement;
+use App\Livewire\Settings\SidebarManagement;
+use App\Livewire\Product\BrandManagement;
+// use App\Livewire\Product\CategoryManagement;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
 // Livewire Components
@@ -42,11 +45,12 @@ Route::post('/summernote-upload', [App\Http\Controllers\UploadController::class,
 
 // ក្រុម Route សម្រាប់អ្នកដែលបាន Login រួច (Auth)
 Route::middleware(['auth'])->group(function () {
+    Route::get('/story/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
 
-    Route::prefix('product')->name('product.')->group(function () {
-        Route::get('/brands', BrandManagement::class)->name('brands.index')->can('view-brand');
-        Route::get('/categories', CategoryManagement::class)->name('categories.index')->can('view-category');
-    });
+    
+
+
+   
 
 
     // បង្កើត Route ទៅកាន់ទំព័រ Config
