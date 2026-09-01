@@ -41,6 +41,7 @@ class GenericTrash extends Component
             'tag' => \App\Models\Tag::class,
             'story-tag' => \App\Models\StoryTag::class,
             'setting' => \App\Models\Setting::class,
+            'story' => \App\Models\Story::class,
 
 
 
@@ -189,6 +190,7 @@ class GenericTrash extends Component
             'tag' => 'tags.index',
             'story-tag' => 'story-tags.index',
             'setting' => 'settings.index',
+            'story' => 'stories.index',
         ];
 
         // ហៅ BaseQuery មកប្រើ

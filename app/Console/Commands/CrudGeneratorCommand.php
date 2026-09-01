@@ -193,8 +193,8 @@ class CrudGeneratorCommand extends Command
                 $formHtml .= $this->getStatusHtmlTemplate($col, $label, $var); $bulkHtml .= $this->getStatusHtmlTemplate($col, $label, $bulkVar);
                 $tableCells .= $this->getStatusTableCell($col); $mobileCells .= $this->getStatusMobileCell($col);
                 
-            // 2. SMART DETECTION: Images / Files
-            } elseif (str_contains($col, 'image') || str_contains($col, 'file')) {
+            // 2. SMART DETECTION: Images / Files / Thumbnails / Logos / Avatars
+            } elseif (preg_match('/(image|file|thumbnail|photo|logo|avatar|banner|icon|cover)/i', $col)) {
                 $hasFile = true; $isM = str_ends_with($col, 's'); if ($isM) $casts[] = "'{$col}' => 'array'";
                 $props[] = "public \${$var};"; $bulkProps[] = "public \${$bulkVar};";
                 $edit[] = "\$this->{$var} = is_string(\$item->{$col}) ? json_decode(\$item->{$col}, true) ?? \$item->{$col} : \$item->{$col};";
@@ -227,12 +227,11 @@ class CrudGeneratorCommand extends Command
                 $formHtml .= $this->getTextAreaHtmlTemplate($col, $label, $var); $bulkHtml .= $this->getTextAreaHtmlTemplate($col, $label, $bulkVar);
                 $tableCells .= $this->getTextTableCell($col); $mobileCells .= $this->getTextMobileCell($col);
 
-            // 5. ✅ NEW: SMART DETECTION: Numbers (int, decimal, float)
+            // 5. SMART DETECTION: Numbers (int, decimal, float)
             } elseif (preg_match('/(int|decimal|float|double|numeric)/', $type)) {
                 $props[] = "public \${$var};"; $bulkProps[] = "public \${$bulkVar};";
                 $edit[] = "\$this->{$var} = \$item->{$col};"; $bulkEdit[] = "\$this->{$bulkVar} = \$item->{$col};";
                 
-                // បើសិនជាប្រភេទ int ឱ្យ Rule ជា integer បើ decimal ឱ្យ Rule ជា numeric
                 $numRule = str_contains($type, 'int') ? 'integer' : 'numeric';
                 $rules[] = "'{$var}' => '{$baseRule}|{$numRule}',"; 
                 $bulkRules[] = "'{$bulkVar}' => '{$baseRule}|{$numRule}',";
@@ -330,11 +329,11 @@ EOT;
                                     @if(is_array(\$f))
                                         {{-- 🌟 បើវាជា Array បង្ហាញរូបទាំងអស់ (Loop) --}}
                                         @foreach(\$f as \$img)
-                                            <img src="{{ asset('storage/'.\$img) }}" class="h-10 w-10 rounded-lg object-cover border-2 border-[var(--color-card-bg)] shadow-sm shrink-0">
+                                            <img src="{{ str_starts_with(\$img, 'http') ? \$img : asset('storage/'.\$img) }}" class="h-10 w-10 rounded-lg object-cover border-2 border-[var(--color-card-bg)] shadow-sm shrink-0">
                                         @endforeach
                                     @else
                                         {{-- 🌟 បើវាជារូបទោល --}}
-                                        <img src="{{ asset('storage/'.\$f) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
+                                        <img src="{{ str_starts_with(\$f, 'http') ? \$f : asset('storage/'.\$f) }}" class="h-10 w-10 rounded-lg object-cover border border-[var(--color-border-color)] shrink-0">
                                     @endif
                                 </div>
                             @else 
@@ -347,6 +346,7 @@ EOT;
 
     private function getTextMobileCell($col) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ strip_tags(\$item->{$col}) }}</span></div> @endif\n"; }
     private function getRelationMobileCell($col, $rel) { return "                    @if(in_array('{$col}', \$selectedColumns)) <div class=\"flex flex-col min-w-0\"><span class=\"text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-widest\">{{ __('messages.{$col}') }}</span><span class=\"text-xs font-bold text-[var(--color-text-main)] truncate block\">{{ \$item->{$rel}?->name ?? \$item->{$col} }}</span></div> @endif\n"; }
+    
     private function getImageMobileCell($col) { 
         return <<<EOT
                     @if(in_array('{$col}', \$selectedColumns)) 
@@ -361,10 +361,10 @@ EOT;
                         <div class="flex flex-wrap mt-1 gap-1.5">
                             @if(is_array(\$f))
                                 @foreach(\$f as \$img)
-                                    <img src="{{ asset('storage/'.\$img) }}" class="h-8 w-8 rounded-lg border-2 border-[var(--color-card-bg)] object-cover shrink-0">
+                                    <img src="{{ str_starts_with(\$img, 'http') ? \$img : asset('storage/'.\$img) }}" class="h-8 w-8 rounded-lg border-2 border-[var(--color-card-bg)] object-cover shrink-0">
                                 @endforeach
                             @elseif(\$f)
-                                <img src="{{ asset('storage/'.\$f) }}" class="h-8 w-8 rounded-lg object-cover shrink-0">
+                                <img src="{{ str_starts_with(\$f, 'http') ? \$f : asset('storage/'.\$f) }}" class="h-8 w-8 rounded-lg object-cover shrink-0">
                             @endif
                         </div>
                     </div> 
@@ -422,7 +422,17 @@ EOT;
                         <div class="w-full md:w-3/4">
                             <input type="file" wire:model="{$var}" id="f-{$var}" {$mAttr} accept="image/*" class="hidden">
                             <label for="f-{$var}" class="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-lg cursor-pointer inline-block">Upload {$label}</label>
-                            @if (\${$var}) <div class="mt-3 flex flex-wrap gap-2"> @if(is_array(\${$var}) || is_iterable(\${$var})) @foreach(\${$var} as \$i => \$f) <img src="{{ is_string(\$f) ? asset('storage/'.\$f) : \$f->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endforeach @else <img src="{{ is_string(\${$var}) ? asset('storage/'.\${$var}) : \${$var}->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> @endif </div> @endif
+                            @if (\${$var}) 
+                                <div class="mt-3 flex flex-wrap gap-2"> 
+                                    @if(is_array(\${$var}) || is_iterable(\${$var})) 
+                                        @foreach(\${$var} as \$i => \$f) 
+                                            <img src="{{ is_string(\$f) ? (str_starts_with(\$f, 'http') ? \$f : asset('storage/'.\$f)) : \$f->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> 
+                                        @endforeach 
+                                    @else 
+                                        <img src="{{ is_string(\${$var}) ? (str_starts_with(\${$var}, 'http') ? \${$var} : asset('storage/'.\${$var})) : \${$var}->temporaryUrl() }}" class="h-20 w-20 rounded-lg object-cover"> 
+                                    @endif 
+                                </div> 
+                            @endif
                         </div>
                     </div>\n
 EOT;

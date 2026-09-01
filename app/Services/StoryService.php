@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\{{ModelName}};
+use App\Models\Story;
 use Illuminate\Database\Eloquent\Builder;
 
-class {{ModelName}}Service
+class StoryService
 {
     /**
      * កំណត់ Field ដែលអ្នកចង់ឲ្យអាច Search បាន (អ្នកអាចប្តូរវាបានតាម Service នីមួយៗ)
@@ -14,7 +14,7 @@ class {{ModelName}}Service
 
     protected function model()
     {
-        return \App\Models\{{ModelName}}::class;
+        return \App\Models\Story::class;
     }
 
     public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
@@ -27,7 +27,7 @@ class {{ModelName}}Service
             $sortField = $primaryKey;
         }
 
-        $query = $this->model()::query(){{EagerLoads}}
+        $query = $this->model()::query()->with(['category', 'user'])
             ->when($searchTerm, function (Builder $q) use ($searchTerm) {
                 // ✅ Smart Search: វានឹង Search គ្រប់ Field ដែលបានកំណត់ក្នុង $searchableFields
                 $q->where(function ($subQuery) use ($searchTerm) {
@@ -51,7 +51,7 @@ class {{ModelName}}Service
     {
         // ✅ Smart Primary Key: ទាញ Key ពី Model ដោយស្វ័យប្រវត្តិ មិនចាំបាច់ Hardcode 'id'
         $primaryKey = app($this->model())->getKeyName();
-        return {{ModelName}}::updateOrCreate([$primaryKey => $id], $data);
+        return Story::updateOrCreate([$primaryKey => $id], $data);
     }
 
     public function deleteItems($ids)
@@ -60,6 +60,6 @@ class {{ModelName}}Service
         $ids = is_array($ids) ? $ids : [$ids];
         
         // ✅ ប្រើ $primaryKey ជំនួស 'id'
-        return {{ModelName}}::whereIn($primaryKey, $ids)->get()->each->delete();
+        return Story::whereIn($primaryKey, $ids)->get()->each->delete();
     }
 }
