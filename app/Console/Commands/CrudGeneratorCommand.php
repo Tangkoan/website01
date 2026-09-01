@@ -133,9 +133,32 @@ class CrudGeneratorCommand extends Command
         $this->info("✅ CRUD [{$modelName}] generated with Smart Logic!");
     }
 
+    // 🌟 មុខងារដែលបាន Upgrade ថ្មី (ស្គាល់ទាំងឯកវចនៈ និងពហុវចនៈ ទោះមានពាក្យច្រើនក៏ដោយ)
     protected function discoverTableName($baseName) {
         $tables = array_map(fn($t) => current((array)$t), DB::select('SHOW TABLES'));
-        foreach ($tables as $table) { if ($table === $baseName || Str::endsWith($table, '_' . $baseName)) return $table; }
+        
+        $singularBaseName = Str::singular($baseName); 
+
+        // អាទិភាពទី ១៖ រកឈ្មោះដែលត្រូវគ្នា ១០០% តែម្តង (អត់មាន Prefix)
+        if (in_array($baseName, $tables)) return $baseName;
+        if (in_array($singularBaseName, $tables)) return $singularBaseName;
+
+        // អាទិភាពទី ២៖ រកឈ្មោះដែលមាន Prefix ពីមុខ (ឧ. tg_tags ឬ tg_story_tag)
+        $possibleMatches = [];
+        foreach ($tables as $table) { 
+            if (Str::endsWith($table, '_' . $baseName) || Str::endsWith($table, '_' . $singularBaseName)) {
+                $possibleMatches[] = $table; 
+            }
+        }
+
+        if (count($possibleMatches) > 0) {
+            // ✅ ចំណុចសំខាន់៖ តម្រៀបយកឈ្មោះ Table ដែលខ្លីជាងគេមកប្រើមុនគេ
+            // ឧទាហរណ៍៖ វាស្គាល់ទាំង 'tg_tags' (7 អក្សរ) និង 'tg_story_tag' (12 អក្សរ)
+            // វានឹងជ្រើសយក 'tg_tags' ព្រោះវាខ្លីជាងនិងត្រូវសាច់រឿងជាង
+            usort($possibleMatches, fn($a, $b) => strlen($a) <=> strlen($b));
+            return $possibleMatches[0];
+        }
+        
         return null;
     }
 

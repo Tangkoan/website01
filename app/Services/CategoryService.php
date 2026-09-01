@@ -6,7 +6,6 @@ use App\Models\Category;
 
 class CategoryService
 {
-
     protected function model()
     {
         return \App\Models\Category::class;
@@ -16,12 +15,16 @@ class CategoryService
     {
         $query = $this->model()::query()
             ->when($searchTerm, function ($q) use ($searchTerm) {
-                return $query->where('name', 'like', '%' . $searchTerm . '%');
+                // ✅ កែពី $query មកជា $q វិញ
+                return $q->where('name', 'like', '%' . $searchTerm . '%');
             })
             ->orderBy($sortField, $sortDirection);
 
+        // ✅ ដោះស្រាយបញ្ហា $items->links() Error ពេលជ្រើសរើស "All"
         if (strtolower($perPage) === 'all') {
-            return $query->get();
+            $total = $query->count();
+            // ប្រើ paginate ជំនួស get() ដើម្បីរក្សាទម្រង់ Paginator Object អោយ View ស្គាល់
+            return $query->paginate($total > 0 ? $total : 1); 
         }
 
         return $query->paginate((int) $perPage);

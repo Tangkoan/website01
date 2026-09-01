@@ -44,6 +44,7 @@ class GenericLog extends Component
             'category' => \App\Models\Story\Category::class,
             'category' => \App\Models\Category::class,
             'tag' => \App\Models\Tag::class,
+            'story-tag' => \App\Models\StoryTag::class,
 
 
         ];
@@ -214,6 +215,7 @@ class GenericLog extends Component
             'brand' => 'product.brands.index',
             'category' => 'categories.index',
             'tag' => 'tags.index',
+            'story-tag' => 'story-tags.index',
         ];
 
         return $backRouteMap[$this->type] ?? 'dashboard';
