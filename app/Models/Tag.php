@@ -2,20 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions; // 1. Import LogOptions
 
 class Tag extends Model
 {
-    use HasFactory;
+    use SoftDeletes, LogsActivity;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name']; // your fillable fields...
 
-    public function stories()
+    // 2. Add this required method
+    public function getActivitylogOptions(): LogOptions
     {
-        return $this->belongsToMany(Story::class);
+        return LogOptions::defaults()
+            ->logOnly(['name']) // Replace with the actual columns you want to log
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+            
+        // Alternatively, if you just want to log all fillable attributes:
+        // return LogOptions::defaults()->logFillable();
     }
 }

@@ -38,6 +38,7 @@ class GenericTrash extends Component
             'categories' => \App\Models\Story\Categories::class,
             'category' => \App\Models\Story\Category::class,
             'category' => \App\Models\Category::class,
+            'tag' => \App\Models\Tag::class,
 
 
 
@@ -183,6 +184,7 @@ class GenericTrash extends Component
             'brand' => 'product.brands.index',
             'sidebar' => 'settings.sidebars.index',
             'category' => 'categories.index',
+            'tag' => 'tags.index',
         ];
 
         // ហៅ BaseQuery មកប្រើ
