@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('type')->default('string');   // ប្រភេទ input (string, text, boolean, select)
             $table->text('value')->nullable();           // តម្លៃរបស់វា
             $table->json('options')->nullable();         // ជម្រើសសម្រាប់ Dropdown (បើមាន)
+            $table->softDeletes();
             $table->timestamps();
         });
     }

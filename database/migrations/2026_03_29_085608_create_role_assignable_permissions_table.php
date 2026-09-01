@@ -18,6 +18,7 @@ return new class extends Migration
             // បង្កើត Foreign Keys
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
+            $table->softDeletes();
 
             // ការពារកុំឲ្យស្ទួន
             $table->unique(['role_id', 'permission_id']);

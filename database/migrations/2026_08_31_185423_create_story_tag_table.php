@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('story_tag', function (Blueprint $table) {
             $table->foreignId('story_id')->constrained()->cascadeOnDelete();
             $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
+            $table->softDeletes();
             
             // កំណត់ Primary Key រួមគ្នាដើម្បីការពារកុំឲ្យទិន្នន័យជាន់គ្នា
             $table->primary(['story_id', 'tag_id']);

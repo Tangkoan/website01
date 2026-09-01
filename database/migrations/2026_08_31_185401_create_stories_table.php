@@ -21,6 +21,13 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('thumbnail')->nullable();
             $table->longText('content');
+            
+            // ដាក់ Field ថ្មីទាំងពីរនៅទីនេះ
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+
+            $table->softDeletes();
+            
             $table->integer('views_count')->default(0);
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->timestamp('published_at')->nullable();

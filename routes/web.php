@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\StoryTagManagement;
+use App\Livewire\SettingManagement;use App\Livewire\StoryTagManagement;
 use App\Livewire\TagManagement;
 use App\Livewire\CategoryManagement;
 use App\Livewire\Settings\SidebarManagement;
@@ -47,6 +47,7 @@ Route::post('/summernote-upload', [App\Http\Controllers\UploadController::class,
 
 // ក្រុម Route សម្រាប់អ្នកដែលបាន Login រួច (Auth)
 Route::middleware(['auth'])->group(function () {
+    Route::get('/settings', SettingManagement::class)->name('settings.index')->can('view-setting');
     Route::get('/story/story-tags', StoryTagManagement::class)->name('story-tags.index')->can('view-story-tag');
     Route::get('/story/tags', TagManagement::class)->name('tags.index')->can('view-tag');
     Route::get('/story/categories', CategoryManagement::class)->name('categories.index')->can('view-category');

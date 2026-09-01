@@ -1,43 +1,34 @@
 <?php
 
-namespace App\Services;
+namespace App\Models;
 
-use App\Models\{{ModelName}};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
-class {{ModelName}}Service
+class {{ModelName}} extends Model
 {
-    protected function model()
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    // ✅ កំណត់ឈ្មោះ Table ឱ្យច្បាស់លាស់ ការពារ Laravel ទាយខុស (ដូចករណី Pivot Table)
+    protected $table = '{{TableName}}';
+    
+    protected $guarded = []; // ✅ Guarded ត្រឹមត្រូវ
+
+    public function getActivitylogOptions(): LogOptions
     {
-        return \App\Models\{{ModelName}}::class;
+        return LogOptions::defaults()
+            ->logUnguarded()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
+    
+    {{ModelCasts}}
 
-    public function getItems($searchTerm, $perPage, $sortField, $sortDirection)
-    {
-        $query = $this->model()::query(){{EagerLoads}}
-            ->when($searchTerm, function ($q) use ($searchTerm) {
-                // ✅ កែពី $query មកជា $q វិញ
-                return $q->where('name', 'like', '%' . $searchTerm . '%');
-            })
-            ->orderBy($sortField, $sortDirection);
-
-        // ✅ ដោះស្រាយបញ្ហា $items->links() Error ពេលជ្រើសរើស "All"
-        if (strtolower($perPage) === 'all') {
-            $total = $query->count();
-            // ប្រើ paginate ជំនួស get() ដើម្បីរក្សាទម្រង់ Paginator Object អោយ View ស្គាល់
-            return $query->paginate($total > 0 ? $total : 1); 
-        }
-
-        return $query->paginate((int) $perPage);
-    }
-
-    public function saveItem(array $data, $id = null)
-    {
-        return {{ModelName}}::updateOrCreate(['id' => $id], $data);
-    }
-
-    public function deleteItems($ids)
-    {
-        $ids = is_array($ids) ? $ids : [$ids];
-        return {{ModelName}}::whereIn('id', $ids)->get()->each->delete();
-    }
+    // ==========================================
+    // Relationships (ចងទំនាក់ទំនងរវាង Table ផ្សេងៗ)
+    // ==========================================
+    {{Relationships}}
 }
