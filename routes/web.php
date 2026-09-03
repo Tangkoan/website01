@@ -8,6 +8,7 @@ use App\Livewire\Product\BrandManagement;
 // use App\Livewire\Product\CategoryManagement;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\FrontendController;
 
 // Livewire Components
 use App\Livewire\Dashboard;
@@ -39,9 +40,10 @@ use App\Livewire\Settings\GlobalTrashManager;
 */
 
 // ទំព័រ Login (សម្រាប់អ្នកមិនទាន់ Login)
-Route::get('/', function () {
+Route::get('/login', function () {
     return view('welcome');
 })->middleware('guest')->name('login');
+;
 
 Route::post('/summernote-upload', [App\Http\Controllers\UploadController::class, 'summernoteUpload'])->name('summernote.upload');
 
@@ -147,4 +149,32 @@ Route::get('/cron/trash/empty/{token}', function ($token) {
 Route::fallback(function () {
     abort(404);
 });
+
+
+
+
+// ទំព័រដើម (Home Page)
+// ប្ដូរពី Route ដែល return view ផ្ទាល់ មកហៅតាម Controller វិញ
+Route::get('/', [FrontendController::class, 'index'])->name('home');
+// ដាក់កូដថ្មីនេះជំនួសវិញ (ត្រូវប្រាកដថាអ្នកបាន use App\Http\Controllers\FrontendController; នៅខាងលើគេ)
+Route::get('/story/{slug}', [App\Http\Controllers\FrontendController::class, 'show'])->name('story.detail');
+
+
+// ឧទាហរណ៍ Route សម្រាប់ Menu ខាងលើ
+Route::get('/read-with-us', function () {
+    return view('frontend.category', ['category' => 'Read With Us']);
+})->name('read-with-us');
+
+Route::get('/real-story', function () {
+    return view('frontend.category', ['category' => 'Real Story']);
+})->name('real-story');
+
+Route::get('/news-healthy', function () {
+    return view('frontend.category', ['category' => 'News & Healthy']);
+})->name('news-healthy');
+
+// សម្រាប់ចុចអានអត្ថបទនីមួយៗ
+
+
+
 
