@@ -22,7 +22,7 @@
 
     <!-- Main Logo -->
     <div class="max-w-6xl mx-auto px-4 py-6 md:py-8 text-center">
-        <a href="/" class="text-3xl md:text-[40px] font-serif text-gray-800 tracking-wide hover:opacity-80 transition-opacity">
+        <a href="{{ route('home') }}" class="text-3xl md:text-[40px] font-serif text-gray-800 tracking-wide hover:opacity-80 transition-opacity">
             Life Reader With Us
         </a>
     </div>
@@ -31,10 +31,21 @@
     <nav class="bg-[#5a6268] text-white font-sans">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <ul class="flex flex-wrap justify-center gap-x-5 gap-y-3 py-3 text-[14px]">
-                <li><a href="/" class="hover:text-gray-300 transition-colors">Home</a></li>
-                <li><a href="#" class="hover:text-gray-300 transition-colors">Read With Us</a></li>
-                <li><a href="#" class="hover:text-gray-300 transition-colors">Real Story</a></li>
-                <li><a href="#" class="hover:text-gray-300 transition-colors">News & Healthy</a></li>
+                <!-- Home Page (Static) -->
+                <li><a href="{{ route('home') }}" class="hover:text-gray-300 transition-colors">Home</a></li>
+                
+                <!-- Dynamic Categories -->
+                @if(isset($categories) && $categories->count() > 0)
+                    @foreach($categories as $category)
+                        <li>
+                            <a href="{{ url('/category/' . $category->slug) }}" class="hover:text-gray-300 transition-colors">
+                                {{ $category->name }}
+                            </a>
+                        </li>
+                    @endforeach
+                @else
+                    
+                @endif
             </ul>
         </div>
     </nav>

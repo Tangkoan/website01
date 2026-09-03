@@ -180,6 +180,8 @@ Route::get('/terms-and-conditions', [PageController::class, 'terms'])->name('pag
 Route::get('/about-us', [PageController::class, 'about'])->name('page.about');
 Route::get('/contact-us', [PageController::class, 'contact'])->name('page.contact');
 
+Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('category.show');
+
 
 
 

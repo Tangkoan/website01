@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 
 use Illuminate\Support\Facades\Gate; // ត្រូវប្រាកដថាបាន import Gate
+use App\Models\Category; // ត្រូវ use Model Category នេះ
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,6 +40,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             // សូមប្ដូរ 'super-admin' ទៅតាមឈ្មោះ role ជាក់ស្ដែងដែលបងមានក្នុង Database
             return $user->hasRole('Super Admin') ? true : null;
+        });
+
+
+        // ប្រាប់ Laravel ឲ្យបញ្ជូនទិន្នន័យ categories នេះទៅកាន់ component header គ្រប់ពេលវាដើរ
+        View::composer('components.layouts.header', function ($view) {
+            $view->with('categories', Category::where('is_active', 1)->get());
         });
     }
 }
