@@ -17,6 +17,10 @@
 
             <h3 class="text-lg font-semibold text-gray-800 pt-2">Non-Personal Information</h3>
             <p>When you visit our website, certain information may be collected automatically, including your IP address, browser type, and device information.</p>
+
+            <h2 class="text-xl font-bold text-gray-900 pt-4">Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+            <p><strong>Email:</strong> contact@{{ str_replace('www.', '', request()->getHost()) }}</p>
         </div>
     </div>
 </x-layouts.app>

@@ -71,6 +71,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ isset($title) ? $title : __('messages.app_name') ?? 'Admin Panel' }}</title>
 
+    <!-- ដាក់កូដ Favicon នៅទីនេះ -->
+    @if(optional($shopInfo)->favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $shopInfo->favicon) }}?v={{ time() }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>

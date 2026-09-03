@@ -14,11 +14,11 @@ class PageController extends Controller
         // ឆែកមើលថាតើមាន Table 'tg_shop_info' ក្នុង Database ដែរឬទេ
         if (Schema::hasTable('tg_shop_info')) {
             $siteName = DB::table('tg_shop_info')->value('name');
-            return $siteName ?? 'Life Reader With Us';
+            return $siteName ?? 'Life Stories With Us';
         }
 
         // បើមិនទាន់មាន Table ទេ ដាក់ឈ្មោះ Hard code នេះសិន
-        return 'Life Reader With Us'; 
+        return 'Life Stories With Us'; 
     }
 
     public function privacyPolicy()

@@ -1,4 +1,4 @@
-<x-layouts.app title="Home - Life Reader With Us">
+<x-layouts.app title="Home - Life Stories With Us">
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         

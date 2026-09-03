@@ -2,7 +2,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-[13px] text-center md:text-left">
         
         <div class="mb-4 md:mb-0">
-            <p>&copy; {{ date('Y') }} Life Reader With Us. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} Life Stories With Us. All rights reserved.</p>
         </div>
         
         <ul class="flex flex-wrap justify-center gap-x-4 gap-y-2">

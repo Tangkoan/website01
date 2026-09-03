@@ -1,4 +1,4 @@
-<x-layouts.app title="{{ $story->title }} - Life Reader With Us">
+<x-layouts.app title="{{ $story->title }} - Life Stories With Us">
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
@@ -23,7 +23,14 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 border-b border-gray-100 pb-4">
                     
                     <div class="flex items-center text-[13px] text-gray-500 font-sans">
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Author" class="w-10 h-10 rounded-full mr-3 object-cover border border-gray-200">
+                        <!-- ទាញយក Logo ពី Table shop_infos -->
+                        @if(optional($shopInfo)->logo)
+                            <img src="{{ asset('storage/' . $shopInfo->logo) }}?v={{ time() }}" alt="{{ optional($shopInfo)->site_name ?? 'Logo' }}" class="w-10 h-10 rounded-full mr-3 object-cover border border-gray-200 shadow-sm">
+                        @else
+                            <!-- បើមិនទាន់ Upload Logo ទេ វានឹងយកឈ្មោះ Site Name មកធ្វើជារូបភាពបណ្តោះអាសន្ន -->
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(optional($shopInfo)->site_name ?? 'Life Stories') }}&background=2563eb&color=fff" alt="Default Avatar" class="w-10 h-10 rounded-full mr-3 object-cover border border-gray-200">
+                        @endif
+                        
                         <div>
                             <span class="block text-gray-800 font-semibold">Reading Time: {{ $story->reading_time ?? '5' }} Minutes</span>
                             <span class="block mt-0.5 text-gray-400">

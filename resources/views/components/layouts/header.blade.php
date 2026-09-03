@@ -23,7 +23,7 @@
     <!-- Main Logo -->
     <div class="max-w-6xl mx-auto px-4 py-6 md:py-8 text-center">
         <a href="{{ route('home') }}" class="text-3xl md:text-[40px] font-serif text-gray-800 tracking-wide hover:opacity-80 transition-opacity">
-            Life Reader With Us
+            Life Stories With Us
         </a>
     </div>
 
