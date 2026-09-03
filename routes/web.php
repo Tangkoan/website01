@@ -9,6 +9,7 @@ use App\Livewire\Product\BrandManagement;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\PageController;
 
 // Livewire Components
 use App\Livewire\Dashboard;
@@ -173,7 +174,11 @@ Route::get('/news-healthy', function () {
     return view('frontend.category', ['category' => 'News & Healthy']);
 })->name('news-healthy');
 
-// សម្រាប់ចុចអានអត្ថបទនីមួយៗ
+// Routes ថ្មីសម្រាប់ Static Pages
+Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('page.privacy');
+Route::get('/terms-and-conditions', [PageController::class, 'terms'])->name('page.terms');
+Route::get('/about-us', [PageController::class, 'about'])->name('page.about');
+Route::get('/contact-us', [PageController::class, 'contact'])->name('page.contact');
 
 
 

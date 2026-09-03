@@ -4,10 +4,10 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center py-3 text-[13px] text-gray-500 font-sans">
             
             <ul class="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-3 md:mb-0">
-                <li><a href="#" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" class="hover:text-gray-900 transition-colors">Terms and Conditions</a></li>
-                <li><a href="#" class="hover:text-gray-900 transition-colors">About Us</a></li>
-                <li><a href="#" class="hover:text-gray-900 transition-colors">Contact Us</a></li>
+                <li><a href="{{ route('page.privacy') }}" class="hover:text-gray-900 transition-colors">Privacy Policy</a></li>
+                <li><a href="{{ route('page.terms') }}" class="hover:text-gray-900 transition-colors">Terms and Conditions</a></li>
+                <li><a href="{{ route('page.about') }}" class="hover:text-gray-900 transition-colors">About Us</a></li>
+                <li><a href="{{ route('page.contact') }}" class="hover:text-gray-900 transition-colors">Contact Us</a></li>
             </ul>
 
             <form class="flex h-8 w-full max-w-[250px] mx-auto md:mx-0 md:max-w-[200px]" action="#" method="GET">

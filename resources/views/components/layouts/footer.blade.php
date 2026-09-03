@@ -6,10 +6,10 @@
         </div>
         
         <ul class="flex flex-wrap justify-center gap-x-4 gap-y-2">
-            <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Terms and Conditions</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-            <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+            <li><a href="{{ route('page.privacy') }}" class="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="{{ route('page.terms') }}" class="hover:text-white transition-colors">Terms and Conditions</a></li>
+            <li><a href="{{ route('page.about') }}" class="hover:text-white transition-colors">About Us</a></li>
+            <li><a href="{{ route('page.contact') }}" class="hover:text-white transition-colors">Contact Us</a></li>
         </ul>
         
     </div>
