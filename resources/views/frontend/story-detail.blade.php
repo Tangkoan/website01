@@ -2,7 +2,7 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- Main Content -->
+        <!-- ================= MAIN CONTENT ================= -->
         <div class="lg:col-span-8">
             
             <!-- Breadcrumbs -->
@@ -59,12 +59,13 @@
                     </div>
                 @endif
 
-                <!-- Alpine.js សម្រាប់មុខងារ Continue Reading -->
-                <div x-data="{ expanded: false }" class="relative">
+                <!-- UX CONTINUE READING & SHOW LESS -->
+                <!-- UX CONTINUE READING & SHOW LESS -->
+                <div x-data="{ expanded: false }" x-ref="articleContainer" class="relative">
                     
-                    <!-- Content Container (លាក់បន្តិចប្រសិនបើមិនទាន់ចុច) -->
-                    <div class="prose max-w-none text-gray-800 text-base md:text-[17px] leading-relaxed font-serif relative"
-                         :class="expanded ? 'pb-10' : 'max-h-[800px] overflow-hidden pb-0'">
+                    <!-- ប្រើប្រាស់ :class ជំនួស :style ដើម្បីដោះសោរ Max-Height ពេលចុច Read More -->
+                    <div :class="expanded ? 'max-h-none pb-12' : 'max-h-[800px]'" 
+                        class="prose max-w-none text-gray-800 text-base md:text-[17px] leading-relaxed font-serif relative overflow-hidden">
                         
                         @php
                             $paragraphs = explode('</p>', $story->content);
@@ -77,8 +78,8 @@
                                 {!! '</p>' !!}
                             @endif
 
-                            <!-- In-Article Ads -->
-                            @if (($index + 1) % $adFrequency == 0 && $index < count($paragraphs) - 1)
+                            <!-- In-Article Ads (រក្សាទុកនៅដដែល) -->
+                            @if (($index + 1) % $adFrequency == 0 && $index < count($paragraphs) - 1 && trim($paragraph) != '')
                                 <div class="my-8 font-sans">
                                     <h4 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-widest">
                                         Promoted Content
@@ -88,21 +89,30 @@
                             @endif
                         @endforeach
 
-                        <!-- ស្រមោលសៗខាងក្រោមពេលមិនទាន់បើកអាន (Gradient Fade) -->
-                        <div x-show="!expanded" class="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+                        <!-- ស្រមោលសៗខាងក្រោមពេលមិនទាន់បើកអាន -->
+                        <div x-show="!expanded" class="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10"></div>
                     </div>
 
                     <!-- ប៊ូតុង Continue Reading -->
-                    <div x-show="!expanded" class="flex justify-center mt-4 mb-10 relative z-10">
-                        <button @click="expanded = true" class="bg-[#5a6268] text-white font-sans text-[13px] font-bold uppercase tracking-wider py-3 px-8 rounded hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2">
+                    <div x-show="!expanded" class="absolute bottom-6 left-0 w-full flex justify-center z-20">
+                        <button @click="expanded = true" class="bg-[#5a6268] text-white font-sans text-[13px] font-bold uppercase tracking-wider py-3 px-8 rounded hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2">
                             Continue Reading
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                     </div>
 
+                    <!-- ប៊ូតុង Show Less -->
+                    <div x-cloak x-show="expanded" class="flex justify-center mt-8 mb-4 relative z-10">
+                        <button @click="expanded = false; window.scrollTo({ top: $refs.articleContainer.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' })" 
+                                class="bg-gray-200 text-gray-700 font-sans text-[13px] font-bold uppercase tracking-wider py-3 px-8 rounded hover:bg-gray-300 transition-colors shadow-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                            Show Less
+                        </button>
+                    </div>
+
                 </div>
 
-                <!-- Story Tags នៅខាងក្រោមអត្ថបទ -->
+                <!-- Story Tags នៅខាងក្រោមអត្ថបទ (បង្ហាញជានិច្ចទាំងលើ Mobile & Desktop) -->
                 <div class="mt-4 pt-6 border-t border-gray-100">
                     <div class="flex flex-wrap gap-2">
                         @forelse ($story->tags as $tag)
@@ -122,53 +132,65 @@
             </article>
         </div>
 
-        <!-- Sidebar (នៅរក្សាទុកដដែល) -->
-        <aside class="lg:col-span-4 space-y-6 mt-4 lg:mt-0">
-            <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <form class="flex w-full" action="#" method="GET">
-                    <input type="text" name="search" placeholder="Search..." class="w-full border border-gray-300 rounded-l-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gray-500">
-                    <button type="submit" class="bg-gray-900 text-white px-5 py-2.5 rounded-r-lg hover:bg-gray-800 text-sm font-medium transition-colors">Search</button>
-                </form>
-            </div>
 
-            <div class="sticky top-6 mt-6">
-                <x-ads.banner />
-            </div>
-
-            <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-bold text-gray-900 mb-5 uppercase tracking-widest border-l-4 border-gray-900 pl-3">Recent Posts</h3>
-                <ul class="space-y-5">
-                    @forelse ($recentPosts as $recent)
-                        <li class="flex gap-4 items-center group">
-                            <a href="{{ route('story.detail', $recent->slug ?? $recent->id) }}" class="w-20 h-20 shrink-0 block bg-gray-50 relative rounded-lg overflow-hidden">
-                                <img src="{{ $recent->thumbnail ? asset('storage/'.$recent->thumbnail) : 'https://via.placeholder.com/80x80?text=LR' }}" 
-                                     onerror="this.src='https://via.placeholder.com/80x80?text=LR'"
-                                     class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
-                            </a>
-                            <div class="flex-1">
-                                <a href="{{ route('story.detail', $recent->slug ?? $recent->id) }}" class="font-bold text-sm text-gray-800 group-hover:text-blue-600 leading-snug line-clamp-2 mb-1.5 transition-colors">
-                                    {{ $recent->title }}
-                                </a>
-                                <p class="text-[11px] text-gray-400 font-medium uppercase tracking-wide">{{ $recent->created_at->format('M j, Y') }}</p>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="text-gray-500 text-sm">No recent posts.</li>
-                    @endforelse
-                </ul>
-            </div>
+        <!-- ================= SIDEBAR ================= -->
+        <!-- 🌟 ប្តូរមកប្រើ hidden md:block ដើម្បីលាក់លើ Mobile និងបង្ហាញលើ Desktop ធម្មតា -->
+        <aside class="hidden md:block lg:col-span-4">
             
-            <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-bold text-gray-900 mb-5 uppercase tracking-widest border-l-4 border-gray-900 pl-3">Tags</h3>
-                <div class="flex flex-wrap gap-2">
-                    @forelse ($sidebarTags ?? [] as $tag)
-                        <a href="#" class="border border-gray-200 text-gray-600 text-[11px] uppercase tracking-wide px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
-                            {{ $tag->name }}
-                        </a>
-                    @empty
-                        <span class="text-xs text-gray-400">No tags.</span>
-                    @endforelse
+            <!-- 🌟 រុំ Wrapper នេះជាមួយ sticky ដើម្បីឱ្យវាអូសតាមនៅលើ Screen ធំ -->
+            <div class="sticky top-6 space-y-6 mt-4 lg:mt-0">
+
+                <!-- Search -->
+                <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                    <form class="flex w-full" action="#" method="GET">
+                        <input type="text" name="search" placeholder="Search..." class="w-full border border-gray-300 rounded-l-lg px-4 py-2.5 text-sm focus:outline-none focus:border-gray-500">
+                        <button type="submit" class="bg-gray-900 text-white px-5 py-2.5 rounded-r-lg hover:bg-gray-800 text-sm font-medium transition-colors">Search</button>
+                    </form>
                 </div>
+
+                <!-- Ad Space -->
+                <div>
+                    <x-ads.banner />
+                </div>
+
+                <!-- Recent Posts -->
+                <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-900 mb-5 uppercase tracking-widest border-l-4 border-gray-900 pl-3">Recent Posts</h3>
+                    <ul class="space-y-5">
+                        @forelse ($recentPosts as $recent)
+                            <li class="flex gap-4 items-center group">
+                                <a href="{{ route('story.detail', $recent->slug ?? $recent->id) }}" class="w-20 h-20 shrink-0 block bg-gray-50 relative rounded-lg overflow-hidden">
+                                    <img src="{{ $recent->thumbnail ? asset('storage/'.$recent->thumbnail) : 'https://via.placeholder.com/80x80?text=LR' }}" 
+                                         onerror="this.src='https://via.placeholder.com/80x80?text=LR'"
+                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                </a>
+                                <div class="flex-1">
+                                    <a href="{{ route('story.detail', $recent->slug ?? $recent->id) }}" class="font-bold text-sm text-gray-800 group-hover:text-blue-600 leading-snug line-clamp-2 mb-1.5 transition-colors">
+                                        {{ $recent->title }}
+                                    </a>
+                                    <p class="text-[11px] text-gray-400 font-medium uppercase tracking-wide">{{ $recent->created_at->format('M j, Y') }}</p>
+                                </div>
+                            </li>
+                        @empty
+                            <li class="text-gray-500 text-sm">No recent posts.</li>
+                        @endforelse
+                    </ul>
+                </div>
+                
+                <!-- Sidebar Tags -->
+                <div class="bg-white p-5 md:p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-bold text-gray-900 mb-5 uppercase tracking-widest border-l-4 border-gray-900 pl-3">Tags</h3>
+                    <div class="flex flex-wrap gap-2">
+                        @forelse ($sidebarTags ?? [] as $tag)
+                            <a href="#" class="border border-gray-200 text-gray-600 text-[11px] uppercase tracking-wide px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">
+                                {{ $tag->name }}
+                            </a>
+                        @empty
+                            <span class="text-xs text-gray-400">No tags.</span>
+                        @endforelse
+                    </div>
+                </div>
+                
             </div>
         </aside>
 

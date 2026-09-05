@@ -2,7 +2,7 @@
     
     <div class="text-center mb-8">
         <h2 class="text-3xl font-extrabold text-gray-900">Welcome Back!!!</h2>
-        <p class="text-sm text-gray-500 mt-2">Please Enter Your Accout To Login</p>
+        <p class="text-sm text-gray-500 mt-2">Please Enter Your Account To Login</p>
     </div>
 
     @if($errorMessage)
@@ -11,7 +11,7 @@
         </div>
     @endif
 
-    <form wire:submit="login" class="space-y-6">
+    <form wire:submit.prevent="login" class="space-y-6">
         
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Email\Name</label>
@@ -20,7 +20,6 @@
                 wire:model="email" 
                 class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none"
                 placeholder="you@gmail.com"
-                value="d"
             >
             @error('email') 
                 <span class="text-red-500 text-sm mt-1 block font-medium">{{ $message }}</span> 
@@ -31,12 +30,10 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <div class="relative">
                 <input 
-                    /* បើ showPassword ពិត វាប្តូរទៅ text បើមិនពិត វាជា password */
                     x-bind:type="showPassword ? 'text' : 'password'" 
                     wire:model="password" 
                     class="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none"
                     placeholder="••••••••"
-                    value="dd"
                 >
                 
                 <button 
